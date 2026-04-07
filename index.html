@@ -46,15 +46,36 @@
 
   <!-- 📋 APP -->
   <div id="app" style="display:none;">
-    <div id="novoAluno" style="display:none;">
-    <h2>➕ Novo Aluno</h2>
-
-    <input type="text" id="nomeAluno" placeholder="Nome do aluno">
-
-    <br><br>
-    <button onclick="salvarAluno()">Salvar</button>
-    <button onclick="voltarApp()">Cancelar</button>
+    <!-- ➕ NOVO ALUNO (MODAL ESTILIZADO) -->
+<div id="novoAluno" class="modal-overlay" style="display:none;">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>➕ Novo Aluno</h2>
+      <button class="close-btn" onclick="voltarApp()">✕</button>
     </div>
+
+    <div class="modal-body">
+      <div class="info-escola" id="infoEscolaCadastro">
+        <span>🏫</span>
+        <span id="escolaVinculada">Carregando...</span>
+      </div>
+
+      <div class="input-icon">
+        <span class="icon">👤</span>
+        <input type="text" id="nomeAluno" placeholder="Nome completo do aluno" autofocus>
+      </div>
+      <div class="error-msg" id="erroNome" style="display:none;">⚠️ Nome obrigatório</div>
+
+      <div class="modal-actions">
+        <button class="btn-salvar" id="btnSalvarAluno" onclick="salvarAluno()">
+          <span class="btn-text">Salvar</span>
+          <span class="spinner-btn" style="display:none;"></span>
+        </button>
+        <button class="btn-cancelar" onclick="voltarApp()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
     <header>
         <div class="header-left">
