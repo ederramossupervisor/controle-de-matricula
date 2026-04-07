@@ -328,20 +328,36 @@ function abrirCadastro() {
 }
 
 function abrirNovoAluno() {
-  document.getElementById("novoAluno").style.display = "block";
+  document.getElementById("novoAluno").style.display = "flex";
   document.getElementById("lista").style.display = "none";
   document.getElementById("painel").style.display = "none";
+  // Exibir a escola da secretária logada
+  document.getElementById("escolaVinculada").textContent = 
+    `Aluno será matriculado em: ${escolaUsuario}`;
 }
 
 async function salvarAluno() {
-  const nome = document.getElementById("nomeAluno").value;
+  const nomeInput = document.getElementById("nomeAluno");
+  const nome = nomeInput.value.trim();
+  const erroDiv = document.getElementById("erroNome");
+  const btnSalvar = document.getElementById("btnSalvarAluno");
+  const btnText = btnSalvar.querySelector(".btn-text");
+  const spinner = btnSalvar.querySelector(".spinner-btn");
 
+  // Validação
   if (!nome) {
-    alert("Digite o nome do aluno");
+    erroDiv.style.display = "block";
+    nomeInput.style.borderColor = "#dc2626";
     return;
   }
+  
+  erroDiv.style.display = "none";
+  nomeInput.style.borderColor = "#e2e8f0";
 
-  mostrarLoading();
+  // Mostrar loading no botão
+  btnText.style.display = "none";
+  spinner.style.display = "inline-block";
+  btnSalvar.disabled = true;
 
   try {
     const resposta = await fetch(API_URL, {
@@ -356,34 +372,41 @@ async function salvarAluno() {
     const resultado = await resposta.json();
 
     if (resultado.status === "ok") {
-      alert("Aluno cadastrado com sucesso!");
+      // Feedback visual rápido antes de fechar
+      btnText.textContent = "✅ Cadastrado!";
+      spinner.style.display = "none";
+      btnText.style.display = "inline";
+      await new Promise(r => setTimeout(r, 600)); // pequena pausa para ver o sucesso
 
-      document.getElementById("nomeAluno").value = "";
-
+      nomeInput.value = "";
       voltarApp();
       carregarAlunos();
     } else {
-      alert("Erro ao cadastrar");
+      alert("Erro: " + (resultado.msg || "Tente novamente"));
     }
-
   } catch (erro) {
-    console.error("Erro:", erro);
-    alert("Erro ao salvar");
+    console.error(erro);
+    alert("Erro de conexão.");
+  } finally {
+    // Restaurar botão
+    btnText.textContent = "Salvar";
+    btnText.style.display = "inline";
+    spinner.style.display = "none";
+    btnSalvar.disabled = false;
   }
-
-  esconderLoading();
 }
 
 function voltarApp() {
   document.getElementById("usuarios").style.display = "none";
   document.getElementById("cadastro").style.display = "none";
   document.getElementById("novoAluno").style.display = "none";
-
   document.getElementById("lista").style.display = "block";
   document.getElementById("painel").style.display = "block";
-
-  // 🔥 Limpar campo de nome do aluno
+  
+  // Limpar campos e mensagens de erro
   document.getElementById("nomeAluno").value = "";
+  document.getElementById("erroNome").style.display = "none";
+  document.getElementById("nomeAluno").style.borderColor = "#e2e8f0";
 }
 
 function fecharCadastro() {
@@ -510,12 +533,6 @@ function listarUsuariosTela() {
   carregarUsuarios();
 }
 
-function voltarApp() {
-  document.getElementById("usuarios").style.display = "none";
-  document.getElementById("lista").style.display = "block";
-  document.getElementById("painel").style.display = "block";
-}
-
 async function carregarUsuarios() {
   mostrarLoading();
 
@@ -619,3 +636,8 @@ window.onload = function () {
     carregarAlunos();
   }
 };
+document.getElementById("novoAluno").addEventListener("click", function(e) {
+  if (e.target === this) {
+    voltarApp();
+  }
+});
