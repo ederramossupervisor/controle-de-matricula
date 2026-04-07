@@ -1,933 +1,801 @@
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #eef2f7, #dfe9f3);
-  margin: 0;
-  padding: 0;
+const API_URL = "https://script.google.com/macros/s/AKfycbyoqaNL2Ik1XlZDpghG12eS96yUNPFgYRulupEsk5vUk1ae6N8dGDWBYd3JwoNsIbXEzQ/exec";
+
+let dadosGlobais = [];
+let emailUsuario = "";
+let perfilUsuario = "";
+let escolaUsuario = "";
+let alteracoesPendentes = {};
+let dadosAlunoAtual = null; // guarda o aluno que está aberto no modal
+
+function mostrarLoading() {
+  document.getElementById("loading").style.display = "flex";
 }
 
-/* HEADER */
-header {
-  background: #1e3a8a;
-  color: white;
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+function esconderLoading() {
+  document.getElementById("loading").style.display = "none";
 }
+// =========================
+// LOGIN
+// =========================
+function login() {
+  const email = document.getElementById("email").value;
 
-/* BOTÕES */
-button {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  margin: 5px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-button:hover {
-  background: #1d4ed8;
-  transform: scale(1.05);
-}
-
-button:active {
-  transform: scale(0.98);
-}
-
-/* INPUTS */
-input, select {
-  padding: 10px;
-  margin: 5px 0;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  width: 100%;
-  transition: 0.2s;
-}
-
-input:focus, select:focus {
-  border-color: #2563eb;
-  outline: none;
-  box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
-}
-
-/* CARDS */
-.card {
-  background: white;
-  padding: 15px;
-  margin: 10px;
-  border-radius: 10px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-}
-
-/* LISTA */
-#lista {
-  padding: 10px;
-}
-
-/* PAINEL */
-#painel {
-  padding: 10px;
-}
-
-/* =========================
-   TELA DE LOGIN (NOVO ESTILO)
-   ========================= */
-#login {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: linear-gradient(145deg, #1e3c72 0%, #2a5298 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-}
-
-.login-container {
-  width: 100%;
-  max-width: 400px;
-  padding: 20px;
-  animation: fadeInUp 0.6s ease-out;
-}
-
-.login-card {
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(8px);
-  padding: 40px 30px;
-  border-radius: 28px;
-  box-shadow: 0 25px 40px -10px rgba(0, 0, 0, 0.3);
-  text-align: center;
-  transition: transform 0.2s ease;
-}
-
-.login-avatar {
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #2563eb, #1e3a8a);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
-  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
-}
-
-.login-avatar span {
-  font-size: 44px;
-  line-height: 1;
-}
-
-.login-card h2 {
-  margin: 0 0 8px;
-  color: #1e293b;
-  font-weight: 600;
-  font-size: 26px;
-}
-
-.login-subtitle {
-  color: #64748b;
-  margin-bottom: 30px;
-  font-size: 15px;
-}
-
-/* Campo com ícone */
-.input-icon {
-  position: relative;
-  margin-bottom: 24px;
-}
-
-.input-icon .icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.input-icon input {
-  width: 100%;
-  padding: 16px 16px 16px 50px;
-  font-size: 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 18px;
-  outline: none;
-  transition: all 0.2s ease;
-  background: white;
-  box-sizing: border-box;
-}
-
-.input-icon input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
-}
-
-.input-icon input::placeholder {
-  color: #94a3b8;
-  font-weight: 300;
-}
-
-/* Botão de login */
-#login button {
-  width: 100%;
-  padding: 16px;
-  font-size: 18px;
-  font-weight: 600;
-  background: linear-gradient(145deg, #2563eb, #1d4ed8);
-  color: white;
-  border: none;
-  border-radius: 40px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
-  margin-top: 8px;
-  letter-spacing: 0.5px;
-}
-
-#login button:hover {
-  background: linear-gradient(145deg, #1d4ed8, #1e40af);
-  transform: scale(1.02);
-  box-shadow: 0 15px 25px -5px rgba(37, 99, 235, 0.5);
-}
-
-#login button:active {
-  transform: scale(0.98);
-}
-
-.login-footer {
-  margin-top: 24px;
-  color: #94a3b8;
-  font-size: 13px;
-}
-
-/* Animação de entrada */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+  if (!email) {
+    alert("Digite um e-mail");
+    return;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  emailUsuario = email;
+
+  // 💾 salva no navegador
+  localStorage.setItem("emailUsuario", email);
+
+  carregarAlunos();
+}
+
+function abrirModalDetalhes(aluno) {
+  dadosAlunoAtual = aluno;
+  
+  // Preencher título
+  document.getElementById("detalhesTitulo").textContent = aluno.ALUNO;
+  
+  // Construir HTML dos documentos
+  let html = `
+    <p style="margin-top:0; color:#64748b; display:flex; gap:12px;">
+      <span>🏫 ${aluno.ESCOLA}</span>
+      <span>📅 Matrícula: ${new Date(aluno.DATA_MATRICULA).toLocaleDateString('pt-BR')}</span>
+    </p>
+    <h3 style="margin-bottom:8px;">Documentos</h3>
+    <div class="checkboxes-container">
+  `;
+  
+  // Lista de documentos (mesma ordem dos checkboxes originais)
+  const docs = [
+  { label: "Certidão de Nascimento", coluna: 8, valor: aluno.CERTIDAO },
+  { label: "CPF do aluno", coluna: 9, valor: aluno.CPF },
+  { label: "RG do aluno", coluna: 10, valor: aluno.RG },
+  { label: "Carteira de Vacinação", coluna: 11, valor: aluno.VACINA },
+  { label: "Cartão do SUS", coluna: 12, valor: aluno.SUS },
+  { label: "Comprovante de Residência", coluna: 13, valor: aluno.RESIDENCIA },
+  { label: "Documentos do Responsável", coluna: 14, valor: aluno.RESP_DOCS },
+  { label: "Histórico Escolar", coluna: 15, valor: aluno.HISTORICO },
+  { label: "Declaração de Transferência", coluna: 16, valor: aluno.DECL_TRANSF }
+];
+  
+  docs.forEach(doc => {
+    const chave = `${aluno._row}_${doc.coluna}`;
+    const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : doc.valor;
+    html += `
+      <div class="checkbox-moderno">
+        <input type="checkbox" 
+          id="doc_${doc.coluna}" 
+          ${checked ? "checked" : ""} 
+          onchange="marcarAlteracao(${aluno._row}, ${doc.coluna}, this.checked)">
+        <label for="doc_${doc.coluna}">${doc.label}</label>
+      </div>
+    `;
+  });
+  
+  html += `</div>`;
+  
+  // Inserir no modal
+  document.getElementById("detalhesConteudo").innerHTML = html;
+  
+  // Exibir modal
+  document.getElementById("modalDetalhes").style.display = "flex";
+}
+
+function fecharModalDetalhes() {
+  document.getElementById("modalDetalhes").style.display = "none";
+  dadosAlunoAtual = null;
+}
+
+function marcarAlteracao(row, coluna, valor) {
+  const chave = `${row}_${coluna}`;
+  alteracoesPendentes[chave] = valor;
+  console.log(`📝 Alteração pendente: linha ${row}, coluna ${coluna} = ${valor}`);
+}
+
+// =========================
+// CARREGAR DADOS
+// =========================
+async function carregarAlunos() {
+  mostrarLoading();
+  try {
+    const resposta = await fetch(`${API_URL}?email=${emailUsuario}`);
+    const dados = await resposta.json();
+
+    if (dados.erro) {
+      alert("Acesso não autorizado");
+      esconderLoading();
+      return;
+    }
+
+    // Guardar perfil/escola
+    perfilUsuario = dados.perfil;
+    escolaUsuario = dados.escola;
+
+    document.getElementById("escolaUsuarioDisplay").textContent = 
+      perfilUsuario === "SUPERVISOR" ? "🔭 Supervisor" : `🏫 ${escolaUsuario}`;
+
+    // 🔥 VERIFICAÇÃO EXTRA: se alunos não for array, algo deu errado
+    if (!Array.isArray(dados.alunos)) {
+      console.error("Resposta inválida, 'alunos' não é array:", dados);
+      alert("Erro na comunicação com o servidor.");
+      esconderLoading();
+      return;
+    }
+
+    dadosGlobais = dados.alunos;
+
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    ajustarInterfacePorPerfil();
+
+    // Agora passamos apenas o array de alunos
+    preencherFiltroEscolas(dados.alunos);
+    renderLista(dados.alunos);
+
+    const resumo = gerarResumo(dados.alunos);
+    renderPainel(resumo);
+
+    const mapa = resumoPorEscola(dados.alunos);
+    renderPorEscola(mapa);
+
+  } catch (erro) {
+    console.error("Erro:", erro);
+  }
+  esconderLoading();
+}
+
+// =========================
+// LISTA
+// =========================
+function renderLista(dados) {
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  dados.forEach(aluno => {
+    const div = document.createElement("div");
+    div.className = "card-compacto fade";
+    
+    // Determinar classes de status
+    let statusClass = "";
+    if (aluno.STATUS.includes("✅")) statusClass = "status-completo";
+    else if (aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
+    else if (aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
+
+    // Calcular dias restantes ou formatar data
+    let prazoTexto = "";
+    let prazoClasse = "";
+    if (aluno.PRAZO_FINAL) {
+      const hoje = new Date();
+      hoje.setHours(0,0,0,0);
+      const prazo = new Date(aluno.PRAZO_FINAL);
+      prazo.setHours(0,0,0,0);
+      const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
+      
+      if (diff < 0) {
+        prazoTexto = `🔴 Vencido há ${Math.abs(diff)} dia(s)`;
+        prazoClasse = "prazo-urgente";
+      } else if (diff === 0) {
+        prazoTexto = "🟡 Vence hoje";
+        prazoClasse = "prazo-atencao";
+      } else if (diff <= 5) {
+        prazoTexto = `🟡 ${diff} dia(s) restante(s)`;
+        prazoClasse = "prazo-atencao";
+      } else {
+        prazoTexto = `🟢 ${diff} dias restantes`;
+        prazoClasse = "prazo-normal";
+      }
+    } else {
+      prazoTexto = "📅 Sem prazo";
+      prazoClasse = "";
+    }
+
+    // Avatar com inicial do aluno
+    const inicial = aluno.ALUNO ? aluno.ALUNO.charAt(0).toUpperCase() : "?";
+
+    div.innerHTML = `
+      <div class="aluno-avatar">${inicial}</div>
+      <div class="aluno-info">
+        <div class="aluno-nome" title="${aluno.ALUNO}">${aluno.ALUNO}</div>
+        <div class="aluno-meta">
+          <span class="status-badge ${statusClass}">${aluno.STATUS}</span>
+          <span class="prazo-info ${prazoClasse}">${prazoTexto}</span>
+        </div>
+      </div>
+      <div class="aluno-acoes">
+        <button class="btn-icone" onclick="abrirAluno(${aluno._row})" title="Abrir ficha">👁️</button>
+      </div>
+    `;
+
+    lista.appendChild(div);
+  });
+}
+
+function ajustarInterfacePorPerfil() {
+  const btnCadastroUsuario = document.querySelector("button[onclick*='abrirModalCadastroUsuario']");
+  const btnListarUsuarios = document.querySelector("button[onclick*='abrirModalListaUsuarios']");
+  const btnNovoAluno = document.querySelector("button[onclick*='abrirNovoAluno']");
+  const filtrosContainer = document.querySelector(".filtros-container");
+
+  if (perfilUsuario === "SECRETARIA") {
+    if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
+    if (btnListarUsuarios) btnListarUsuarios.style.display = "none";
+    if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
+    if (filtrosContainer) filtrosContainer.style.display = "none";   // 🔥 esconde filtros
+  } else if (perfilUsuario === "SUPERVISOR") {
+    if (btnCadastroUsuario) btnCadastroUsuario.style.display = "inline-block";
+    if (btnListarUsuarios) btnListarUsuarios.style.display = "inline-block";
+    if (btnNovoAluno) btnNovoAluno.style.display = "none";
+    if (filtrosContainer) filtrosContainer.style.display = "flex";    // 🔥 mostra filtros
   }
 }
 
-/* LOADING */
-#loading {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255,255,255,0.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 1100;
+// =========================
+// DETALHE
+// =========================
+function abrirAluno(row) {
+  const aluno = dadosGlobais.find(a => a._row == row);
+  if (!aluno) {
+    alert("Aluno não encontrado");
+    return;
+  }
+  abrirModalDetalhes(aluno);
 }
 
-.spinner {
-  border: 6px solid #eee;
-  border-top: 6px solid #2563eb;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  animation: girar 1s linear infinite;
+// =========================
+// CHECKBOX
+// =========================
+function checkbox(label, valor, row, coluna) {
+  const chave = `${row}_${coluna}`;
+  // Se houver alteração pendente para esta célula, use esse valor; senão, use o valor original do aluno
+  const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : valor;
+  
+  return `
+    <label>
+      <input type="checkbox" 
+        ${checked ? "checked" : ""} 
+        onchange="marcarAlteracao(${row}, ${coluna}, this.checked)">
+      ${label}
+    </label><br>
+  `;
 }
 
-@keyframes girar {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* TRANSIÇÃO DE TELA */
-.fade {
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px);}
-  to { opacity: 1; transform: translateY(0);}
-}
-/* =========================
-   HEADER MODERNO
-   ========================= */
-header {
-  background: white;
-  color: #1e293b;
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  flex-wrap: wrap;
-  gap: 16px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.header-left h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #0f172a;
-}
-
-.escola-badge {
-  background: #e2e8f0;
-  padding: 6px 14px;
-  border-radius: 40px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #334155;
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.header-actions button {
-  background: white;
-  color: #1e293b;
-  border: 1px solid #e2e8f0;
-  padding: 10px 16px;
-  border-radius: 40px;
-  font-weight: 500;
-  transition: all 0.2s;
-  box-shadow: none;
-}
-
-.header-actions button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  transform: translateY(-1px);
-}
-
-.btn-primary {
-  background: #2563eb !important;
-  color: white !important;
-  border: none !important;
-}
-
-.btn-primary:hover {
-  background: #1d4ed8 !important;
-}
-
-.btn-outline {
-  border-color: #cbd5e1 !important;
-}
-/* Painel de métricas */
-.painel-metricas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 16px;
-  padding: 20px;
-}
-
-.metrica-card {
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-  border: 1px solid #f1f5f9;
-  transition: transform 0.2s;
-}
-
-.metrica-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-}
-
-.metrica-titulo {
-  font-size: 14px;
-  color: #64748b;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.metrica-valor {
-  font-size: 36px;
-  font-weight: 700;
-  color: #0f172a;
-  line-height: 1.2;
-}
-
-.metrica-detalhe {
-  font-size: 13px;
-  color: #94a3b8;
-  margin-top: 6px;
-}
-/* Lista de alunos */
-#lista {
-  padding: 0 20px 20px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 18px;
-}
-
-.card {
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-  border: 1px solid #f1f5f9;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-}
-
-.card:hover {
-  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
-  border-color: #e2e8f0;
-}
-
-.card strong {
-  font-size: 18px;
-  color: #0f172a;
-  margin-bottom: 8px;
-}
-
-.card p {
-  margin: 4px 0;
-  color: #475569;
-  font-size: 14px;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 40px;
-  font-size: 12px;
-  font-weight: 500;
-  margin-top: 8px;
-}
-
-.status-completo { background: #dcfce7; color: #166534; }
-.status-pendente { background: #fef9c3; color: #854d0e; }
-.status-vencido { background: #fee2e2; color: #991b1b; }
-
-.card button {
-  margin-top: 12px;
-  background: #f8fafc;
-  color: #1e293b;
-  border: 1px solid #e2e8f0;
-  border-radius: 40px;
-  padding: 8px 0;
-  font-weight: 500;
-  align-self: flex-start;
-  min-width: 100px;
-}
-
-.card button:hover {
-  background: #2563eb;
-  color: white;
-  border-color: #2563eb;
-}
-.filtros-container {
-  display: flex;
-  gap: 16px;
-  padding: 20px 20px 0;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-/* Reaproveita o estilo do .input-icon que já criamos para o login */
-.input-icon {
-  position: relative;
-  width: 100%;
-}
-
-.input-icon .icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.input-icon input {
-  width: 100%;
-  padding: 14px 16px 14px 50px;
-  font-size: 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 40px;
-  outline: none;
-  transition: all 0.2s;
-  background: white;
-}
-
-.input-icon input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-@media (max-width: 640px) {
-  header {
-    flex-direction: column;
-    align-items: flex-start;
+async function salvarAlteracoesEmLote(row) {
+  const alteracoes = [];
+  
+  for (let chave in alteracoesPendentes) {
+    const [linha, coluna] = chave.split('_').map(Number);
+    if (linha === row) { // só envia alterações da linha atual (aluno aberto)
+      alteracoes.push({
+        row: linha,
+        coluna: coluna,
+        valor: alteracoesPendentes[chave]
+      });
+    }
   }
   
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
+  if (alteracoes.length === 0) {
+    alert("Nenhuma alteração para salvar.");
+    return;
   }
   
-  .header-actions button {
-    flex: 1;
-    text-align: center;
+  mostrarLoading();
+  
+  try {
+    const resposta = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "atualizarDocumentosEmLote",
+        alteracoes: alteracoes,
+        email: emailUsuario
+      })
+    });
+    
+    const resultado = await resposta.json();
+    
+    if (resultado.status === "ok") {
+    // Limpar pendências da linha salva
+    for (let chave in alteracoesPendentes) {
+        const [linha] = chave.split('_').map(Number);
+        if (linha === row) delete alteracoesPendentes[chave];
+    }
+    
+    // Fechar o modal
+    fecharModalDetalhes();
+    
+    // Recarregar os dados da lista (já atualiza tudo)
+    await carregarAlunos();
+    } else {
+    alert("Erro ao salvar: " + (resultado.msg || "Tente novamente"));
+    }
+  } catch (erro) {
+    console.error("Erro:", erro);
+    alert("Erro de conexão.");
   }
   
-  .painel-metricas {
-    grid-template-columns: 1fr 1fr;
+  esconderLoading();
+}
+
+// =========================
+// ATUALIZAR
+// =========================
+async function atualizar(row, coluna, valor) {
+  mostrarLoading();
+
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        row: row,
+        coluna: coluna,
+        valor: valor,
+        email: emailUsuario
+      })
+    });
+
+  } catch (erro) {
+    alert("Erro ao salvar");
+  }
+
+  esconderLoading();
+}
+
+// =========================
+// FILTRO
+// =========================
+function preencherFiltroEscolas(dados) {
+ if (!Array.isArray(dados)) {
+    console.error("preencherFiltroEscolas: dados não é array", dados);
+    return;
+  }    
+  const select = document.getElementById("filtroEscola");
+
+  select.innerHTML = '<option value="">Todas as escolas</option>';
+
+  const escolas = [...new Set(dados.map(a => a.ESCOLA))];
+
+  escolas.forEach(escola => {
+    const option = document.createElement("option");
+    option.value = escola;
+    option.textContent = escola;
+    select.appendChild(option);
+  });
+}
+
+function filtrarPorEscola() {
+  // Simplesmente chama a função que combina os dois filtros
+  filtrarPorNome();
+}
+
+function filtrarPorNome() {
+  // 1. Pega o texto digitado e converte para minúsculas
+  const termo = document.getElementById("pesquisaNome").value.toLowerCase();
+  
+  // 2. Pega a escola selecionada no filtro de escolas
+  const escolaSelecionada = document.getElementById("filtroEscola").value;
+  
+  // 3. Começa com todos os alunos (dadosGlobais)
+  let dadosFiltrados = dadosGlobais;
+  
+  // 4. Se uma escola foi selecionada, filtra primeiro por escola
+  if (escolaSelecionada) {
+    dadosFiltrados = dadosFiltrados.filter(a => a.ESCOLA === escolaSelecionada);
   }
   
-  #lista {
-    grid-template-columns: 1fr;
+  // 5. Se algo foi digitado, filtra pelo nome do aluno
+  if (termo) {
+    dadosFiltrados = dadosFiltrados.filter(a => 
+      a.ALUNO.toLowerCase().includes(termo)
+    );
+  }
+  
+  // 6. Renderiza a lista com os dados filtrados
+  renderLista(dadosFiltrados);
+}
+
+
+function abrirNovoAluno() {
+  document.getElementById("novoAluno").style.display = "flex";
+  document.getElementById("lista").style.display = "none";
+  document.getElementById("painel").style.display = "none";
+  // Exibir a escola da secretária logada
+  document.getElementById("escolaVinculada").textContent = 
+    `Aluno será matriculado em: ${escolaUsuario}`;
+}
+
+// =========================
+// GESTÃO DE USUÁRIOS (MODAIS)
+// =========================
+
+function abrirModalListaUsuarios() {
+  document.getElementById("modalListaUsuarios").style.display = "flex";
+  carregarUsuarios();
+}
+
+function fecharModalListaUsuarios() {
+  document.getElementById("modalListaUsuarios").style.display = "none";
+}
+
+function abrirModalCadastroUsuario() {
+  // Limpar campos
+  document.getElementById("novoEmail").value = "";
+  document.getElementById("perfil").value = "SECRETARIA";
+  document.getElementById("escola").value = "";
+  document.getElementById("erroUsuario").style.display = "none";
+  
+  // Se for Supervisor, mostrar campo escola; se não, esconder? (Melhor mostrar sempre e validar)
+  document.getElementById("modalCadastroUsuario").style.display = "flex";
+}
+
+function fecharModalCadastroUsuario() {
+  document.getElementById("modalCadastroUsuario").style.display = "none";
+}
+
+// Atualiza a lista de usuários no modal
+async function carregarUsuarios() {
+  mostrarLoading();
+  try {
+    const resposta = await fetch(`${API_URL}?tipo=usuarios&email=${emailUsuario}`);
+    const dados = await resposta.json();
+
+    if (dados.erro) {
+      alert("Acesso não autorizado");
+      esconderLoading();
+      return;
+    }
+
+    renderUsuarios(dados);
+  } catch (erro) {
+    console.error("Erro:", erro);
+    alert("Erro ao carregar usuários");
+  }
+  esconderLoading();
+}
+
+function renderUsuarios(usuarios) {
+  const container = document.getElementById("listaUsuariosContainer");
+  container.innerHTML = "";
+
+  if (!Array.isArray(usuarios)) {
+    container.innerHTML = "<p>Erro ao carregar usuários</p>";
+    return;
+  }
+
+  if (usuarios.length === 0) {
+    container.innerHTML = "<p>Nenhum usuário cadastrado</p>";
+    return;
+  }
+
+  usuarios.forEach(u => {
+    const div = document.createElement("div");
+    div.className = "usuario-card";
+    
+    const perfilClass = u.PERFIL === "SUPERVISOR" ? "perfil-supervisor" : "perfil-secretaria";
+    const avatarIcon = u.PERFIL === "SUPERVISOR" ? "👑" : "📋";
+    
+    div.innerHTML = `
+      <div class="usuario-avatar">${avatarIcon}</div>
+      <div class="usuario-info">
+        <strong>${u.EMAIL}</strong>
+        <p>🏫 ${u.ESCOLA || "—"} · <span class="perfil-badge ${perfilClass}">${u.PERFIL}</span></p>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// Salvar usuário (atualizada)
+async function salvarUsuario() {
+  const email = document.getElementById("novoEmail").value.trim();
+  const perfil = document.getElementById("perfil").value;
+  const escola = document.getElementById("escola").value.trim();
+  const erroDiv = document.getElementById("erroUsuario");
+  
+  // Validação
+  if (!email) {
+    erroDiv.textContent = "E-mail obrigatório";
+    erroDiv.style.display = "block";
+    return;
+  }
+  if (perfil === "SECRETARIA" && !escola) {
+    erroDiv.textContent = "Escola obrigatória para Secretaria";
+    erroDiv.style.display = "block";
+    return;
+  }
+  erroDiv.style.display = "none";
+  
+  const btnSalvar = document.getElementById("btnSalvarUsuario");
+  const btnText = btnSalvar.querySelector(".btn-text");
+  const spinner = btnSalvar.querySelector(".spinner-btn");
+  
+  btnText.style.display = "none";
+  spinner.style.display = "inline-block";
+  btnSalvar.disabled = true;
+  
+  try {
+    const resposta = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "cadastrarUsuario",
+        email: email,
+        perfil: perfil,
+        escola: escola
+      })
+    });
+    
+    const resultado = await resposta.json();
+    
+    if (resultado.status === "ok") {
+      btnText.textContent = "✅ Cadastrado!";
+      spinner.style.display = "none";
+      btnText.style.display = "inline";
+      await new Promise(r => setTimeout(r, 600));
+      
+      fecharModalCadastroUsuario();
+      // Se o modal de lista estiver aberto, recarregar a lista
+      if (document.getElementById("modalListaUsuarios").style.display === "flex") {
+        carregarUsuarios();
+      }
+    } else {
+      erroDiv.textContent = resultado.msg || "Erro ao cadastrar";
+      erroDiv.style.display = "block";
+    }
+  } catch (erro) {
+    console.error(erro);
+    erroDiv.textContent = "Erro de conexão";
+    erroDiv.style.display = "block";
+  } finally {
+    btnText.textContent = "Salvar";
+    btnText.style.display = "inline";
+    spinner.style.display = "none";
+    btnSalvar.disabled = false;
   }
 }
-/* =========================
-   MODAL DE CADASTRO DE ALUNO
-   ========================= */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
-}
 
-.modal-card {
-  background: white;
-  width: 90%;
-  max-width: 450px;
-  border-radius: 28px;
-  box-shadow: 0 25px 40px -10px rgba(0,0,0,0.3);
-  overflow: hidden;
-  animation: slideUp 0.3s ease;
-}
+async function salvarAluno() {
+  const nomeInput = document.getElementById("nomeAluno");
+  const responsavelInput = document.getElementById("nomeResponsavel");
+  const telefoneInput = document.getElementById("telefoneContato");
 
-.modal-header {
-  padding: 20px 24px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  const nome = nomeInput ? nomeInput.value.trim() : "";
+  const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
+  const telefone = telefoneInput ? telefoneInput.value.trim() : "";
 
-.modal-header h2 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-  color: #0f172a;
-}
+  const erroDiv = document.getElementById("erroNome");
+  const btnSalvar = document.getElementById("btnSalvarAluno");
+  const btnText = btnSalvar.querySelector(".btn-text");
+  const spinner = btnSalvar.querySelector(".spinner-btn");
 
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-
-.close-btn:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.modal-body {
-  padding: 20px 24px 24px;
-}
-
-.info-escola {
-  background: #f0f9ff;
-  border-radius: 16px;
-  padding: 12px 16px;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #0369a1;
-  font-weight: 500;
-  border: 1px solid #bae6fd;
-}
-
-.info-escola span:first-child {
-  font-size: 24px;
-}
-
-.error-msg {
-  color: #dc2626;
-  font-size: 13px;
-  margin-top: 6px;
-  margin-left: 16px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 28px;
-}
-
-.btn-salvar {
-  flex: 2;
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 16px;
-  border-radius: 40px;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.2s;
-  box-shadow: 0 8px 16px -4px rgba(37, 99, 235, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btn-salvar:hover {
-  background: #1d4ed8;
-  transform: scale(1.02);
-}
-
-.btn-cancelar {
-  flex: 1;
-  background: white;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-  padding: 16px;
-  border-radius: 40px;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.btn-cancelar:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-}
-
-/* Spinner dentro do botão */
-.spinner-btn {
-  width: 20px;
-  height: 20px;
-  border: 3px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: girar 0.8s linear infinite;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  // Validação (apenas nome obrigatório)
+  if (!nome) {
+    if (erroDiv) erroDiv.style.display = "block";
+    if (nomeInput) nomeInput.style.borderColor = "#dc2626";
+    return;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  if (erroDiv) erroDiv.style.display = "none";
+  if (nomeInput) nomeInput.style.borderColor = "#e2e8f0";
+
+  // Mostrar loading no botão
+  btnText.style.display = "none";
+  spinner.style.display = "inline-block";
+  btnSalvar.disabled = true;
+
+  try {
+    const resposta = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "cadastrarAluno",
+        nome: nome,
+        responsavel: responsavel,
+        telefone: telefone,
+        email: emailUsuario
+      })
+    });
+
+    const resultado = await resposta.json();
+
+    if (resultado.status === "ok") {
+      btnText.textContent = "✅ Cadastrado!";
+      spinner.style.display = "none";
+      btnText.style.display = "inline";
+
+      // Limpar campos
+      if (nomeInput) nomeInput.value = "";
+      if (responsavelInput) responsavelInput.value = "";
+      if (telefoneInput) telefoneInput.value = "";
+
+      // Fechar modal e voltar à lista
+      document.getElementById("novoAluno").style.display = "none";
+      document.getElementById("lista").style.display = "block";
+      document.getElementById("painel").style.display = "block";
+
+      await carregarAlunos(); // recarrega a lista
+    } else {
+      alert("Erro: " + (resultado.msg || "Tente novamente"));
+    }
+  } catch (erro) {
+    console.error(erro);
+    alert("Erro de conexão.");
+  } finally {
+    btnText.textContent = "Salvar";
+    btnText.style.display = "inline";
+    spinner.style.display = "none";
+    btnSalvar.disabled = false;
   }
 }
-/* Modal de detalhes (mais largo) */
-.modal-card--grande {
-  max-width: 600px;
+
+function voltarApp() {
+  // Esconde os modais (com verificação)
+  const idsParaEsconder = ["usuarios", "cadastro", "novoAluno", "modalListaUsuarios", "modalCadastroUsuario"];
+  idsParaEsconder.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+
+  // Mostra lista e painel
+  const lista = document.getElementById("lista");
+  const painel = document.getElementById("painel");
+  if (lista) lista.style.display = "block";
+  if (painel) painel.style.display = "block";
+
+  // Limpa campos do cadastro de aluno (se existirem)
+  const nomeAluno = document.getElementById("nomeAluno");
+  if (nomeAluno) {
+    nomeAluno.value = "";
+    nomeAluno.style.borderColor = "#e2e8f0";
+  }
+  const erroNome = document.getElementById("erroNome");
+  if (erroNome) erroNome.style.display = "none";
+
+  const nomeResp = document.getElementById("nomeResponsavel");
+  if (nomeResp) nomeResp.value = "";
+
+  const tel = document.getElementById("telefoneContato");
+  if (tel) tel.value = "";
 }
 
-/* Estilização moderna dos checkboxes */
-.checkbox-moderno {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f1f5f9;
+
+// =========================
+// PAINEL
+// =========================
+function gerarResumo(dados) {
+  let resumo = {
+    total: dados.length,
+    completos: 0,
+    pendentes: 0,
+    vencidos: 0
+  };
+
+  dados.forEach(aluno => {
+    if (aluno.STATUS === "✅ Completo") resumo.completos++;
+    if (aluno.STATUS === "⚠️ Pendente") resumo.pendentes++;
+    if (aluno.ALERTA === "🔴 Vencido") resumo.vencidos++;
+  });
+
+  return resumo;
 }
 
-.checkbox-moderno:last-of-type {
-  border-bottom: none;
+function renderPainel(resumo) {
+  const painel = document.getElementById("painel");
+  painel.innerHTML = `
+    <div class="metrica-card">
+      <div class="metrica-titulo">📋 Total de alunos</div>
+      <div class="metrica-valor">${resumo.total}</div>
+      <div class="metrica-detalhe">matriculados</div>
+    </div>
+    <div class="metrica-card">
+      <div class="metrica-titulo">✅ Completos</div>
+      <div class="metrica-valor">${resumo.completos}</div>
+      <div class="metrica-detalhe">documentação ok</div>
+    </div>
+    <div class="metrica-card">
+      <div class="metrica-titulo">⚠️ Pendentes</div>
+      <div class="metrica-valor">${resumo.pendentes}</div>
+      <div class="metrica-detalhe">faltam documentos</div>
+    </div>
+    <div class="metrica-card">
+      <div class="metrica-titulo">🔴 Vencidos</div>
+      <div class="metrica-valor">${resumo.vencidos}</div>
+      <div class="metrica-detalhe">prazo expirado</div>
+    </div>
+  `;
 }
 
-.checkbox-moderno input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 28px;
-  height: 28px;
-  background: white;
-  border: 2px solid #cbd5e1;
-  border-radius: 8px;
-  margin-right: 16px;
-  cursor: pointer;
-  transition: all 0.15s;
-  position: relative;
-  flex-shrink: 0;
+// =========================
+// POR ESCOLA
+// =========================
+function resumoPorEscola(dados) {
+  const mapa = {};
+
+  dados.forEach(aluno => {
+    const escola = aluno.ESCOLA;
+
+    if (!mapa[escola]) {
+      mapa[escola] = { total: 0, pendentes: 0 };
+    }
+
+    mapa[escola].total++;
+
+    if (aluno.STATUS === "⚠️ Pendente") {
+      mapa[escola].pendentes++;
+    }
+  });
+
+  return mapa;
 }
 
-.checkbox-moderno input[type="checkbox"]:checked {
-  background: #2563eb;
-  border-color: #2563eb;
+function renderPorEscola(mapa) {
+  const painel = document.getElementById("painel");
+
+  let html = `<div class="card"><h3>🏫 Por Escola</h3>`;
+
+  for (let escola in mapa) {
+    html += `
+      <p>
+        ${escola}: 
+        ${mapa[escola].pendentes} pendentes / ${mapa[escola].total}
+      </p>
+    `;
+  }
+
+  html += `</div>`;
+
+  painel.innerHTML += html;
 }
 
-.checkbox-moderno input[type="checkbox"]:checked::after {
-  content: "✓";
-  color: white;
-  font-size: 20px;
-  font-weight: bold;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+// =========================
+// LOGOUT
+// =========================
+function logout() {
+  if (!confirm("Deseja sair do sistema?")) return;
+
+  emailUsuario = "";
+
+  localStorage.removeItem("emailUsuario");
+
+  document.getElementById("app").style.display = "none";
+  document.getElementById("login").style.display = "block";
+
+  document.getElementById("email").value = "";
+
+  dadosGlobais = [];
 }
 
-.checkbox-moderno label {
-  font-size: 16px;
-  font-weight: 500;
-  color: #1e293b;
-  cursor: pointer;
-  flex: 1;
-}
 
-.checkbox-moderno:hover {
-  background: #f8fafc;
-}
-/* Cards de usuário (dentro do modal) */
-.usuario-card {
-  background: #f8fafc;
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
-  border: 1px solid #e2e8f0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+// =========================
+// AUTO LOGIN
+// =========================
+window.onload = function () {
+  const emailSalvo = localStorage.getItem("emailUsuario");
 
-.usuario-avatar {
-  width: 48px;
-  height: 48px;
-  background: #e0e7ff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: #2563eb;
-  flex-shrink: 0;
-}
+  if (emailSalvo) {
+    emailUsuario = emailSalvo;
+    document.getElementById("email").value = emailSalvo;
+    carregarAlunos();
+  }
+};
 
-.usuario-info {
-  flex: 1;
-}
+document.getElementById("novoAluno").addEventListener("click", function(e) {
+  if (e.target === this) {
+    voltarApp();
+  }
+});
 
-.usuario-info strong {
-  font-size: 16px;
-  color: #0f172a;
-}
+document.getElementById("modalDetalhes").addEventListener("click", function(e) {
+  if (e.target === this) {
+    fecharModalDetalhes();
+  }
+});
 
-.usuario-info p {
-  margin: 4px 0 0;
-  font-size: 14px;
-  color: #475569;
-}
+document.getElementById("modalListaUsuarios").addEventListener("click", function(e) {
+  if (e.target === this) fecharModalListaUsuarios();
+});
 
-.perfil-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 40px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.perfil-supervisor { background: #fef3c7; color: #92400e; }
-.perfil-secretaria { background: #dcfce7; color: #166534; }
-
-/* Ajuste do select dentro de .input-icon */
-.input-icon select {
-  appearance: none;
-  background: white;
-  cursor: pointer;
-}
-
-/* =========================
-   LISTA DE ALUNOS COMPACTA
-   ========================= */
-#lista {
-  padding: 0 20px 20px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-}
-
-.card-compacto {
-  background: white;
-  border-radius: 16px;
-  padding: 12px 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-  border: 1px solid #f1f5f9;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.card-compacto:hover {
-  box-shadow: 0 6px 14px rgba(0,0,0,0.06);
-  border-color: #e2e8f0;
-}
-
-.aluno-avatar {
-  width: 44px;
-  height: 44px;
-  background: #e0e7ff;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  color: #2563eb;
-  flex-shrink: 0;
-}
-
-.aluno-info {
-  flex: 1;
-  min-width: 0; /* para truncar texto */
-}
-
-.aluno-nome {
-  font-weight: 600;
-  color: #0f172a;
-  font-size: 15px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 4px;
-}
-
-.aluno-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 40px;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.status-completo { background: #dcfce7; color: #166534; }
-.status-pendente { background: #fef9c3; color: #854d0e; }
-.status-vencido { background: #fee2e2; color: #991b1b; }
-
-.prazo-info {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: #64748b;
-}
-
-.prazo-urgente { color: #dc2626; font-weight: 600; }
-.prazo-atencao { color: #d97706; }
-.prazo-normal { color: #059669; }
-
-.aluno-acoes {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.btn-icone {
-  background: none;
-  border: none;
-  font-size: 20px;
-  padding: 6px;
-  border-radius: 40px;
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #64748b;
-  transition: all 0.2s;
-}
-
-.btn-icone:hover {
-  background: #f1f5f9;
-  color: #2563eb;
-}
-/* Estilo moderno para o select de escolas */
-.filtros-container select {
-  padding: 14px 16px 14px 50px;
-  font-size: 16px;
-  border: 2px solid #e2e8f0;
-  border-radius: 40px;
-  outline: none;
-  transition: all 0.2s;
-  background: white;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-  background-size: 16px;
-  width: 100%;
-  max-width: 280px;
-  cursor: pointer;
-}
-
-.filtros-container select:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-
-/* Ajuste para o ícone do select */
-.filtros-container .input-icon:first-child {
-  position: relative;
-  max-width: 280px;
-}
-
-.filtros-container .input-icon:first-child .icon {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 18px;
-  opacity: 0.7;
-  pointer-events: none;
-  z-index: 1;
-}
+document.getElementById("modalCadastroUsuario").addEventListener("click", function(e) {
+  if (e.target === this) fecharModalCadastroUsuario();
+});
