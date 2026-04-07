@@ -234,7 +234,7 @@ input:focus, select:focus {
   display: none;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 1100;
 }
 
 .spinner {
@@ -660,4 +660,274 @@ header {
     opacity: 1;
     transform: translateY(0);
   }
+}
+/* Modal de detalhes (mais largo) */
+.modal-card--grande {
+  max-width: 600px;
+}
+
+/* Estilização moderna dos checkboxes */
+.checkbox-moderno {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.checkbox-moderno:last-of-type {
+  border-bottom: none;
+}
+
+.checkbox-moderno input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 28px;
+  height: 28px;
+  background: white;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  margin-right: 16px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.checkbox-moderno input[type="checkbox"]:checked {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.checkbox-moderno input[type="checkbox"]:checked::after {
+  content: "✓";
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.checkbox-moderno label {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
+  cursor: pointer;
+  flex: 1;
+}
+
+.checkbox-moderno:hover {
+  background: #f8fafc;
+}
+/* Cards de usuário (dentro do modal) */
+.usuario-card {
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.usuario-avatar {
+  width: 48px;
+  height: 48px;
+  background: #e0e7ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.usuario-info {
+  flex: 1;
+}
+
+.usuario-info strong {
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.usuario-info p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #475569;
+}
+
+.perfil-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 40px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.perfil-supervisor { background: #fef3c7; color: #92400e; }
+.perfil-secretaria { background: #dcfce7; color: #166534; }
+
+/* Ajuste do select dentro de .input-icon */
+.input-icon select {
+  appearance: none;
+  background: white;
+  cursor: pointer;
+}
+
+/* =========================
+   LISTA DE ALUNOS COMPACTA
+   ========================= */
+#lista {
+  padding: 0 20px 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.card-compacto {
+  background: white;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-compacto:hover {
+  box-shadow: 0 6px 14px rgba(0,0,0,0.06);
+  border-color: #e2e8f0;
+}
+
+.aluno-avatar {
+  width: 44px;
+  height: 44px;
+  background: #e0e7ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.aluno-info {
+  flex: 1;
+  min-width: 0; /* para truncar texto */
+}
+
+.aluno-nome {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+
+.aluno-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 40px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.status-completo { background: #dcfce7; color: #166534; }
+.status-pendente { background: #fef9c3; color: #854d0e; }
+.status-vencido { background: #fee2e2; color: #991b1b; }
+
+.prazo-info {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.prazo-urgente { color: #dc2626; font-weight: 600; }
+.prazo-atencao { color: #d97706; }
+.prazo-normal { color: #059669; }
+
+.aluno-acoes {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.btn-icone {
+  background: none;
+  border: none;
+  font-size: 20px;
+  padding: 6px;
+  border-radius: 40px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.btn-icone:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+/* Estilo moderno para o select de escolas */
+.filtros-container select {
+  padding: 14px 16px 14px 50px;
+  font-size: 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 40px;
+  outline: none;
+  transition: all 0.2s;
+  background: white;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  width: 100%;
+  max-width: 280px;
+  cursor: pointer;
+}
+
+.filtros-container select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+/* Ajuste para o ícone do select */
+.filtros-container .input-icon:first-child {
+  position: relative;
+  max-width: 280px;
+}
+
+.filtros-container .input-icon:first-child .icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 1;
 }
