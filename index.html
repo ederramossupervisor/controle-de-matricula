@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Matrículas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="style.css">
+  <!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Tema da barra de status (para dispositivos móveis) -->
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Matrículas">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+
+<body>
+<div id="loading">
+  <div class="spinner"></div>
+</div>
+
+  <!-- 🔐 LOGIN -->
+<div id="login">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-avatar">
+        <span>📚</span>
+      </div>
+      <h2>Controle de Matrículas</h2>
+      <p class="login-subtitle">Acesse com seu e-mail institucional</p>
+      
+      <div class="input-icon">
+        <span class="icon">✉️</span>
+        <input type="email" id="email" placeholder="Digite seu e-mail" autofocus>
+      </div>
+      
+      <button onclick="login()">Entrar no sistema</button>
+      
+      <p class="login-footer">Secretaria Escolar • v1.0</p>
+    </div>
+  </div>
+</div>
+
+  <!-- 📋 APP -->
+  <div id="app" style="display:none;">
+    <div id="novoAluno" style="display:none;">
+    <h2>➕ Novo Aluno</h2>
+
+    <input type="text" id="nomeAluno" placeholder="Nome do aluno">
+
+    <br><br>
+    <button onclick="salvarAluno()">Salvar</button>
+    <button onclick="voltarApp()">Cancelar</button>
+    </div>
+
+    <header>
+        <div class="header-left">
+            <h1>📋 Controle de Matrículas</h1>
+            <span class="escola-badge" id="escolaUsuarioDisplay"></span>
+        </div>
+        <div class="header-actions">
+            <button onclick="abrirNovoAluno()" class="btn-primary" id="btnNovoAluno">➕ Novo Aluno</button>
+            <button onclick="listarUsuariosTela()" id="btnVerUsuarios">👥 Usuários</button>
+            <button onclick="abrirCadastro()" id="btnCadastrarUsuario">➕ Usuário</button>
+            <button onclick="logout()" class="btn-outline">🚪 Sair</button>
+        </div>
+        </header>
+
+    <!-- 🔽 CADASTRO DE USUÁRIO -->
+    <div id="cadastro" style="display:none;">
+      <h2>Cadastro de Usuário</h2>
+
+      <input type="email" id="novoEmail" placeholder="E-mail">
+
+      <select id="perfil">
+        <option value="SECRETARIA">Secretaria</option>
+        <option value="SUPERVISOR">Supervisor</option>
+      </select>
+
+      <input type="text" id="escola" placeholder="Nome da escola">
+
+      <br><br>
+      <button onclick="salvarUsuario()">Salvar</button>
+      <button onclick="fecharCadastro()">Cancelar</button>
+    </div>
+
+    <!-- 👥 LISTA DE USUÁRIOS -->
+    <div id="usuarios" style="display:none;">
+      <h2>👥 Usuários cadastrados</h2>
+
+      <div id="listaUsuarios"></div>
+
+      <br>
+      <button onclick="voltarApp()">⬅ Voltar</button>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filtros-container">
+    <select id="filtroEscola" onchange="filtrarPorEscola()">
+        <option value="">Todas as escolas</option>
+    </select>
+
+    <div class="input-icon" style="flex:2; min-width: 200px;">
+        <span class="icon">🔍</span>
+        <input type="text" id="pesquisaNome" placeholder="Buscar aluno por nome..." oninput="filtrarPorNome()">
+    </div>
+    </div>
+
+    <!-- PAINEL -->
+    <div id="painel" class="painel-metricas">
+    <!-- Será preenchido via JS -->
+    </div>
+
+    <!-- LISTA -->
+    <div id="lista"></div>
+
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(reg => console.log('✅ Service Worker registrado', reg.scope))
+      .catch(err => console.error('❌ Erro no Service Worker', err));
+  }
+</script>
+</body>
+</html>
