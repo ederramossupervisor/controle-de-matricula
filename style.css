@@ -968,3 +968,30 @@ header {
   pointer-events: none;
   z-index: 1;
 }
+
+
+/* Limitar altura da lista de turmas e adicionar rolagem */
+#listaTurmasContainer {
+  max-height: 400px;        /* altura máxima antes de aparecer a barra de rolagem */
+  overflow-y: auto;         /* barra de rolagem vertical quando necessário */
+  padding-right: 4px;       /* pequeno espaço para a barra não encostar no conteúdo */
+}
+
+/* Opcional: estilizar a barra de rolagem para navegadores WebKit (Chrome, Edge, Safari) */
+#listaTurmasContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+#listaTurmasContainer::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+#listaTurmasContainer::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+#listaTurmasContainer::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
