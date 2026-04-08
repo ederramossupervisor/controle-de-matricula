@@ -159,7 +159,8 @@ function abrirModalDetalhes(aluno) {
   { label: "Comprovante de Residência", coluna: 14, valor: aluno.RESIDENCIA }, // N
   { label: "Documentos do Responsável", coluna: 15, valor: aluno.RESP_DOCS },  // O
   { label: "Histórico Escolar", coluna: 16, valor: aluno.HISTORICO },       // P
-  { label: "Declaração de Transferência", coluna: 17, valor: aluno.DECL_TRANSF } // Q
+  { label: "Declaração de Transferência", coluna: 17, valor: aluno.DECL_TRANSF }, // Q
+  { label: "Laudo/Relatório Pedagógico (Ed. Especial)", coluna: 18, valor: aluno.ED_ESPECIAL }
 ];  
   docs.forEach(doc => {
     const chave = `${aluno._row}_${doc.coluna}`;
@@ -750,6 +751,7 @@ async function salvarAluno() {
         responsavel: responsavel,
         telefone: telefone,
         turma: document.getElementById("selectTurmaAluno").value,
+        edEspecial: edEspecial,
         email: emailUsuario
       })
     });
@@ -794,10 +796,10 @@ function voltarApp() {
     if (el) el.style.display = "none";
   });
 
-  // Mostra lista e painel (removendo qualquer display inline para voltar ao CSS padrão)
+  // Mostra lista e painel
   const lista = document.getElementById("lista");
   const painel = document.getElementById("painel");
-  if (lista) lista.style.display = "";   // ✅ Remove display: block/none, deixa o CSS agir
+  if (lista) lista.style.display = "";
   if (painel) painel.style.display = "";
 
   // Limpa campos do cadastro de aluno (se existirem)
@@ -814,9 +816,11 @@ function voltarApp() {
 
   const tel = document.getElementById("telefoneContato");
   if (tel) tel.value = "";
+
+  // 🔥 LIMPA O CHECKBOX DE EDUCAÇÃO ESPECIAL
+  const edEspCheck = document.getElementById("alunoEdEspecial");
+  if (edEspCheck) edEspCheck.checked = false;
 }
-
-
 // =========================
 // PAINEL
 // =========================
