@@ -785,11 +785,11 @@ function voltarApp() {
     if (el) el.style.display = "none";
   });
 
-  // Mostra lista e painel
+  // Mostra lista e painel (removendo qualquer display inline para voltar ao CSS padrão)
   const lista = document.getElementById("lista");
   const painel = document.getElementById("painel");
-  if (lista) lista.style.display = "block";
-  if (painel) painel.style.display = "block";
+  if (lista) lista.style.display = "";   // ✅ Remove display: block/none, deixa o CSS agir
+  if (painel) painel.style.display = "";
 
   // Limpa campos do cadastro de aluno (se existirem)
   const nomeAluno = document.getElementById("nomeAluno");
