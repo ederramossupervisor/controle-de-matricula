@@ -74,6 +74,14 @@
             <input type="tel" id="telefoneContato" placeholder="Telefone de contato">
           </div>
 
+          <!-- CAMPO TURMA -->
+          <div class="input-icon">
+            <span class="icon">📚</span>
+            <select id="selectTurmaAluno" style="padding-left: 50px;">
+              <option value="">Selecione a turma</option>
+            </select>
+          </div>
+
           <div class="error-msg" id="erroNome" style="display:none;">⚠️ Nome do aluno obrigatório</div>
 
           <div class="modal-actions">
@@ -105,7 +113,27 @@
         </div>
       </div>
     </div>
-
+    <!-- 🏫 MODAL DE LISTA DE TURMAS -->
+    <div id="modalTurmas" class="modal-overlay" style="display:none;">
+      <div class="modal-card modal-card--grande">
+        <div class="modal-header">
+          <h2>🏫 Gerenciar Turmas</h2>
+          <button class="close-btn" onclick="fecharModalTurmas()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div style="display: flex; gap: 16px; margin-bottom: 20px;">
+            <select id="filtroEscolaTurma" class="input-icon" style="flex:2;">
+              <option value="">Todas as escolas</option>
+            </select>
+            <button class="btn-primary" onclick="abrirModalCadastroTurma()" style="flex:1;">➕ Nova turma</button>
+          </div>
+          <div id="listaTurmasContainer"></div>
+          <div class="modal-actions">
+            <button class="btn-cancelar" onclick="fecharModalTurmas()">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- HEADER PRINCIPAL -->
     <header>
       <div class="header-left">
