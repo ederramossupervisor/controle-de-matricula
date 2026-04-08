@@ -1021,3 +1021,9 @@ header {
     width: 100%;
   }
 }
+/* Garantir que cards compactos mantenham seu estilo */
+#lista .card-compacto {
+  display: flex !important;
+  width: auto !important;
+  max-width: none !important;
+}
