@@ -262,19 +262,33 @@ async function carregarAlunos() {
 function renderLista(dados) {
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
-  lista.className = "";
+  lista.style.display = "grid";
+  lista.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))";
+  lista.style.gap = "12px";
+  lista.style.padding = "0 20px 20px";
 
   dados.forEach(aluno => {
     const div = document.createElement("div");
-    div.className = "card-compacto fade";
+    div.className = "fade"; // apenas para animação
     
-    // Determinar classes de status
+    // Estilos inline para garantir o layout compacto
+    div.style.background = "white";
+    div.style.borderRadius = "16px";
+    div.style.padding = "12px 16px";
+    div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.04)";
+    div.style.border = "1px solid #f1f5f9";
+    div.style.display = "flex";
+    div.style.alignItems = "center";
+    div.style.gap = "12px";
+    div.style.transition = "all 0.2s";
+    
+    // Determinar classes de status (ainda usamos para cores)
     let statusClass = "";
     if (aluno.STATUS.includes("✅")) statusClass = "status-completo";
     else if (aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
     else if (aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
 
-    // Calcular dias restantes ou formatar data
+    // Calcular dias restantes
     let prazoTexto = "";
     let prazoClasse = "";
     if (aluno.PRAZO_FINAL) {
@@ -302,28 +316,26 @@ function renderLista(dados) {
       prazoClasse = "";
     }
 
-    // Avatar com inicial do aluno
     const inicial = aluno.ALUNO ? aluno.ALUNO.charAt(0).toUpperCase() : "?";
 
     div.innerHTML = `
-      <div class="aluno-avatar">${inicial}</div>
-      <div class="aluno-info">
-        <div class="aluno-nome" title="${aluno.ALUNO}">${aluno.ALUNO}</div>
-        ${aluno.TURMA ? `<div style="font-size:11px; color:#64748b;">📚 ${aluno.TURMA}</div>` : ''}
-        <div class="aluno-meta">
-          <span class="status-badge ${statusClass}">${aluno.STATUS}</span>
-          <span class="prazo-info ${prazoClasse}">${prazoTexto}</span>
+      <div class="aluno-avatar" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;">${inicial}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${aluno.ALUNO}">${aluno.ALUNO}</div>
+        ${aluno.TURMA ? `<div style="font-size:11px;color:#64748b;margin-bottom:4px;">📚 ${aluno.TURMA}</div>` : ''}
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+          <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
+          <span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">${prazoTexto}</span>
         </div>
       </div>
-      <div class="aluno-acoes">
-        <button class="btn-icone" onclick="abrirAluno(${aluno._row})" title="Abrir ficha">👁️</button>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button onclick="abrirAluno(${aluno._row})" title="Abrir ficha" style="background:none;border:none;font-size:20px;padding:6px;border-radius:40px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748b;transition:all 0.2s;">👁️</button>
       </div>
     `;
 
     lista.appendChild(div);
   });
 }
-
 function ajustarInterfacePorPerfil() {
   const btnCadastroUsuario = document.querySelector("button[onclick*='abrirModalCadastroUsuario']");
   const btnListarUsuarios = document.querySelector("button[onclick*='abrirModalListaUsuarios']");
