@@ -729,10 +729,12 @@ async function salvarAluno() {
   const nomeInput = document.getElementById("nomeAluno");
   const responsavelInput = document.getElementById("nomeResponsavel");
   const telefoneInput = document.getElementById("telefoneContato");
+  const edEspecialCheck = document.getElementById("alunoEdEspecial");
 
   const nome = nomeInput ? nomeInput.value.trim() : "";
   const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
   const telefone = telefoneInput ? telefoneInput.value.trim() : "";
+  const edEspecial = edEspecialCheck ? edEspecialCheck.checked : false;   // ✅ declaração correta
 
   const erroDiv = document.getElementById("erroNome");
   const btnSalvar = document.getElementById("btnSalvarAluno");
@@ -763,7 +765,7 @@ async function salvarAluno() {
         responsavel: responsavel,
         telefone: telefone,
         turma: document.getElementById("selectTurmaAluno").value,
-        edEspecial: edEspecial,
+        edEspecial: edEspecial,   // ✅ enviando o valor
         email: emailUsuario
       })
     });
@@ -779,11 +781,13 @@ async function salvarAluno() {
       if (nomeInput) nomeInput.value = "";
       if (responsavelInput) responsavelInput.value = "";
       if (telefoneInput) telefoneInput.value = "";
+      if (edEspecialCheck) edEspecialCheck.checked = false;
+      document.getElementById("selectTurmaAluno").selectedIndex = 0;
 
       // Fechar modal e voltar à lista
       document.getElementById("novoAluno").style.display = "none";
-      document.getElementById("lista").style.display = "block";
-      document.getElementById("painel").style.display = "block";
+      document.getElementById("lista").style.display = "";
+      document.getElementById("painel").style.display = "";
 
       await carregarAlunos(); // recarrega a lista
     } else {
@@ -799,7 +803,6 @@ async function salvarAluno() {
     btnSalvar.disabled = false;
   }
 }
-
 function voltarApp() {
   // Esconde os modais (com verificação)
   const idsParaEsconder = ["usuarios", "cadastro", "novoAluno", "modalListaUsuarios", "modalCadastroUsuario"];
