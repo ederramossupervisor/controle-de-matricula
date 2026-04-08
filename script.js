@@ -262,6 +262,7 @@ async function carregarAlunos() {
 function renderLista(dados) {
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
+  lista.className = "";
 
   dados.forEach(aluno => {
     const div = document.createElement("div");
