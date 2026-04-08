@@ -200,6 +200,7 @@ function renderLista(dados) {
       <div class="aluno-avatar">${inicial}</div>
       <div class="aluno-info">
         <div class="aluno-nome" title="${aluno.ALUNO}">${aluno.ALUNO}</div>
+        ${aluno.TURMA ? `<div style="font-size:11px; color:#64748b;">📚 ${aluno.TURMA}</div>` : ''}
         <div class="aluno-meta">
           <span class="status-badge ${statusClass}">${aluno.STATUS}</span>
           <span class="prazo-info ${prazoClasse}">${prazoTexto}</span>
