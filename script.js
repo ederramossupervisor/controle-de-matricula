@@ -217,7 +217,7 @@ async function carregarAlunos() {
     document.getElementById("escolaUsuarioDisplay").textContent = 
       perfilUsuario === "SUPERVISOR" ? "🔭 Supervisor" : `🏫 ${escolaUsuario}`;
 
-    // 🔥 VERIFICAÇÃO EXTRA: se alunos não for array, algo deu errado
+    // Verificação extra: se alunos não for array, algo deu errado
     if (!Array.isArray(dados.alunos)) {
       console.error("Resposta inválida, 'alunos' não é array:", dados);
       alert("Erro na comunicação com o servidor.");
@@ -232,14 +232,23 @@ async function carregarAlunos() {
 
     ajustarInterfacePorPerfil();
 
-    // Agora passamos apenas o array de alunos
-    preencherFiltroEscolas();
-    renderLista(dados.alunos);
+    // Inicializar os filtros (preenche selects de escola, status etc.)
+    inicializarFiltros();
 
-    const resumo = gerarResumo(dados.alunos);
+    // Para secretária, carregar imediatamente as turmas da escola dela
+    if (perfilUsuario === "SECRETARIA") {
+      await carregarTurmasParaFiltro();
+    }
+
+    // Renderizar a lista com todos os alunos (os filtros ainda estão vazios)
+    renderLista(dadosGlobais);
+
+    // Atualizar painel de resumo
+    const resumo = gerarResumo(dadosGlobais);
     renderPainel(resumo);
 
-    const mapa = resumoPorEscola(dados.alunos);
+    // Resumo por escola (opcional, pode manter ou remover)
+    const mapa = resumoPorEscola(dadosGlobais);
     renderPorEscola(mapa);
 
   } catch (erro) {
@@ -247,7 +256,6 @@ async function carregarAlunos() {
   }
   esconderLoading();
 }
-
 // =========================
 // LISTA
 // =========================
@@ -321,14 +329,23 @@ function ajustarInterfacePorPerfil() {
   const btnNovoAluno = document.querySelector("button[onclick*='abrirNovoAluno']");
   const filtrosContainer = document.querySelector(".filtros-container");
   const btnTurmas = document.getElementById("btnTurmas");
+  const filtroEscolaWrapper = document.getElementById("filtroEscolaWrapper");
+  const filtroTurmaWrapper = document.getElementById("filtroTurmaWrapper");
+  const filtroStatusWrapper = document.getElementById("filtroStatusWrapper");
 
   if (perfilUsuario === "SECRETARIA") {
+    if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "none";
+    if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
+    if (filtroStatusWrapper) filtroStatusWrapper.style.display = "block";
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
     if (btnListarUsuarios) btnListarUsuarios.style.display = "none";
     if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
     if (filtrosContainer) filtrosContainer.style.display = "none";
     if (btnTurmas) btnTurmas.style.display = "none";
   } else if (perfilUsuario === "SUPERVISOR") {
+    if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "none";
+    if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
+    if (filtroStatusWrapper) filtroStatusWrapper.style.display = "block";
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "inline-block";
     if (btnListarUsuarios) btnListarUsuarios.style.display = "inline-block";
     if (btnNovoAluno) btnNovoAluno.style.display = "none";
@@ -461,32 +478,38 @@ function preencherFiltroEscolas() {
   });
 }
 
-function filtrarPorEscola() {
-  // Simplesmente chama a função que combina os dois filtros
-  filtrarPorNome();
-}
+function aplicarFiltros() {
+  const termoNome = document.getElementById("pesquisaNome").value.toLowerCase();
+  const escolaSelecionada = document.getElementById("filtroEscola")?.value || "";
+  const turmaSelecionada = document.getElementById("filtroTurma")?.value || "";
+  const statusSelecionado = document.getElementById("filtroStatus")?.value || "";
 
-function filtrarPorNome() {
-  // 1. Pega o texto digitado e converte para minúsculas
-  const termo = document.getElementById("pesquisaNome").value.toLowerCase();
-  
-  // 2. Pega a escola selecionada no filtro de escolas
-  const escolaSelecionada = document.getElementById("filtroEscola").value;
-  
-  // 3. Começa com todos os alunos (dadosGlobais)
   let dadosFiltrados = dadosGlobais;
-  
-  // 4. Se uma escola foi selecionada, filtra primeiro por escola
-  if (escolaSelecionada) {
+
+  // Filtro por escola (supervisor)
+  if (perfilUsuario === "SUPERVISOR" && escolaSelecionada) {
     dadosFiltrados = dadosFiltrados.filter(a => a.ESCOLA === escolaSelecionada);
   }
-  
-  // 5. Se algo foi digitado, filtra pelo nome do aluno
-  if (termo) {
-    dadosFiltrados = dadosFiltrados.filter(a => 
-      a.ALUNO.toLowerCase().includes(termo)
+
+  // Filtro por turma
+  if (turmaSelecionada) {
+    dadosFiltrados = dadosFiltrados.filter(a => a.TURMA === turmaSelecionada);
+  }
+
+  // Filtro por status
+  if (statusSelecionado) {
+    dadosFiltrados = dadosFiltrados.filter(a => a.STATUS === statusSelecionado);
+  }
+
+  // Filtro por nome
+  if (termoNome) {
+    dadosFiltrados = dadosFiltrados.filter(a =>
+      a.ALUNO.toLowerCase().includes(termoNome)
     );
   }
+
+  renderLista(dadosFiltrados);
+}
   
   // 6. Renderiza a lista com os dados filtrados
   renderLista(dadosFiltrados);
@@ -1032,4 +1055,9 @@ document.getElementById("modalListaUsuarios").addEventListener("click", function
 
 document.getElementById("modalCadastroUsuario").addEventListener("click", function(e) {
   if (e.target === this) fecharModalCadastroUsuario();
+});
+
+document.getElementById("filtroEscola")?.addEventListener("change", function() {
+  carregarTurmasParaFiltro();
+  aplicarFiltros();
 });
