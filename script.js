@@ -903,14 +903,16 @@ function logout() {
   if (!confirm("Deseja sair do sistema?")) return;
 
   emailUsuario = "";
-
   localStorage.removeItem("emailUsuario");
 
+  // Esconde o app
   document.getElementById("app").style.display = "none";
-  document.getElementById("login").style.display = "block";
+  
+  // Mostra o login removendo qualquer estilo inline para que o CSS (flex) funcione
+  const loginEl = document.getElementById("login");
+  loginEl.style.display = "";   // ✅ remove display inline, volta ao padrão CSS
 
   document.getElementById("email").value = "";
-
   dadosGlobais = [];
 }
 
