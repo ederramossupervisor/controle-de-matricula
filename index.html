@@ -121,6 +121,15 @@
         <div class="modal-body">
           <div id="detalhesConteudo"></div>
           <div class="modal-actions">
+          <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+            <p style="margin: 0 0 8px; font-weight: 500;">📌 Encerrar matrícula:</p>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn-cancelar" onclick="alterarSituacaoAluno('Transferido')" style="flex:1;">🔄 Transferido</button>
+              <button class="btn-cancelar" onclick="alterarSituacaoAluno('Concluído')" style="flex:1;">🎓 Concluído</button>
+            </div>
+            <p style="font-size:12px; color:#64748b; margin-top:6px;">O aluno será ocultado da lista principal.</p>
+          </div>
+            <button class="btn-primary" onclick="alterarSituacaoAluno('Ativo')" style="flex:1; margin-top:8px;">✅ Reativar aluno</button>
             <button class="btn-salvar" id="btnSalvarDetalhes" onclick="salvarAlteracoesEmLote(dadosAlunoAtual._row)">
               💾 Salvar alterações
             </button>
