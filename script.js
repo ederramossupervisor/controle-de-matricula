@@ -343,7 +343,7 @@ function ajustarInterfacePorPerfil() {
     if (filtrosContainer) filtrosContainer.style.display = "none";
     if (btnTurmas) btnTurmas.style.display = "none";
   } else if (perfilUsuario === "SUPERVISOR") {
-    if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "none";
+    if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "block";
     if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
     if (filtroStatusWrapper) filtroStatusWrapper.style.display = "block";
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "inline-block";
@@ -511,10 +511,7 @@ function aplicarFiltros() {
   renderLista(dadosFiltrados);
 }
   
-  // 6. Renderiza a lista com os dados filtrados
-  renderLista(dadosFiltrados);
-}
-
+  
 async function carregarTurmasParaCadastro(escola) {
   const select = document.getElementById("selectTurmaAluno");
   select.innerHTML = '<option value="">Carregando turmas...</option>';
