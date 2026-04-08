@@ -136,10 +136,8 @@ function abrirModalTurmas() {
 function abrirModalDetalhes(aluno) {
   dadosAlunoAtual = aluno;
   
-  // Preencher título
   document.getElementById("detalhesTitulo").textContent = aluno.ALUNO;
   
-  // Construir HTML dos documentos
   let html = `
     <p style="margin-top:0; color:#64748b; display:flex; gap:12px;">
       <span>🏫 ${aluno.ESCOLA}</span>
@@ -149,20 +147,21 @@ function abrirModalDetalhes(aluno) {
     <div class="checkboxes-container">
   `;
   
-  // Lista de documentos (mesma ordem dos checkboxes originais)
-  const docs = [
-  { label: "Certidão de Nascimento", coluna: 9, valor: aluno.CERTIDAO },    // I
-  { label: "CPF do aluno", coluna: 10, valor: aluno.CPF },                  // J
-  { label: "RG do aluno", coluna: 11, valor: aluno.RG },                    // K
-  { label: "Carteira de Vacinação", coluna: 12, valor: aluno.VACINA },      // L
-  { label: "Cartão do SUS", coluna: 13, valor: aluno.SUS },                 // M
-  { label: "Comprovante de Residência", coluna: 14, valor: aluno.RESIDENCIA }, // N
-  { label: "Documentos do Responsável", coluna: 15, valor: aluno.RESP_DOCS },  // O
-  { label: "Histórico Escolar", coluna: 16, valor: aluno.HISTORICO },       // P
-  { label: "Declaração de Transferência", coluna: 17, valor: aluno.DECL_TRANSF }, // Q
-  { label: "Laudo/Relatório Pedagógico (Ed. Especial)", coluna: 18, valor: aluno.ED_ESPECIAL }
-];  
-  docs.forEach(doc => {
+  // Lista de documentos básicos (9 itens)
+  const docsBasicos = [
+    { label: "Certidão de Nascimento", coluna: 9, valor: aluno.CERTIDAO },
+    { label: "CPF do aluno", coluna: 10, valor: aluno.CPF },
+    { label: "RG do aluno", coluna: 11, valor: aluno.RG },
+    { label: "Carteira de Vacinação", coluna: 12, valor: aluno.VACINA },
+    { label: "Cartão do SUS", coluna: 13, valor: aluno.SUS },
+    { label: "Comprovante de Residência", coluna: 14, valor: aluno.RESIDENCIA },
+    { label: "Documentos do Responsável", coluna: 15, valor: aluno.RESP_DOCS },
+    { label: "Histórico Escolar", coluna: 16, valor: aluno.HISTORICO },
+    { label: "Declaração de Transferência", coluna: 17, valor: aluno.DECL_TRANSF }
+  ];
+  
+  // Adiciona os básicos
+  docsBasicos.forEach(doc => {
     const chave = `${aluno._row}_${doc.coluna}`;
     const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : doc.valor;
     html += `
@@ -176,12 +175,25 @@ function abrirModalDetalhes(aluno) {
     `;
   });
   
+  // Se o aluno for da Educação Especial, adiciona o documento extra
+  if (aluno.ED_ESPECIAL === true) {
+    const docEspecial = { label: "Laudo/Relatório Pedagógico (Ed. Especial)", coluna: 18, valor: aluno.ED_ESPECIAL };
+    const chave = `${aluno._row}_${docEspecial.coluna}`;
+    const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : docEspecial.valor;
+    html += `
+      <div class="checkbox-moderno">
+        <input type="checkbox" 
+          id="doc_${docEspecial.coluna}" 
+          ${checked ? "checked" : ""} 
+          onchange="marcarAlteracao(${aluno._row}, ${docEspecial.coluna}, this.checked)">
+        <label for="doc_${docEspecial.coluna}">${docEspecial.label}</label>
+      </div>
+    `;
+  }
+  
   html += `</div>`;
   
-  // Inserir no modal
   document.getElementById("detalhesConteudo").innerHTML = html;
-  
-  // Exibir modal
   document.getElementById("modalDetalhes").style.display = "flex";
 }
 
