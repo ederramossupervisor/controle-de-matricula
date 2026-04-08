@@ -396,6 +396,23 @@ function filtrarPorNome() {
   renderLista(dadosFiltrados);
 }
 
+async function carregarTurmasParaCadastro(escola) {
+  const select = document.getElementById("selectTurmaAluno");
+  select.innerHTML = '<option value="">Carregando turmas...</option>';
+  try {
+    const resp = await fetch(`${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`);
+    const turmas = await resp.json();
+    select.innerHTML = '<option value="">Selecione a turma</option>';
+    turmas.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.turma;
+      opt.textContent = t.turma;
+      select.appendChild(opt);
+    });
+  } catch (e) {
+    select.innerHTML = '<option value="">Erro ao carregar</option>';
+  }
+}
 
 function abrirNovoAluno() {
   document.getElementById("novoAluno").style.display = "flex";
@@ -404,6 +421,7 @@ function abrirNovoAluno() {
   // Exibir a escola da secretária logada
   document.getElementById("escolaVinculada").textContent = 
     `Aluno será matriculado em: ${escolaUsuario}`;
+  carregarTurmasParaCadastro(escolaUsuario);
 }
 
 // =========================
@@ -592,6 +610,7 @@ async function salvarAluno() {
         nome: nome,
         responsavel: responsavel,
         telefone: telefone,
+        turma: document.getElementById("selectTurmaAluno").value,
         email: emailUsuario
       })
     });
