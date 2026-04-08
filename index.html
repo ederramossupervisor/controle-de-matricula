@@ -236,18 +236,39 @@
       </div>
     </div>
 
-    <!-- FILTROS -->
+   <!-- FILTROS -->
     <div class="filtros-container">
-      <div class="input-icon" style="max-width: 280px;">
+      <!-- Filtro de Escola (visível apenas para supervisor) -->
+      <div class="input-icon" id="filtroEscolaWrapper" style="min-width: 200px;">
         <span class="icon">🏫</span>
-        <select id="filtroEscola" onchange="filtrarPorEscola()">
-            <option value="">Todas as escolas</option>
+        <select id="filtroEscola" onchange="aplicarFiltros()">
+          <option value="">Todas as escolas</option>
         </select>
-        </div>
-
+      </div>
+    
+      <!-- Filtro de Turma -->
+      <div class="input-icon" id="filtroTurmaWrapper" style="min-width: 180px;">
+        <span class="icon">📚</span>
+        <select id="filtroTurma" onchange="aplicarFiltros()">
+          <option value="">Todas as turmas</option>
+        </select>
+      </div>
+    
+      <!-- Filtro de Status -->
+      <div class="input-icon" id="filtroStatusWrapper" style="min-width: 160px;">
+        <span class="icon">📊</span>
+        <select id="filtroStatus" onchange="aplicarFiltros()">
+          <option value="">Todos os status</option>
+          <option value="✅ Completo">✅ Completo</option>
+          <option value="⚠️ Pendente">⚠️ Pendente</option>
+          <option value="🔴 Vencido">🔴 Vencido</option>
+        </select>
+      </div>
+    
+      <!-- Pesquisa por nome -->
       <div class="input-icon" style="flex:2; min-width: 200px;">
         <span class="icon">🔍</span>
-        <input type="text" id="pesquisaNome" placeholder="Buscar aluno por nome..." oninput="filtrarPorNome()">
+        <input type="text" id="pesquisaNome" placeholder="Buscar aluno por nome..." oninput="aplicarFiltros()">
       </div>
     </div>
 
