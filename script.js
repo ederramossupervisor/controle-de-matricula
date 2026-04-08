@@ -340,8 +340,9 @@ function ajustarInterfacePorPerfil() {
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
     if (btnListarUsuarios) btnListarUsuarios.style.display = "none";
     if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
-    if (filtrosContainer) filtrosContainer.style.display = "none";
+    if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "none";
+    
   } else if (perfilUsuario === "SUPERVISOR") {
     if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "block";
     if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
