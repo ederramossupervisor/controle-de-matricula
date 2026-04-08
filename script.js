@@ -226,22 +226,19 @@ function ajustarInterfacePorPerfil() {
   const btnNovoAluno = document.querySelector("button[onclick*='abrirNovoAluno']");
   const filtrosContainer = document.querySelector(".filtros-container");
   const btnTurmas = document.getElementById("btnTurmas");
-  if (perfilUsuario === "SUPERVISOR") {
-    if (btnTurmas) btnTurmas.style.display = "inline-block";
-  } else {
-    if (btnTurmas) btnTurmas.style.display = "none";
-  }
 
   if (perfilUsuario === "SECRETARIA") {
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
     if (btnListarUsuarios) btnListarUsuarios.style.display = "none";
     if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
-    if (filtrosContainer) filtrosContainer.style.display = "none";   // 🔥 esconde filtros
+    if (filtrosContainer) filtrosContainer.style.display = "none";
+    if (btnTurmas) btnTurmas.style.display = "none";
   } else if (perfilUsuario === "SUPERVISOR") {
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "inline-block";
     if (btnListarUsuarios) btnListarUsuarios.style.display = "inline-block";
     if (btnNovoAluno) btnNovoAluno.style.display = "none";
-    if (filtrosContainer) filtrosContainer.style.display = "flex";    // 🔥 mostra filtros
+    if (filtrosContainer) filtrosContainer.style.display = "flex";
+    if (btnTurmas) btnTurmas.style.display = "inline-block";
   }
 }
 
@@ -796,6 +793,126 @@ function logout() {
   dadosGlobais = [];
 }
 
+// =========================
+// GESTÃO DE TURMAS (SUPERVISOR)
+// =========================
+
+let turmasGlobais = [];
+
+async function carregarTurmas(escola = "") {
+  mostrarLoading();
+  try {
+    const url = `${API_URL}?tipo=turmas&email=${emailUsuario}` + (escola ? `&escola=${encodeURIComponent(escola)}` : "");
+    const resposta = await fetch(url);
+    const turmas = await resposta.json();
+    turmasGlobais = turmas;
+    renderListaTurmas(turmas);
+    preencherSelectEscolasTurma();
+  } catch (erro) {
+    console.error("Erro ao carregar turmas:", erro);
+    alert("Erro ao carregar turmas.");
+  }
+  esconderLoading();
+}
+
+function renderListaTurmas(turmas) {
+  const container = document.getElementById("listaTurmasContainer");
+  if (!container) return;
+  container.innerHTML = "";
+  if (!turmas.length) {
+    container.innerHTML = "<p>Nenhuma turma cadastrada.</p>";
+    return;
+  }
+  turmas.forEach(t => {
+    const div = document.createElement("div");
+    div.className = "usuario-card";
+    div.innerHTML = `
+      <div class="usuario-avatar">📚</div>
+      <div class="usuario-info">
+        <strong>${t.turma}</strong>
+        <p>🏫 ${t.escola}</p>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+async function preencherSelectEscolasTurma() {
+  const escolas = [...new Set(dadosGlobais.map(a => a.ESCOLA))];
+  const selectFiltro = document.getElementById("filtroEscolaTurma");
+  const selectCadastro = document.getElementById("selectEscolaTurma");
+  [selectFiltro, selectCadastro].forEach(select => {
+    if (!select) return;
+    select.innerHTML = '<option value="">Todas as escolas</option>';
+    escolas.forEach(esc => {
+      const opt = document.createElement("option");
+      opt.value = esc;
+      opt.textContent = esc;
+      select.appendChild(opt);
+    });
+  });
+}
+
+function fecharModalTurmas() {
+  document.getElementById("modalTurmas").style.display = "none";
+}
+
+function abrirModalCadastroTurma() {
+  document.getElementById("modalCadastroTurma").style.display = "flex";
+  preencherSelectEscolasTurma();
+}
+
+function fecharModalCadastroTurma() {
+  document.getElementById("modalCadastroTurma").style.display = "none";
+  document.getElementById("nomeTurma").value = "";
+  document.getElementById("erroTurma").style.display = "none";
+}
+
+async function salvarTurma() {
+  const escola = document.getElementById("selectEscolaTurma").value;
+  const turma = document.getElementById("nomeTurma").value.trim();
+  const erroDiv = document.getElementById("erroTurma");
+  if (!escola || !turma) {
+    erroDiv.textContent = "Preencha todos os campos";
+    erroDiv.style.display = "block";
+    return;
+  }
+  erroDiv.style.display = "none";
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "cadastrarTurma",
+        email: emailUsuario,
+        escola: escola,
+        turma: turma
+      })
+    });
+    const result = await resp.json();
+    if (result.status === "ok") {
+      fecharModalCadastroTurma();
+      carregarTurmas(document.getElementById("filtroEscolaTurma").value);
+    } else {
+      erroDiv.textContent = result.msg;
+      erroDiv.style.display = "block";
+    }
+  } catch (e) {
+    erroDiv.textContent = "Erro de conexão";
+    erroDiv.style.display = "block";
+  }
+  esconderLoading();
+}
+
+// Listener para filtro de turmas (pode ficar aqui)
+document.addEventListener("DOMContentLoaded", function() {
+  const filtro = document.getElementById("filtroEscolaTurma");
+  if (filtro) {
+    filtro.addEventListener("change", function() {
+      carregarTurmas(this.value);
+    });
+  }
+});
 
 // =========================
 // AUTO LOGIN
