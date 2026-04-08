@@ -291,7 +291,15 @@
           <option value="🔴 Vencido">🔴 Vencido</option>
         </select>
       </div>
-    
+      <div class="input-icon" id="filtroSituacaoWrapper">
+        <span class="icon">📌</span>
+        <select id="filtroSituacao" onchange="aplicarFiltros()">
+          <option value="">Todas as situações</option>
+          <option value="Ativo">Ativo</option>
+          <option value="Transferido">Transferido</option>
+          <option value="Concluído">Concluído</option>
+        </select>
+      </div>
       <!-- Pesquisa por nome -->
       <div class="input-icon" style="flex:2; min-width: 200px;">
         <span class="icon">🔍</span>
