@@ -7,6 +7,43 @@ let escolaUsuario = "";
 let alteracoesPendentes = {};
 let dadosAlunoAtual = null; // guarda o aluno que está aberto no modal
 
+// Lista oficial de escolas (disponível para o supervisor)
+const LISTA_ESCOLAS = [
+  "CEEFMTI AFONSO CLÁUDIO",
+  "CEEFMTI ELISA PAIVA",
+  "EEEF IVANA CASAGRANDE SCABELO",
+  "EEEF SEVERINO PASTE",
+  "EEEFM MÁRIO BERGAMIN",
+  "EEEFM ALTO RIO POSSMOSER",
+  "EEEFM ÁLVARO CASTELO",
+  "EEEFM DOMINGOS PERIM",
+  "EEEFM ELVIRA BARROS",
+  "EEEFM FAZENDA CAMPORÊS",
+  "EEEFM FAZENDA EMÍLIO SCHROEDER",
+  "EEEFM FIORAVANTE CALIMAN",
+  "EEEFM FREDERICO BOLDT",
+  "EEEFM GISELA SALLOKER FAYET",
+  "EEEFM GRAÇA ARANHA",
+  "EEEFM JOAQUIM CAETANO DE PAIVA",
+  "EEEFM JOSE CUPERTINO",
+  "EEEFM JOSE GIESTAS",
+  "EEEFM JOSÉ ROBERTO CHRISTO",
+  "EEEFM LEOGILDO SEVERIANO DE SOUZA",
+  "EEEFM LUIZ JOUFFROY",
+  "EEEFM MARIA DE ABREU ALVIM",
+  "EEEFM MARLENE BRANDÃO",
+  "EEEFM PEDRA AZUL",
+  "EEEFM PONTO DO ALTO",
+  "EEEFM PROF ALDY SOARES MERCON VARGAS",
+  "EEEFM PROF HERMANN BERGER",
+  "EEEFM SÃO JORGE",
+  "EEEFM SÃO LUÍS",
+  "EEEFM TEOFILO PAULINO",
+  "EEEM FRANCISCO GUILHERME",
+  "EEEM MATA FRIA",
+  "EEEM SOBREIRO"
+];
+
 function mostrarLoading() {
   document.getElementById("loading").style.display = "flex";
 }
@@ -138,7 +175,7 @@ async function carregarAlunos() {
     ajustarInterfacePorPerfil();
 
     // Agora passamos apenas o array de alunos
-    preencherFiltroEscolas(dados.alunos);
+    preencherFiltroEscolas();
     renderLista(dados.alunos);
 
     const resumo = gerarResumo(dados.alunos);
@@ -355,18 +392,10 @@ async function atualizar(row, coluna, valor) {
 // =========================
 // FILTRO
 // =========================
-function preencherFiltroEscolas(dados) {
- if (!Array.isArray(dados)) {
-    console.error("preencherFiltroEscolas: dados não é array", dados);
-    return;
-  }    
+function preencherFiltroEscolas() {
   const select = document.getElementById("filtroEscola");
-
   select.innerHTML = '<option value="">Todas as escolas</option>';
-
-  const escolas = [...new Set(dados.map(a => a.ESCOLA))];
-
-  escolas.forEach(escola => {
+  LISTA_ESCOLAS.forEach(escola => {
     const option = document.createElement("option");
     option.value = escola;
     option.textContent = escola;
@@ -837,14 +866,14 @@ function renderListaTurmas(turmas) {
   });
 }
 
-async function preencherSelectEscolasTurma() {
-  const escolas = [...new Set(dadosGlobais.map(a => a.ESCOLA))];
+function preencherSelectEscolasTurma() {
   const selectFiltro = document.getElementById("filtroEscolaTurma");
   const selectCadastro = document.getElementById("selectEscolaTurma");
+  
   [selectFiltro, selectCadastro].forEach(select => {
     if (!select) return;
     select.innerHTML = '<option value="">Todas as escolas</option>';
-    escolas.forEach(esc => {
+    LISTA_ESCOLAS.forEach(esc => {
       const opt = document.createElement("option");
       opt.value = esc;
       opt.textContent = esc;
