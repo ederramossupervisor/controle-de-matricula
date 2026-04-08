@@ -71,6 +71,63 @@ function login() {
   carregarAlunos();
 }
 
+// Preenche os selects de filtro (escola, turma, status)
+function inicializarFiltros() {
+  // Preencher escolas (apenas supervisor, mas já preenchemos para usar no filtro de turmas)
+  const selectEscola = document.getElementById("filtroEscola");
+  if (selectEscola) {
+    selectEscola.innerHTML = '<option value="">Todas as escolas</option>';
+    LISTA_ESCOLAS.forEach(esc => {
+      const opt = document.createElement("option");
+      opt.value = esc;
+      opt.textContent = esc;
+      selectEscola.appendChild(opt);
+    });
+  }
+
+  // Status já está fixo no HTML, nada a fazer.
+
+  // Turmas serão carregadas dinamicamente conforme a escola selecionada
+  carregarTurmasParaFiltro();
+}
+
+// Carrega turmas para o select de filtro (baseado na escola selecionada ou perfil)
+async function carregarTurmasParaFiltro() {
+  const selectTurma = document.getElementById("filtroTurma");
+  if (!selectTurma) return;
+
+  let escolaFiltro = "";
+  if (perfilUsuario === "SUPERVISOR") {
+    escolaFiltro = document.getElementById("filtroEscola").value;
+  } else {
+    escolaFiltro = escolaUsuario; // secretaria vê apenas turmas da própria escola
+  }
+
+  if (!escolaFiltro) {
+    // Se nenhuma escola selecionada, mostra placeholder
+    selectTurma.innerHTML = '<option value="">Selecione uma escola primeiro</option>';
+    return;
+  }
+
+  selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
+
+  try {
+    const resp = await fetch(`${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escolaFiltro)}`);
+    const turmas = await resp.json();
+    turmasDisponiveis = turmas;
+
+    selectTurma.innerHTML = '<option value="">Todas as turmas</option>';
+    turmas.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.turma;
+      opt.textContent = t.turma;
+      selectTurma.appendChild(opt);
+    });
+  } catch (e) {
+    selectTurma.innerHTML = '<option value="">Erro ao carregar</option>';
+  }
+}
+
 function abrirModalTurmas() {
   document.getElementById("modalTurmas").style.display = "flex";
   carregarTurmas();
