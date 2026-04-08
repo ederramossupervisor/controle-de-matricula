@@ -571,10 +571,19 @@ function abrirModalCadastroUsuario() {
   // Limpar campos
   document.getElementById("novoEmail").value = "";
   document.getElementById("perfil").value = "SECRETARIA";
-  document.getElementById("escola").value = "";
   document.getElementById("erroUsuario").style.display = "none";
-  
-  // Se for Supervisor, mostrar campo escola; se não, esconder? (Melhor mostrar sempre e validar)
+
+  // Preencher dropdown de escolas (usando a constante LISTA_ESCOLAS)
+  const selectEscola = document.getElementById("escola");
+  selectEscola.innerHTML = '<option value="">Selecione a escola</option>';
+  LISTA_ESCOLAS.forEach(esc => {
+    const opt = document.createElement("option");
+    opt.value = esc;
+    opt.textContent = esc;
+    selectEscola.appendChild(opt);
+  });
+  selectEscola.value = ""; // garante que nenhuma escola fique selecionada
+
   document.getElementById("modalCadastroUsuario").style.display = "flex";
 }
 
