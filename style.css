@@ -1000,3 +1000,24 @@ header {
     max-height: 300px;
   }
 }
+.filtros-container {
+  display: flex;
+  gap: 12px;
+  padding: 20px 20px 0;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filtros-container .input-icon {
+  flex: 1 1 180px;
+}
+
+@media (max-width: 640px) {
+  .filtros-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filtros-container .input-icon {
+    width: 100%;
+  }
+}
