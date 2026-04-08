@@ -4,8 +4,7 @@ const urlsToCache = [
   './index.html',
   './style.css',
   './script.js',
-  './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Segoe+UI&display=swap' // opcional
+  './manifest.json'
 ];
 
 // Instala o service worker e armazena os arquivos no cache
