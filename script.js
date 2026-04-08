@@ -566,6 +566,11 @@ function aplicarFiltros() {
     );
   }
 
+  // Dentro de aplicarFiltros, após os outros filtros:
+  if (perfilUsuario === "SECRETARIA") {
+    dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === "Ativo");
+  }
+
   renderLista(dadosFiltrados);
 }
   
