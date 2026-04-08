@@ -6,6 +6,7 @@ let perfilUsuario = "";
 let escolaUsuario = "";
 let alteracoesPendentes = {};
 let dadosAlunoAtual = null; // guarda o aluno que está aberto no modal
+let turmasDisponiveis = []; // armazenará as turmas para os filtros
 
 // Lista oficial de escolas (disponível para o supervisor)
 const LISTA_ESCOLAS = [
