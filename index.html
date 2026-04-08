@@ -113,6 +113,7 @@
         </div>
       </div>
     </div>
+    
     <!-- 🏫 MODAL DE LISTA DE TURMAS -->
     <div id="modalTurmas" class="modal-overlay" style="display:none;">
       <div class="modal-card modal-card--grande">
@@ -134,6 +135,33 @@
         </div>
       </div>
     </div>
+
+    <!-- ➕ MODAL DE CADASTRO DE TURMA -->
+    <div id="modalCadastroTurma" class="modal-overlay" style="display:none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>➕ Nova Turma</h2>
+          <button class="close-btn" onclick="fecharModalCadastroTurma()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="input-icon">
+            <span class="icon">🏫</span>
+            <select id="selectEscolaTurma">
+              <option value="">Selecione a escola</option>
+            </select>
+          </div>
+          <div class="input-icon">
+            <span class="icon">📚</span>
+            <input type="text" id="nomeTurma" placeholder="Nome da turma (ex: 1º Ano A)">
+          </div>
+          <div class="error-msg" id="erroTurma" style="display:none;"></div>
+          <div class="modal-actions">
+            <button class="btn-salvar" onclick="salvarTurma()">Salvar</button>
+            <button class="btn-cancelar" onclick="fecharModalCadastroTurma()">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- HEADER PRINCIPAL -->
     <header>
       <div class="header-left">
@@ -145,6 +173,7 @@
         <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios">👥 Usuários</button>
         <button onclick="abrirModalCadastroUsuario()" id="btnCadastrarUsuario">➕ Usuário</button>
         <button onclick="logout()" class="btn-outline">🚪 Sair</button>
+        <button onclick="abrirModalTurmas()" id="btnTurmas">🏫 Turmas</button>
       </div>
     </header>
 
