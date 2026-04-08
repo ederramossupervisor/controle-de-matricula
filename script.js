@@ -51,17 +51,16 @@ function abrirModalDetalhes(aluno) {
   
   // Lista de documentos (mesma ordem dos checkboxes originais)
   const docs = [
-  { label: "Certidão de Nascimento", coluna: 8, valor: aluno.CERTIDAO },
-  { label: "CPF do aluno", coluna: 9, valor: aluno.CPF },
-  { label: "RG do aluno", coluna: 10, valor: aluno.RG },
-  { label: "Carteira de Vacinação", coluna: 11, valor: aluno.VACINA },
-  { label: "Cartão do SUS", coluna: 12, valor: aluno.SUS },
-  { label: "Comprovante de Residência", coluna: 13, valor: aluno.RESIDENCIA },
-  { label: "Documentos do Responsável", coluna: 14, valor: aluno.RESP_DOCS },
-  { label: "Histórico Escolar", coluna: 15, valor: aluno.HISTORICO },
-  { label: "Declaração de Transferência", coluna: 16, valor: aluno.DECL_TRANSF }
-];
-  
+  { label: "Certidão de Nascimento", coluna: 9, valor: aluno.CERTIDAO },    // I
+  { label: "CPF do aluno", coluna: 10, valor: aluno.CPF },                  // J
+  { label: "RG do aluno", coluna: 11, valor: aluno.RG },                    // K
+  { label: "Carteira de Vacinação", coluna: 12, valor: aluno.VACINA },      // L
+  { label: "Cartão do SUS", coluna: 13, valor: aluno.SUS },                 // M
+  { label: "Comprovante de Residência", coluna: 14, valor: aluno.RESIDENCIA }, // N
+  { label: "Documentos do Responsável", coluna: 15, valor: aluno.RESP_DOCS },  // O
+  { label: "Histórico Escolar", coluna: 16, valor: aluno.HISTORICO },       // P
+  { label: "Declaração de Transferência", coluna: 17, valor: aluno.DECL_TRANSF } // Q
+];  
   docs.forEach(doc => {
     const chave = `${aluno._row}_${doc.coluna}`;
     const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : doc.valor;
