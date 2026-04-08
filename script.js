@@ -220,6 +220,12 @@ function ajustarInterfacePorPerfil() {
   const btnListarUsuarios = document.querySelector("button[onclick*='abrirModalListaUsuarios']");
   const btnNovoAluno = document.querySelector("button[onclick*='abrirNovoAluno']");
   const filtrosContainer = document.querySelector(".filtros-container");
+  const btnTurmas = document.getElementById("btnTurmas");
+  if (perfilUsuario === "SUPERVISOR") {
+    if (btnTurmas) btnTurmas.style.display = "inline-block";
+  } else {
+    if (btnTurmas) btnTurmas.style.display = "none";
+  }
 
   if (perfilUsuario === "SECRETARIA") {
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
