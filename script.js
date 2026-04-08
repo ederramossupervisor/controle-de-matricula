@@ -33,6 +33,11 @@ function login() {
   carregarAlunos();
 }
 
+function abrirModalTurmas() {
+  document.getElementById("modalTurmas").style.display = "flex";
+  carregarTurmas();
+}
+
 function abrirModalDetalhes(aluno) {
   dadosAlunoAtual = aluno;
   
