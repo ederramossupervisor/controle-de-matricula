@@ -208,6 +208,37 @@ function marcarAlteracao(row, coluna, valor) {
   console.log(`📝 Alteração pendente: linha ${row}, coluna ${coluna} = ${valor}`);
 }
 
+async function alterarSituacaoAluno(novaSituacao) {
+  if (!dadosAlunoAtual) return;
+  
+  const confirmacao = confirm(`Deseja marcar este aluno como "${novaSituacao}"?`);
+  if (!confirmacao) return;
+  
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "alterarSituacao",
+        row: dadosAlunoAtual._row,
+        situacao: novaSituacao,
+        email: emailUsuario
+      })
+    });
+    const result = await resp.json();
+    if (result.status === "ok") {
+      fecharModalDetalhes();
+      await carregarAlunos();
+    } else {
+      alert("Erro: " + (result.msg || "Tente novamente"));
+    }
+  } catch (e) {
+    console.error(e);
+    alert("Erro de conexão.");
+  }
+  esconderLoading();
+}
+
 // =========================
 // CARREGAR DADOS
 // =========================
