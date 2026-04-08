@@ -995,3 +995,8 @@ header {
 #listaTurmasContainer::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+@media (max-width: 640px) {
+  #listaTurmasContainer {
+    max-height: 300px;
+  }
+}
