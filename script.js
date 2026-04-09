@@ -179,6 +179,13 @@ async function salvarDadosAluno() {
     alert("Nome do aluno é obrigatório.");
     return;
   }
+
+   // 🔥 VALIDAÇÃO DE TELEFONE (INSIRA AQUI)
+  const telefoneNumeros = telefone.replace(/\D/g, '');
+  if (telefoneNumeros.length > 0 && telefoneNumeros.length < 10) {
+    alert("Telefone incompleto. Informe DDD + número (mínimo 10 dígitos).");
+    return;
+  }
   
   const btn = document.getElementById("btnSalvarInfoAluno");
   const btnText = btn.querySelector(".btn-text");
@@ -1007,6 +1014,13 @@ async function salvarAluno() {
   if (erroDiv) erroDiv.style.display = "none";
   if (nomeInput) nomeInput.style.borderColor = "#e2e8f0";
 
+  // 🔥 VALIDAÇÃO DE TELEFONE (INSIRA AQUI)
+  const telefoneNumeros = telefone.replace(/\D/g, '');
+  if (telefoneNumeros.length > 0 && telefoneNumeros.length < 10) {
+    alert("Telefone incompleto. Informe DDD + número (mínimo 10 dígitos).");
+    return;
+  }
+
   // Mostrar loading no botão
   btnText.style.display = "none";
   spinner.style.display = "inline-block";
@@ -1330,6 +1344,7 @@ document.addEventListener("DOMContentLoaded", function() {
 // AUTO LOGIN
 // =========================
 window.onload = function () {
+  initDarkMode(); 
   const emailSalvo = localStorage.getItem("emailUsuario");
 
   if (emailSalvo) {
@@ -1364,5 +1379,4 @@ document.getElementById("filtroEscola")?.addEventListener("change", function() {
   aplicarFiltros();
 });
 
-  initDarkMode();
-};
+  
