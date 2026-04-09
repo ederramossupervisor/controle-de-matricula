@@ -1309,42 +1309,74 @@ function fecharModalCadastroTurma() {
   document.getElementById("erroTurma").style.display = "none";
 }
 
+// NOVA FUNÇÃO SALVAR TURMA (MÚLTIPLAS LINHAS)
 async function salvarTurma() {
   const escola = document.getElementById("selectEscolaTurma").value;
-  const turma = document.getElementById("nomeTurma").value.trim();
+  const turmasTexto = document.getElementById("nomeTurma").value.trim();
   const erroDiv = document.getElementById("erroTurma");
-  if (!escola || !turma) {
-    erroDiv.textContent = "Preencha todos os campos";
+  
+  if (!escola) {
+    erroDiv.textContent = "Selecione uma escola.";
     erroDiv.style.display = "block";
     return;
   }
+  if (!turmasTexto) {
+    erroDiv.textContent = "Digite pelo menos uma turma.";
+    erroDiv.style.display = "block";
+    return;
+  }
+  
+  const turmas = turmasTexto.split('\n')
+    .map(t => t.trim())
+    .filter(t => t !== "");
+  
+  if (turmas.length === 0) {
+    erroDiv.textContent = "Nenhuma turma válida informada.";
+    erroDiv.style.display = "block";
+    return;
+  }
+  
   erroDiv.style.display = "none";
   mostrarLoading();
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "cadastrarTurma",
-        email: emailUsuario,
-        escola: escola,
-        turma: turma
-      })
-    });
-    const result = await resp.json();
-    if (result.status === "ok") {
-      fecharModalCadastroTurma();
-      carregarTurmas(document.getElementById("filtroEscolaTurma").value);
-    } else {
-      erroDiv.textContent = result.msg;
-      erroDiv.style.display = "block";
+  
+  let sucessos = 0;
+  let erros = [];
+  
+  for (let turma of turmas) {
+    try {
+      const resp = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          acao: "cadastrarTurma",
+          email: emailUsuario,
+          escola: escola,
+          turma: turma
+        })
+      });
+      const result = await resp.json();
+      if (result.status === "ok") {
+        sucessos++;
+      } else {
+        erros.push(`${turma}: ${result.msg || "Erro desconhecido"}`);
+      }
+    } catch (e) {
+      erros.push(`${turma}: Erro de conexão`);
     }
-  } catch (e) {
-    erroDiv.textContent = "Erro de conexão";
-    erroDiv.style.display = "block";
   }
+  
   esconderLoading();
+  
+  let mensagem = "";
+  if (sucessos > 0) mensagem += `✅ ${sucessos} turma(s) cadastrada(s) com sucesso.`;
+  if (erros.length > 0) mensagem += `\n❌ Erros:\n${erros.join('\n')}`;
+  
+  alert(mensagem);
+  
+  if (sucessos > 0) {
+    fecharModalCadastroTurma();
+    carregarTurmas(document.getElementById("filtroEscolaTurma").value);
+  }
 }
-
 // Listener para filtro de turmas (pode ficar aqui)
 document.addEventListener("DOMContentLoaded", function() {
   const filtro = document.getElementById("filtroEscolaTurma");
