@@ -1005,3 +1005,20 @@ body.fundo-personalizado {
   background: var(--text-muted);
   color: white;
 }
+
+textarea {
+  border: 2px solid var(--input-border);
+  border-radius: 18px;
+  padding: 14px;
+  font-size: 16px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s;
+  resize: vertical;
+  font-family: inherit;
+}
+textarea:focus {
+  border-color: var(--btn-primary-bg);
+  box-shadow: 0 0 0 4px var(--input-focus-shadow);
+}
