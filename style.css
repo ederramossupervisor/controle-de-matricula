@@ -1216,3 +1216,34 @@ body.fundo-personalizado {
   --badge-vencido-bg: #fee2e2;
   --badge-vencido-text: #991b1b;
 }
+[data-theme="dark"] {
+  --bg-gradient-start: #0f172a;
+  --bg-gradient-end: #1e293b;
+  --header-bg: #1e293b;
+  --header-text: #f1f5f9;
+  --card-bg: #1e293b;
+  --card-border: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --input-bg: #0f172a;
+  --input-border: #475569;
+  --input-focus-shadow: rgba(59, 130, 246, 0.2);
+  --btn-primary-bg: #3b82f6;
+  --btn-primary-hover: #2563eb;
+  --btn-cancelar-bg: #1e293b;
+  --btn-cancelar-border: #475569;
+  --modal-overlay: rgba(0, 0, 0, 0.7);
+  --shadow-sm: rgba(0, 0, 0, 0.2);
+  --shadow-md: rgba(0, 0, 0, 0.4);
+  --shadow-lg: rgba(0, 0, 0, 0.5);
+  --login-bg-start: #0f172a;
+  --login-bg-end: #1e293b;
+  --login-card-bg: rgba(30, 41, 59, 0.98);
+  --badge-completo-bg: #14532d;
+  --badge-completo-text: #dcfce7;
+  --badge-pendente-bg: #713f12;
+  --badge-pendente-text: #fef9c3;
+  --badge-vencido-bg: #7f1d1d;
+  --badge-vencido-text: #fee2e2;
+}
