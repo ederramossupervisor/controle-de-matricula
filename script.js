@@ -258,6 +258,13 @@ function abrirModalDetalhes(aluno) {
   html += `</div>`;
   
   document.getElementById("detalhesConteudo").innerHTML = html;
+  // Preencher campos editáveis
+  document.getElementById("editNomeAluno").value = aluno.ALUNO || "";
+  document.getElementById("editResponsavel").value = aluno.RESPONSAVEL || "";
+  document.getElementById("editTelefone").value = aluno.TELEFONE || "";
+  
+  // Carregar turmas da escola e selecionar a atual
+  carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
   document.getElementById("modalDetalhes").style.display = "flex";
 }
 
