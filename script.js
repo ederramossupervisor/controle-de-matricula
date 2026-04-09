@@ -554,16 +554,16 @@ function renderLista(dados) {
         const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
         
         if (diff < 0) {
-          prazoTexto = `🔴 Vencido há ${Math.abs(diff)} dia(s)`;
+          prazoTexto = `⏰ Vencido há ${Math.abs(diff)} dia(s)`;
           prazoClasse = "prazo-urgente";
         } else if (diff === 0) {
-          prazoTexto = "🟡 Vence hoje";
+          prazoTexto = "⏳ Vence hoje";
           prazoClasse = "prazo-atencao";
         } else if (diff <= 5) {
-          prazoTexto = `🟡 ${diff} dia(s) restante(s)`;
+          prazoTexto = `⚠️ ${diff} dia(s) restante(s)`;
           prazoClasse = "prazo-atencao";
         } else {
-          prazoTexto = `🟢 ${diff} dias restantes`;
+          prazoTexto = `📅 ${diff} dias restantes`;
           prazoClasse = "prazo-normal";
         }
       } else {
