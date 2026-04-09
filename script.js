@@ -100,6 +100,31 @@ function aplicarFundoPorEscola(escola) {
   }
 }
 
+// Modo escuro
+function toggleDarkMode() {
+  const body = document.body;
+  const isDark = body.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  body.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  updateDarkModeIcon(newTheme);
+}
+
+function updateDarkModeIcon(theme) {
+  const btn = document.getElementById('darkModeToggle');
+  if (btn) {
+    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+}
+
+function initDarkMode() {
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+  document.body.setAttribute('data-theme', theme);
+  updateDarkModeIcon(theme);
+}
+
 function mostrarLoading() {
   document.getElementById("loading").style.display = "flex";
 }
