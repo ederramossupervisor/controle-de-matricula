@@ -1344,3 +1344,6 @@ document.getElementById("filtroEscola")?.addEventListener("change", function() {
   carregarTurmasParaFiltro();
   aplicarFiltros();
 });
+
+  initDarkMode();
+};
