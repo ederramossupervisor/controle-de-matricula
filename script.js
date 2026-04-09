@@ -104,6 +104,87 @@ function mostrarLoading() {
   document.getElementById("loading").style.display = "flex";
 }
 
+async function carregarTurmasParaEdicao(escola, turmaAtual) {
+  const select = document.getElementById("editTurma");
+  select.innerHTML = '<option value="">Carregando turmas...</option>';
+  try {
+    const resp = await fetch(`${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`);
+    const turmas = await resp.json();
+    select.innerHTML = '<option value="">Selecione a turma</option>';
+    turmas.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.turma;
+      opt.textContent = t.turma;
+      if (t.turma === turmaAtual) opt.selected = true;
+      select.appendChild(opt);
+    });
+  } catch (e) {
+    select.innerHTML = '<option value="">Erro ao carregar</option>';
+  }
+}
+
+async function salvarDadosAluno() {
+  if (!dadosAlunoAtual) return;
+  
+  const nome = document.getElementById("editNomeAluno").value.trim();
+  const responsavel = document.getElementById("editResponsavel").value.trim();
+  const telefone = document.getElementById("editTelefone").value.trim();
+  const turma = document.getElementById("editTurma").value;
+  
+  if (!nome) {
+    alert("Nome do aluno é obrigatório.");
+    return;
+  }
+  
+  const btn = document.getElementById("btnSalvarInfoAluno");
+  const btnText = btn.querySelector(".btn-text");
+  const spinner = btn.querySelector(".spinner-btn");
+  
+  btnText.style.display = "none";
+  spinner.style.display = "inline-block";
+  btn.disabled = true;
+  
+  try {
+    const resposta = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "atualizarDadosAluno",
+        row: dadosAlunoAtual._row,
+        nome: nome,
+        responsavel: responsavel,
+        telefone: telefone,
+        turma: turma,
+        email: emailUsuario
+      })
+    });
+    
+    const resultado = await resposta.json();
+    
+    if (resultado.status === "ok") {
+      dadosAlunoAtual.ALUNO = nome;
+      dadosAlunoAtual.RESPONSAVEL = responsavel;
+      dadosAlunoAtual.TELEFONE = telefone;
+      dadosAlunoAtual.TURMA = turma;
+      
+      document.getElementById("detalhesTitulo").textContent = nome;
+      
+      btnText.textContent = "✅ Salvo!";
+      setTimeout(() => {
+        btnText.textContent = "💾 Salvar informações";
+      }, 2000);
+    } else {
+      alert("Erro: " + (resultado.msg || "Tente novamente"));
+    }
+  } catch (erro) {
+    console.error(erro);
+    alert("Erro de conexão.");
+  } finally {
+    btnText.style.display = "inline";
+    spinner.style.display = "none";
+    btn.disabled = false;
+  }
+}
+
 function esconderLoading() {
   document.getElementById("loading").style.display = "none";
 }
