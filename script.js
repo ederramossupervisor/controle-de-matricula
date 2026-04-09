@@ -45,6 +45,33 @@ const LISTA_ESCOLAS = [
   "EEEM Sobreiro"
 ];
 
+// Mapeamento de fundos por escola (usando o nome exato da constante LISTA_ESCOLAS)
+const FUNDOS_ESCOLAS = {
+  "EEEFM Fioravante Caliman": "fundos/EEEFM_Fioravante_Caliman.jpg",
+  "EEEFM Pedra Azul": "fundos/EEEFM_Pedra_Azul.jpg",
+  "EEEFM Alto Rio Possmoser": "fundos/EEEFM_Alto_Rio_Possmoser.jpg",
+  // Adicione as demais escolas que desejar
+  "default": "fundos/default.jpg"
+};
+
+function aplicarFundoPorEscola(escola) {
+  const body = document.body;
+  let imagemFundo = FUNDOS_ESCOLAS[escola];
+  
+  if (!imagemFundo) {
+    imagemFundo = FUNDOS_ESCOLAS["default"];
+  }
+  
+  if (imagemFundo) {
+    body.style.backgroundImage = `url('${imagemFundo}')`;
+    body.classList.add("fundo-personalizado");
+  } else {
+    // Se não houver imagem definida, remove qualquer fundo personalizado
+    body.style.backgroundImage = "";
+    body.classList.remove("fundo-personalizado");
+  }
+}
+
 function mostrarLoading() {
   document.getElementById("loading").style.display = "flex";
 }
@@ -276,6 +303,14 @@ async function carregarAlunos() {
       alert("Erro na comunicação com o servidor.");
       esconderLoading();
       return;
+    }
+
+    // Aplicar fundo personalizado para secretarias
+    if (perfilUsuario === "SECRETARIA") {
+      aplicarFundoPorEscola(escolaUsuario);
+    } else {
+      // Supervisor pode ter fundo padrão ou nenhum
+      aplicarFundoPorEscola("default");
     }
 
     dadosGlobais = dados.alunos;
@@ -998,6 +1033,9 @@ function logout() {
 
   // Esconde o app
   document.getElementById("app").style.display = "none";
+
+  document.body.style.backgroundImage = "";
+  document.body.classList.remove("fundo-personalizado");
   
   // Mostra o login removendo qualquer estilo inline para que o CSS (flex) funcione
   const loginEl = document.getElementById("login");
