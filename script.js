@@ -367,6 +367,7 @@ function renderLista(dados) {
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${aluno.ALUNO}">${aluno.ALUNO}</div>
         ${aluno.TURMA ? `<div style="font-size:11px;color:#64748b;margin-bottom:4px;">📚 ${aluno.TURMA}</div>` : ''}
+        ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;">📌 ${aluno.SITUACAO}</div>` : ''}
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
           <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
           <span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">${prazoTexto}</span>
