@@ -332,34 +332,37 @@ function renderLista(dados) {
     else if (aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
     else if (aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
 
-    // Calcular dias restantes (apenas se o status NÃO for "✅ Completo")
-let prazoTexto = "";
-let prazoClasse = "";
-
-if (aluno.STATUS !== "✅ Completo") {
-  if (aluno.PRAZO_FINAL) {
-    const hoje = new Date();
-    hoje.setHours(0,0,0,0);
-    const prazo = new Date(aluno.PRAZO_FINAL);
-    prazo.setHours(0,0,0,0);
-    const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
+        // Calcular dias restantes (apenas se o status NÃO for "✅ Completo")
+        let prazoTexto = "";
+        let prazoClasse = "";
     
-    if (diff < 0) {
-      prazoTexto = `🔴 Vencido há ${Math.abs(diff)} dia(s)`;
-      prazoClasse = "prazo-urgente";
-    } else if (diff === 0) {
-      prazoTexto = "🟡 Vence hoje";
-      prazoClasse = "prazo-atencao";
-    } else if (diff <= 5) {
-      prazoTexto = `🟡 ${diff} dia(s) restante(s)`;
-      prazoClasse = "prazo-atencao";
-    } else {
-      prazoTexto = `🟢 ${diff} dias restantes`;
-      prazoClasse = "prazo-normal";
-    }
-  } else {
-    prazoTexto = "📅 Sem prazo";
-    prazoClasse = "";
+        if (aluno.STATUS !== "✅ Completo") {
+          if (aluno.PRAZO_FINAL) {
+            const hoje = new Date();
+            hoje.setHours(0,0,0,0);
+            const prazo = new Date(aluno.PRAZO_FINAL);
+            prazo.setHours(0,0,0,0);
+            const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
+            
+            if (diff < 0) {
+              prazoTexto = `🔴 Vencido há ${Math.abs(diff)} dia(s)`;
+              prazoClasse = "prazo-urgente";
+            } else if (diff === 0) {
+              prazoTexto = "🟡 Vence hoje";
+              prazoClasse = "prazo-atencao";
+            } else if (diff <= 5) {
+              prazoTexto = `🟡 ${diff} dia(s) restante(s)`;
+              prazoClasse = "prazo-atencao";
+            } else {
+              prazoTexto = `🟢 ${diff} dias restantes`;
+              prazoClasse = "prazo-normal";
+            }
+          } else {
+            prazoTexto = "📅 Sem prazo";
+            prazoClasse = "";
+          }
+        }
+        // Se status for completo, prazoTexto permanece vazio (nada é exibido)
   }
 } else {
   // Quando completo, podemos não exibir nada ou exibir "Concluído"
