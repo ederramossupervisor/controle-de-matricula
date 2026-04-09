@@ -1165,3 +1165,23 @@ header {
 .btn-pequeno:hover {
   background: #e2e8f0;
 }
+
+/* Fundo dinâmico para a tela principal */
+body.fundo-personalizado {
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Overlay branco para garantir legibilidade dos cards */
+#fundoOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.85); /* ajuste a opacidade conforme desejar */
+  z-index: -2; /* fica atrás do conteúdo, mas sobre a imagem */
+  pointer-events: none; /* permite clicar através */
+}
