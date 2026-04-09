@@ -390,6 +390,7 @@ function ajustarInterfacePorPerfil() {
   const filtroEscolaWrapper = document.getElementById("filtroEscolaWrapper");
   const filtroTurmaWrapper = document.getElementById("filtroTurmaWrapper");
   const filtroStatusWrapper = document.getElementById("filtroStatusWrapper");
+  const filtroSituacaoWrapper = document.getElementById("filtroSituacaoWrapper"); 
 
   if (perfilUsuario === "SECRETARIA") {
     if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "none";
@@ -400,7 +401,7 @@ function ajustarInterfacePorPerfil() {
     if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "none";
-    
+    if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "none";
   } else if (perfilUsuario === "SUPERVISOR") {
     if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "block";
     if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
@@ -410,6 +411,7 @@ function ajustarInterfacePorPerfil() {
     if (btnNovoAluno) btnNovoAluno.style.display = "none";
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "inline-block";
+    if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "block";
   }
 }
 
@@ -542,6 +544,7 @@ function aplicarFiltros() {
   const escolaSelecionada = document.getElementById("filtroEscola")?.value || "";
   const turmaSelecionada = document.getElementById("filtroTurma")?.value || "";
   const statusSelecionado = document.getElementById("filtroStatus")?.value || "";
+  const situacaoSelecionada = document.getElementById("filtroSituacao")?.value || "";
 
   let dadosFiltrados = dadosGlobais;
 
@@ -558,6 +561,10 @@ function aplicarFiltros() {
   // Filtro por status
   if (statusSelecionado) {
     dadosFiltrados = dadosFiltrados.filter(a => a.STATUS === statusSelecionado);
+  }
+
+  if (perfilUsuario === "SUPERVISOR" && situacaoSelecionada) {
+    dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === situacaoSelecionada);
   }
 
   // Filtro por nome
