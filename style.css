@@ -1080,3 +1080,26 @@ header {
   color: #cbd5e1;
   font-weight: 300;
 }
+
+/* Limitar altura do modal de detalhes e adicionar rolagem */
+.modal-card--grande .modal-body {
+  max-height: 70vh;          /* altura máxima = 70% da altura da tela */
+  overflow-y: auto;           /* rolagem vertical quando necessário */
+  padding-right: 8px;         /* espaço para a barra de rolagem */
+}
+
+/* Estilização opcional da barra de rolagem (mais bonita) */
+.modal-card--grande .modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+.modal-card--grande .modal-body::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+.modal-card--grande .modal-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.modal-card--grande .modal-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
