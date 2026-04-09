@@ -788,12 +788,15 @@ async function salvarAluno() {
   const responsavelInput = document.getElementById("nomeResponsavel");
   const telefoneInput = document.getElementById("telefoneContato");
   const edEspecialCheck = document.getElementById("alunoEdEspecial");
+  const turmaSelect = document.getElementById("selectTurmaAluno");
+  const dataMatriculaInput = document.getElementById("dataMatricula").value;
 
   const nome = nomeInput ? nomeInput.value.trim() : "";
   const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
   const telefone = telefoneInput ? telefoneInput.value.trim() : "";
   const edEspecial = edEspecialCheck ? edEspecialCheck.checked : false;   // ✅ declaração correta
-
+  const turma = turmaSelect ? turmaSelect.value : "";
+  
   const erroDiv = document.getElementById("erroNome");
   const btnSalvar = document.getElementById("btnSalvarAluno");
   const btnText = btnSalvar.querySelector(".btn-text");
@@ -823,6 +826,7 @@ async function salvarAluno() {
         responsavel: responsavel,
         telefone: telefone,
         turma: document.getElementById("selectTurmaAluno").value,
+        dataMatricula: dataMatriculaInput,
         edEspecial: edEspecial,   // ✅ enviando o valor
         email: emailUsuario
       })
@@ -834,6 +838,7 @@ async function salvarAluno() {
       btnText.textContent = "✅ Cadastrado!";
       spinner.style.display = "none";
       btnText.style.display = "inline";
+      document.getElementById("dataMatricula").value = "";
 
       // Limpar campos
       if (nomeInput) nomeInput.value = "";
