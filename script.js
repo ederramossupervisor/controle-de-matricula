@@ -541,10 +541,12 @@ function renderLista(dados) {
     else if (aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
     else if (aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
 
-    // Calcular dias restantes (apenas se o status NÃO for "✅ Completo")
+    // Calcular dias restantes e barra de progresso (apenas se status NÃO for "✅ Completo")
     let prazoTexto = "";
     let prazoClasse = "";
-
+    let barraProgresso = "";
+    let corBarra = "#10b981"; // verde padrão
+    
     if (aluno.STATUS !== "✅ Completo") {
       if (aluno.PRAZO_FINAL) {
         const hoje = new Date();
@@ -553,25 +555,38 @@ function renderLista(dados) {
         prazo.setHours(0,0,0,0);
         const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
         
+        // Definir texto e classe do prazo
         if (diff < 0) {
           prazoTexto = `⏰ Vencido há ${Math.abs(diff)} dia(s)`;
           prazoClasse = "prazo-urgente";
+          corBarra = "#ef4444"; // vermelho
         } else if (diff === 0) {
           prazoTexto = "⏳ Vence hoje";
           prazoClasse = "prazo-atencao";
+          corBarra = "#f59e0b"; // laranja
         } else if (diff <= 5) {
           prazoTexto = `⚠️ ${diff} dia(s) restante(s)`;
           prazoClasse = "prazo-atencao";
+          corBarra = "#f59e0b"; // laranja
         } else {
           prazoTexto = `📅 ${diff} dias restantes`;
           prazoClasse = "prazo-normal";
+          corBarra = "#10b981"; // verde
         }
+        
+        // Calcular percentual da barra (baseado em 30 dias totais)
+        const totalDias = 30;
+        const percentual = diff > 0 ? Math.min(100, Math.round((diff / totalDias) * 100)) : 0;
+        barraProgresso = `
+          <div style="margin-top:6px; background:#e2e8f0; border-radius:10px; height:6px; width:100%;">
+            <div style="background:${corBarra}; border-radius:10px; height:6px; width:${percentual}%;"></div>
+          </div>
+        `;
       } else {
         prazoTexto = "📅 Sem prazo";
         prazoClasse = "";
       }
     }
-    // Se status for completo, prazoTexto permanece vazio (nada é exibido)
 
     const inicial = (aluno.ALUNO && typeof aluno.ALUNO === 'string' && aluno.ALUNO.trim().length > 0)
       ? aluno.ALUNO.trim().charAt(0).toUpperCase()
@@ -587,6 +602,7 @@ function renderLista(dados) {
           <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
           ${prazoTexto ? `<span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">${prazoTexto}</span>` : ''}
         </div>
+        ${barraProgresso}
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
         <button onclick="abrirAluno(${aluno._row})" title="Abrir ficha" style="background:none;border:none;font-size:20px;padding:6px;border-radius:40px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748b;transition:all 0.2s;">👁️</button>
@@ -596,7 +612,6 @@ function renderLista(dados) {
     lista.appendChild(div);
   });
 }
-
 function ajustarInterfacePorPerfil() {
   const btnCadastroUsuario = document.querySelector("button[onclick*='abrirModalCadastroUsuario']");
   const btnListarUsuarios = document.querySelector("button[onclick*='abrirModalListaUsuarios']");
