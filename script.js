@@ -313,9 +313,8 @@ function renderLista(dados) {
 
   dados.forEach(aluno => {
     const div = document.createElement("div");
-    div.className = "fade"; // apenas para animação
+    div.className = "fade";
     
-    // Estilos inline para garantir o layout compacto
     div.style.background = "white";
     div.style.borderRadius = "16px";
     div.style.padding = "12px 16px";
@@ -326,60 +325,56 @@ function renderLista(dados) {
     div.style.gap = "12px";
     div.style.transition = "all 0.2s";
     
-    // Determinar classes de status (ainda usamos para cores)
     let statusClass = "";
     if (aluno.STATUS.includes("✅")) statusClass = "status-completo";
     else if (aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
     else if (aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
 
-        // Calcular dias restantes (apenas se o status NÃO for "✅ Completo")
-        let prazoTexto = "";
-        let prazoClasse = "";
-    
-        if (aluno.STATUS !== "✅ Completo") {
-          if (aluno.PRAZO_FINAL) {
-            const hoje = new Date();
-            hoje.setHours(0,0,0,0);
-            const prazo = new Date(aluno.PRAZO_FINAL);
-            prazo.setHours(0,0,0,0);
-            const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
-            
-            if (diff < 0) {
-              prazoTexto = `🔴 Vencido há ${Math.abs(diff)} dia(s)`;
-              prazoClasse = "prazo-urgente";
-            } else if (diff === 0) {
-              prazoTexto = "🟡 Vence hoje";
-              prazoClasse = "prazo-atencao";
-            } else if (diff <= 5) {
-              prazoTexto = `🟡 ${diff} dia(s) restante(s)`;
-              prazoClasse = "prazo-atencao";
-            } else {
-              prazoTexto = `🟢 ${diff} dias restantes`;
-              prazoClasse = "prazo-normal";
-            }
-          } else {
-            prazoTexto = "📅 Sem prazo";
-            prazoClasse = "";
-          }
+    // Calcular dias restantes (apenas se o status NÃO for "✅ Completo")
+    let prazoTexto = "";
+    let prazoClasse = "";
+
+    if (aluno.STATUS !== "✅ Completo") {
+      if (aluno.PRAZO_FINAL) {
+        const hoje = new Date();
+        hoje.setHours(0,0,0,0);
+        const prazo = new Date(aluno.PRAZO_FINAL);
+        prazo.setHours(0,0,0,0);
+        const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
+        
+        if (diff < 0) {
+          prazoTexto = `🔴 Vencido há ${Math.abs(diff)} dia(s)`;
+          prazoClasse = "prazo-urgente";
+        } else if (diff === 0) {
+          prazoTexto = "🟡 Vence hoje";
+          prazoClasse = "prazo-atencao";
+        } else if (diff <= 5) {
+          prazoTexto = `🟡 ${diff} dia(s) restante(s)`;
+          prazoClasse = "prazo-atencao";
+        } else {
+          prazoTexto = `🟢 ${diff} dias restantes`;
+          prazoClasse = "prazo-normal";
         }
-        // Se status for completo, prazoTexto permanece vazio (nada é exibido)
-  }
-} else {
-  // Quando completo, podemos não exibir nada ou exibir "Concluído"
-  prazoTexto = "";
-  prazoClasse = "";
-}
-    const inicial = aluno.ALUNO ? aluno.ALUNO.charAt(0).toUpperCase() : "?";
+      } else {
+        prazoTexto = "📅 Sem prazo";
+        prazoClasse = "";
+      }
+    }
+    // Se status for completo, prazoTexto permanece vazio (nada é exibido)
+
+    const inicial = (aluno.ALUNO && typeof aluno.ALUNO === 'string' && aluno.ALUNO.trim().length > 0)
+      ? aluno.ALUNO.trim().charAt(0).toUpperCase()
+      : "?";
 
     div.innerHTML = `
       <div class="aluno-avatar" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;">${inicial}</div>
       <div style="flex:1;min-width:0;">
-        <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${aluno.ALUNO}">${aluno.ALUNO}</div>
+        <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${aluno.ALUNO || ''}">${aluno.ALUNO || 'Nome inválido'}</div>
         ${aluno.TURMA ? `<div style="font-size:11px;color:#64748b;margin-bottom:4px;">📚 ${aluno.TURMA}</div>` : ''}
         ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;">📌 ${aluno.SITUACAO}</div>` : ''}
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
           <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
-          <span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">${prazoTexto}</span>
+          ${prazoTexto ? `<span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">${prazoTexto}</span>` : ''}
         </div>
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
@@ -390,6 +385,7 @@ function renderLista(dados) {
     lista.appendChild(div);
   });
 }
+
 function ajustarInterfacePorPerfil() {
   const btnCadastroUsuario = document.querySelector("button[onclick*='abrirModalCadastroUsuario']");
   const btnListarUsuarios = document.querySelector("button[onclick*='abrirModalListaUsuarios']");
