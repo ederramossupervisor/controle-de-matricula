@@ -366,7 +366,7 @@ function renderLista(dados) {
   }
 } else {
   // Quando completo, podemos não exibir nada ou exibir "Concluído"
-  prazoTexto = "✅ Concluído";
+  prazoTexto = "";
   prazoClasse = "";
 }
     const inicial = aluno.ALUNO ? aluno.ALUNO.charAt(0).toUpperCase() : "?";
