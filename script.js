@@ -261,6 +261,142 @@ function login() {
   carregarAlunos();
 }
 
+// =========================
+// GESTÃO DE DOCUMENTOS
+// =========================
+function abrirModalDocumentos() {
+  document.getElementById("modalDocumentos").style.display = "flex";
+  preencherSelectEscolasDoc();
+  mostrarAbaUpload(); // inicia na aba de upload
+}
+
+function fecharModalDocumentos() {
+  document.getElementById("modalDocumentos").style.display = "none";
+}
+
+function mostrarAbaUpload() {
+  document.getElementById("abaUpload").style.display = "block";
+  document.getElementById("abaListagem").style.display = "none";
+}
+
+function mostrarAbaListagem() {
+  document.getElementById("abaUpload").style.display = "none";
+  document.getElementById("abaListagem").style.display = "block";
+  buscarDocumentos(); // carrega lista ao abrir
+}
+
+function preencherSelectEscolasDoc() {
+  const selectUpload = document.getElementById("uploadEscola");
+  const selectFiltro = document.getElementById("filtroEscolaDoc");
+  [selectUpload, selectFiltro].forEach(select => {
+    if (!select) return;
+    select.innerHTML = '<option value="">' + (select.id === 'filtroEscolaDoc' ? 'Todas as escolas' : 'Selecione a escola') + '</option>';
+    LISTA_ESCOLAS.forEach(esc => select.appendChild(new Option(esc, esc)));
+  });
+  
+  // Ajustar visibilidade conforme perfil
+  const uploadWrapper = document.getElementById("uploadEscolaWrapper");
+  const filtroWrapper = document.getElementById("filtroEscolaDocWrapper");
+  if (perfilUsuario === "SECRETARIA") {
+    if (uploadWrapper) uploadWrapper.style.display = "none";
+    if (filtroWrapper) filtroWrapper.style.display = "none";
+  } else {
+    if (uploadWrapper) uploadWrapper.style.display = "block";
+    if (filtroWrapper) filtroWrapper.style.display = "block";
+  }
+}
+
+async function fazerUpload() {
+  const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("uploadEscola").value : escolaUsuario;
+  const tipo = document.getElementById("uploadTipoDoc").value;
+  const nomeAluno = document.getElementById("uploadNomeAluno").value.trim();
+  const fileInput = document.getElementById("arquivoUpload");
+  const file = fileInput.files[0];
+  
+  if (!escola) { alert("Selecione a escola."); return; }
+  if (!tipo) { alert("Selecione o tipo de documento."); return; }
+  if (!nomeAluno) { alert("Digite o nome do aluno."); return; }
+  if (!file) { alert("Selecione um arquivo."); return; }
+  
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const base64 = e.target.result.split(',')[1];
+    mostrarLoading();
+    try {
+      const resp = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          acao: "uploadDocumento",
+          email: emailUsuario,
+          escola: escola,
+          tipo: tipo,
+          nomeAluno: nomeAluno,
+          fileName: file.name,
+          mimeType: file.type,
+          fileBase64: base64
+        })
+      });
+      const result = await resp.json();
+      if (result.status === "ok") {
+        alert("✅ Upload realizado com sucesso!");
+        fileInput.value = "";
+        document.getElementById("uploadNomeAluno").value = "";
+        document.getElementById("uploadTipoDoc").value = "";
+        if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+      } else {
+        alert("Erro: " + (result.msg || "Falha no upload"));
+      }
+    } catch (e) { console.error(e); alert("Erro de conexão."); }
+    esconderLoading();
+  };
+  reader.readAsDataURL(file);
+}
+
+async function buscarDocumentos() {
+  const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
+  const tipo = document.getElementById("filtroTipoDoc").value;
+  const nomeAluno = document.getElementById("filtroNomeAlunoDoc").value.trim();
+  
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "listarDocumentos",
+        email: emailUsuario,
+        escola: escola,
+        tipo: tipo,
+        nomeAluno: nomeAluno
+      })
+    });
+    const docs = await resp.json();
+    renderizarListaDocumentos(docs);
+  } catch (e) { console.error(e); alert("Erro ao buscar documentos."); }
+  esconderLoading();
+}
+
+function renderizarListaDocumentos(docs) {
+  const container = document.getElementById("listaDocumentosContainer");
+  container.innerHTML = "";
+  if (!docs.length) { container.innerHTML = "<p>Nenhum documento encontrado.</p>"; return; }
+  docs.forEach(doc => {
+    const div = document.createElement("div");
+    div.className = "usuario-card";
+    div.innerHTML = `
+      <div class="usuario-avatar">📄</div>
+      <div class="usuario-info">
+        <strong>${doc.fileName}</strong>
+        <p>🏫 ${doc.escola} | 👤 ${doc.nomeAluno} | 📅 ${new Date(doc.dataUpload).toLocaleDateString()}</p>
+        <div style="margin-top:8px;">
+          <a href="${doc.viewUrl}" target="_blank" class="btn-pequeno">👁️ Visualizar</a>
+          <a href="${doc.downloadUrl}" class="btn-pequeno">⬇️ Baixar</a>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
 // Preenche os selects de filtro (escola, turma, status)
 function inicializarFiltros() {
   // Preencher escolas (apenas supervisor, mas já preenchemos para usar no filtro de turmas)
