@@ -375,7 +375,7 @@ function abrirModalDetalhes(aluno) {
   if (aluno.ED_ESPECIAL === true) {
     const docEspecial = { label: "Laudo/Relatório Pedagógico (Ed. Especial)", coluna: 18, valor: aluno.ED_ESPECIAL };
     const chave = `${aluno._row}_${docEspecial.coluna}`;
-    const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : false;
+    const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : docEspecial.valor;
     html += `
       <div class="checkbox-moderno">
         <input type="checkbox" 
