@@ -394,6 +394,7 @@ function abrirModalDetalhes(aluno) {
   document.getElementById("editNomeAluno").value = aluno.ALUNO || "";
   document.getElementById("editResponsavel").value = aluno.RESPONSAVEL || "";
   document.getElementById("editTelefone").value = aluno.TELEFONE || "";
+  document.getElementById("editEdEspecial").checked = aluno.ED_ESPECIAL === true;
   
   // Carregar turmas da escola e selecionar a atual
   carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
