@@ -174,6 +174,7 @@ async function salvarDadosAluno() {
   const responsavel = document.getElementById("editResponsavel").value.trim();
   const telefone = document.getElementById("editTelefone").value.trim();
   const turma = document.getElementById("editTurma").value;
+  const edEspecial = document.getElementById("editEdEspecial").checked;
   
   if (!nome) {
     alert("Nome do aluno é obrigatório.");
@@ -205,6 +206,7 @@ async function salvarDadosAluno() {
         responsavel: responsavel,
         telefone: telefone,
         turma: turma,
+        edEspecial: edEspecial,
         email: emailUsuario
       })
     });
@@ -216,6 +218,7 @@ async function salvarDadosAluno() {
       dadosAlunoAtual.RESPONSAVEL = responsavel;
       dadosAlunoAtual.TELEFONE = telefone;
       dadosAlunoAtual.TURMA = turma;
+      dadosAlunoAtual.ED_ESPECIAL = edEspecial;
       
       document.getElementById("detalhesTitulo").textContent = nome;
       
