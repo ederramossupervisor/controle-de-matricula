@@ -324,53 +324,50 @@ function fazerUpload() {
   reader.onload = function(e) {
     const base64 = e.target.result.split(',')[1];
     
-    // Obter ou criar iframe oculto
-    let iframe = document.getElementById('uploadFrame');
-    let iframeReady = false;
+    // Criar um formulário dinâmico
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = API_URL;
+    form.target = 'uploadTarget'; // iframe oculto
+    form.style.display = 'none';
     
-    if (!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.id = 'uploadFrame';
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-      iframe.src = API_URL + '?tipo=uploadFrame';
-      
-      // Aguardar sinal de 'ready' do iframe
-      window.addEventListener('message', function readyHandler(event) {
-        if (event.data && event.data.status === 'ready') {
-          iframeReady = true;
-          window.removeEventListener('message', readyHandler);
-          
-          // Enviar os dados do arquivo
-          iframe.contentWindow.postMessage({
-            action: 'upload',
-            base64: base64,
-            fileName: file.name,
-            mimeType: file.type,
-            email: emailUsuario,
-            escola: escola,
-            tipo: tipo,
-            nomeAluno: nomeAluno
-          }, '*');
-        }
-      });
-    } else {
-      // Iframe já existe, verificar se está pronto (pode já ter enviado 'ready' antes)
-      // Para simplificar, forçamos o envio (o iframe tratará)
-      iframe.contentWindow.postMessage({
-        action: 'upload',
-        base64: base64,
-        fileName: file.name,
-        mimeType: file.type,
-        email: emailUsuario,
-        escola: escola,
-        tipo: tipo,
-        nomeAluno: nomeAluno
-      }, '*');
+    // Campos do formulário
+    const fields = {
+      acao: 'uploadDocumento',
+      email: emailUsuario,
+      escola: escola,
+      tipo: tipo,
+      nomeAluno: nomeAluno,
+      fileName: file.name,
+      mimeType: file.type,
+      fileBase64: base64
+    };
+    
+    for (let key in fields) {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = fields[key];
+      form.appendChild(input);
     }
     
-    // Listener para resposta final (sucesso/erro)
-    window.addEventListener('message', function finalHandler(event) {
+    // Criar iframe de destino se não existir
+    let iframe = document.getElementById('uploadTarget');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'uploadTarget';
+      iframe.name = 'uploadTarget';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+    }
+    
+    // Listener para capturar a resposta do iframe (redirecionamento)
+    iframe.onload = function() {
+      // O callback enviará um postMessage que capturaremos
+    };
+    
+    // Listener global para receber a mensagem do callback
+    window.addEventListener('message', function handler(event) {
       if (event.data && (event.data.status === 'ok' || event.data.status === 'error')) {
         esconderLoading();
         if (event.data.status === 'ok') {
@@ -380,15 +377,18 @@ function fazerUpload() {
           document.getElementById("uploadTipoDoc").value = "";
           if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
         } else {
-          alert("Erro: " + event.data.error);
+          alert("Erro: " + (event.data.msg || "Falha no upload"));
         }
-        window.removeEventListener('message', finalHandler);
+        window.removeEventListener('message', handler);
       }
     });
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
   };
   reader.readAsDataURL(file);
 }
-
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
