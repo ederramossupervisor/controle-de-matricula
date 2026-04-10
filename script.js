@@ -324,7 +324,7 @@ function fazerUpload() {
   reader.onload = function(e) {
     const base64 = e.target.result.split(',')[1];
     
-    // Criar formulário que será submetido em uma POPUP
+    // Monta o formulário que será submetido em uma POPUP
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = API_URL;
@@ -350,34 +350,26 @@ function fazerUpload() {
       form.appendChild(input);
     }
     
-    // Abrir popup centrada
-    const w = 400, h = 300;
-    const left = (screen.width - w) / 2;
-    const top = (screen.height - h) / 2;
-    const popup = window.open('', 'uploadPopup', `width=${w},height=${h},left=${left},top=${top}`);
+    document.body.appendChild(form);
     
+    // Abre a popup e submete o formulário para ela
+    const popup = window.open('', 'uploadPopup', 'width=400,height=300');
     if (!popup) {
-      alert("Permita popups para realizar o upload.");
+      alert("Permita popups para este site para realizar o upload.");
       esconderLoading();
       return;
     }
     
-    document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);
+    esconderLoading();
     
-    // Verificar quando a popup fechar
-    const timer = setInterval(() => {
-      if (popup.closed) {
-        clearInterval(timer);
-        esconderLoading();
-        alert("✅ Upload concluído!");
-        fileInput.value = "";
-        document.getElementById("uploadNomeAluno").value = "";
-        document.getElementById("uploadTipoDoc").value = "";
-        if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+    // Recarregar a lista de documentos após um tempo (opcional)
+    setTimeout(() => {
+      if (document.getElementById("modalDocumentos").style.display === "flex") {
+        buscarDocumentos();
       }
-    }, 500);
+    }, 2000);
   };
   reader.readAsDataURL(file);
 }
