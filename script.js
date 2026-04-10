@@ -324,18 +324,39 @@ function fazerUpload() {
   reader.onload = function(e) {
     const base64 = e.target.result.split(',')[1];
     
-    // Criar iframe oculto se não existir
+    // Obter ou criar iframe oculto
     let iframe = document.getElementById('uploadFrame');
+    let iframeReady = false;
+    
     if (!iframe) {
       iframe = document.createElement('iframe');
       iframe.id = 'uploadFrame';
       iframe.style.display = 'none';
       document.body.appendChild(iframe);
       iframe.src = API_URL + '?tipo=uploadFrame';
-    }
-    
-    // Aguardar o iframe carregar e enviar a mensagem
-    iframe.onload = function() {
+      
+      // Aguardar sinal de 'ready' do iframe
+      window.addEventListener('message', function readyHandler(event) {
+        if (event.data && event.data.status === 'ready') {
+          iframeReady = true;
+          window.removeEventListener('message', readyHandler);
+          
+          // Enviar os dados do arquivo
+          iframe.contentWindow.postMessage({
+            action: 'upload',
+            base64: base64,
+            fileName: file.name,
+            mimeType: file.type,
+            email: emailUsuario,
+            escola: escola,
+            tipo: tipo,
+            nomeAluno: nomeAluno
+          }, '*');
+        }
+      });
+    } else {
+      // Iframe já existe, verificar se está pronto (pode já ter enviado 'ready' antes)
+      // Para simplificar, forçamos o envio (o iframe tratará)
       iframe.contentWindow.postMessage({
         action: 'upload',
         base64: base64,
@@ -346,32 +367,28 @@ function fazerUpload() {
         tipo: tipo,
         nomeAluno: nomeAluno
       }, '*');
-    };
-    
-    // Se o iframe já estiver carregado, forçar o onload
-    if (iframe.contentWindow) {
-      iframe.onload();
     }
+    
+    // Listener para resposta final (sucesso/erro)
+    window.addEventListener('message', function finalHandler(event) {
+      if (event.data && (event.data.status === 'ok' || event.data.status === 'error')) {
+        esconderLoading();
+        if (event.data.status === 'ok') {
+          alert("✅ Upload realizado com sucesso!");
+          fileInput.value = "";
+          document.getElementById("uploadNomeAluno").value = "";
+          document.getElementById("uploadTipoDoc").value = "";
+          if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+        } else {
+          alert("Erro: " + event.data.error);
+        }
+        window.removeEventListener('message', finalHandler);
+      }
+    });
   };
   reader.readAsDataURL(file);
-  
-  // Listener para receber resposta do iframe
-  window.addEventListener('message', function handler(event) {
-    if (event.data.status === 'ok') {
-      esconderLoading();
-      alert("✅ Upload realizado com sucesso!");
-      fileInput.value = "";
-      document.getElementById("uploadNomeAluno").value = "";
-      document.getElementById("uploadTipoDoc").value = "";
-      if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
-      window.removeEventListener('message', handler);
-    } else if (event.data.status === 'error') {
-      esconderLoading();
-      alert("Erro: " + event.data.error);
-      window.removeEventListener('message', handler);
-    }
-  });
 }
+
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
