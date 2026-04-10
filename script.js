@@ -321,40 +321,43 @@ async function fazerUpload() {
   mostrarLoading();
   
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     const base64 = e.target.result.split(',')[1];
     
-    // Chamada nativa do GAS (sem CORS!)
-    google.script.run
-      .withSuccessHandler((result) => {
-        esconderLoading();
-        if (result.status === "ok") {
-          alert("✅ Upload realizado com sucesso!");
-          fileInput.value = "";
-          document.getElementById("uploadNomeAluno").value = "";
-          document.getElementById("uploadTipoDoc").value = "";
-          if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
-        } else {
-          alert("Erro: " + (result.msg || "Falha no upload"));
-        }
-      })
-      .withFailureHandler((error) => {
-        esconderLoading();
-        alert("Erro de conexão: " + error.message);
-      })
-      .uploadDocumento({
-        email: emailUsuario,
-        escola: escola,
-        tipo: tipo,
-        nomeAluno: nomeAluno,
-        fileName: file.name,
-        mimeType: file.type,
-        fileBase64: base64
+    try {
+      const resp = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          acao: "uploadDocumento",
+          email: emailUsuario,
+          escola: escola,
+          tipo: tipo,
+          nomeAluno: nomeAluno,
+          fileName: file.name,
+          mimeType: file.type,
+          fileBase64: base64
+        })
       });
+      
+      const result = await resp.json();
+      esconderLoading();
+      
+      if (result.status === "ok") {
+        alert("✅ Upload realizado com sucesso!");
+        fileInput.value = "";
+        document.getElementById("uploadNomeAluno").value = "";
+        document.getElementById("uploadTipoDoc").value = "";
+        if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+      } else {
+        alert("Erro: " + (result.msg || "Falha no upload"));
+      }
+    } catch (error) {
+      esconderLoading();
+      alert("Erro de conexão: " + error.message);
+    }
   };
   reader.readAsDataURL(file);
 }
-
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
