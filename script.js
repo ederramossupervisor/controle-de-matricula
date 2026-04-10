@@ -306,7 +306,7 @@ function preencherSelectEscolasDoc() {
   }
 }
 
-function fazerUpload() {
+async function fazerUpload() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("uploadEscola").value : escolaUsuario;
   const tipo = document.getElementById("uploadTipoDoc").value;
   const nomeAluno = document.getElementById("uploadNomeAluno").value.trim();
@@ -321,59 +321,48 @@ function fazerUpload() {
   mostrarLoading();
   
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     const base64 = e.target.result.split(',')[1];
     
-    // Monta o formulário que será submetido em uma POPUP
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = API_URL;
-    form.target = 'uploadPopup';   // nome da janela popup
-    form.style.display = 'none';
-    
-    const fields = {
-      acao: 'uploadDocumento',
-      email: emailUsuario,
-      escola: escola,
-      tipo: tipo,
-      nomeAluno: nomeAluno,
-      fileName: file.name,
-      mimeType: file.type,
-      fileBase64: base64
-    };
-    
-    for (let key in fields) {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = fields[key];
-      form.appendChild(input);
-    }
-    
-    document.body.appendChild(form);
-    
-    // Abre a popup e submete o formulário para ela
-    const popup = window.open('', 'uploadPopup', 'width=400,height=300');
-    if (!popup) {
-      alert("Permita popups para este site para realizar o upload.");
+    try {
+      const resp = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          acao: "uploadDocumento",
+          email: emailUsuario,
+          escola: escola,
+          tipo: tipo,
+          nomeAluno: nomeAluno,
+          fileName: file.name,
+          mimeType: file.type,
+          fileBase64: base64
+        })
+      });
+      
+      const result = await resp.json();
       esconderLoading();
-      return;
-    }
-    
-    form.submit();
-    document.body.removeChild(form);
-    esconderLoading();
-    
-    // Recarregar a lista de documentos após um tempo (opcional)
-    setTimeout(() => {
-      if (document.getElementById("modalDocumentos").style.display === "flex") {
-        buscarDocumentos();
+      
+      if (result.status === "ok") {
+        alert("✅ Upload realizado com sucesso!");
+        fileInput.value = "";
+        document.getElementById("uploadNomeAluno").value = "";
+        document.getElementById("uploadTipoDoc").value = "";
+        if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+        
+        // Recarregar lista de documentos se o modal estiver aberto
+        if (document.getElementById("modalDocumentos").style.display === "flex") {
+          buscarDocumentos();
+        }
+      } else {
+        alert("Erro: " + (result.msg || "Falha no upload"));
       }
-    }, 2000);
+    } catch (error) {
+      esconderLoading();
+      alert("Erro de conexão: " + error.message);
+    }
   };
   reader.readAsDataURL(file);
 }
-
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
