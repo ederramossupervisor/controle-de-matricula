@@ -306,7 +306,7 @@ function preencherSelectEscolasDoc() {
   }
 }
 
-async function fazerUpload() {
+function fazerUpload() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("uploadEscola").value : escolaUsuario;
   const tipo = document.getElementById("uploadTipoDoc").value;
   const nomeAluno = document.getElementById("uploadNomeAluno").value.trim();
@@ -321,44 +321,57 @@ async function fazerUpload() {
   mostrarLoading();
   
   const reader = new FileReader();
-  reader.onload = async function(e) {
+  reader.onload = function(e) {
     const base64 = e.target.result.split(',')[1];
     
-    try {
-      const resp = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          acao: "uploadDocumento",
-          email: emailUsuario,
-          escola: escola,
-          tipo: tipo,
-          nomeAluno: nomeAluno,
-          fileName: file.name,
-          mimeType: file.type,
-          fileBase64: base64
-        })
-      });
-      
-      const result = await resp.json();
-      esconderLoading();
-      
-      if (result.status === "ok") {
-        alert("✅ Upload realizado com sucesso!");
-        fileInput.value = "";
-        document.getElementById("uploadNomeAluno").value = "";
-        document.getElementById("uploadTipoDoc").value = "";
-        if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
-      } else {
-        alert("Erro: " + (result.msg || "Falha no upload"));
-      }
-    } catch (error) {
-      esconderLoading();
-      alert("Erro de conexão: " + error.message);
+    // Criar iframe oculto se não existir
+    let iframe = document.getElementById('uploadFrame');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      iframe.id = 'uploadFrame';
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+      iframe.src = API_URL + '?tipo=uploadFrame';
+    }
+    
+    // Aguardar o iframe carregar e enviar a mensagem
+    iframe.onload = function() {
+      iframe.contentWindow.postMessage({
+        action: 'upload',
+        base64: base64,
+        fileName: file.name,
+        mimeType: file.type,
+        email: emailUsuario,
+        escola: escola,
+        tipo: tipo,
+        nomeAluno: nomeAluno
+      }, '*');
+    };
+    
+    // Se o iframe já estiver carregado, forçar o onload
+    if (iframe.contentWindow) {
+      iframe.onload();
     }
   };
   reader.readAsDataURL(file);
+  
+  // Listener para receber resposta do iframe
+  window.addEventListener('message', function handler(event) {
+    if (event.data.status === 'ok') {
+      esconderLoading();
+      alert("✅ Upload realizado com sucesso!");
+      fileInput.value = "";
+      document.getElementById("uploadNomeAluno").value = "";
+      document.getElementById("uploadTipoDoc").value = "";
+      if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+      window.removeEventListener('message', handler);
+    } else if (event.data.status === 'error') {
+      esconderLoading();
+      alert("Erro: " + event.data.error);
+      window.removeEventListener('message', handler);
+    }
+  });
 }
-
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
