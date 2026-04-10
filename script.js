@@ -318,36 +318,39 @@ async function fazerUpload() {
   if (!nomeAluno) { alert("Digite o nome do aluno."); return; }
   if (!file) { alert("Selecione um arquivo."); return; }
   
+  mostrarLoading();
+  
   const reader = new FileReader();
-  reader.onload = async function(e) {
+  reader.onload = function(e) {
     const base64 = e.target.result.split(',')[1];
-    mostrarLoading();
-    try {
-      const resp = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          acao: "uploadDocumento",
-          email: emailUsuario,
-          escola: escola,
-          tipo: tipo,
-          nomeAluno: nomeAluno,
-          fileName: file.name,
-          mimeType: file.type,
-          fileBase64: base64
-        })
+    
+    // Chamada nativa do GAS (sem CORS!)
+    google.script.run
+      .withSuccessHandler((result) => {
+        esconderLoading();
+        if (result.status === "ok") {
+          alert("✅ Upload realizado com sucesso!");
+          fileInput.value = "";
+          document.getElementById("uploadNomeAluno").value = "";
+          document.getElementById("uploadTipoDoc").value = "";
+          if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+        } else {
+          alert("Erro: " + (result.msg || "Falha no upload"));
+        }
+      })
+      .withFailureHandler((error) => {
+        esconderLoading();
+        alert("Erro de conexão: " + error.message);
+      })
+      .uploadDocumento({
+        email: emailUsuario,
+        escola: escola,
+        tipo: tipo,
+        nomeAluno: nomeAluno,
+        fileName: file.name,
+        mimeType: file.type,
+        fileBase64: base64
       });
-      const result = await resp.json();
-      if (result.status === "ok") {
-        alert("✅ Upload realizado com sucesso!");
-        fileInput.value = "";
-        document.getElementById("uploadNomeAluno").value = "";
-        document.getElementById("uploadTipoDoc").value = "";
-        if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
-      } else {
-        alert("Erro: " + (result.msg || "Falha no upload"));
-      }
-    } catch (e) { console.error(e); alert("Erro de conexão."); }
-    esconderLoading();
   };
   reader.readAsDataURL(file);
 }
