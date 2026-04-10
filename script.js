@@ -1135,10 +1135,11 @@ function gerarResumo(dados) {
   };
 
   dados.forEach(aluno => {
-    if (aluno.STATUS === "✅ Completo") resumo.completos++;
-    if (aluno.STATUS === "⚠️ Pendente") resumo.pendentes++;
-    if (aluno.ALERTA === "🔴 Vencido") resumo.vencidos++;
-  });
+  if (aluno.STATUS === "✅ Completo") resumo.completos++;
+  if (aluno.STATUS === "⚠️ Pendente") resumo.pendentes++;
+  // Só conta como vencido se NÃO estiver completo e o alerta for "🔴 Vencido"
+  if (aluno.STATUS !== "✅ Completo" && aluno.ALERTA === "🔴 Vencido") resumo.vencidos++;
+});
 
   return resumo;
 }
