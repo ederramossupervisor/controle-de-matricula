@@ -324,14 +324,13 @@ function fazerUpload() {
   reader.onload = function(e) {
     const base64 = e.target.result.split(',')[1];
     
-    // Criar um formulário dinâmico
+    // Criar formulário que será submetido em uma POPUP
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = API_URL;
-    form.target = 'uploadTarget'; // iframe oculto
+    form.target = 'uploadPopup';   // nome da janela popup
     form.style.display = 'none';
     
-    // Campos do formulário
     const fields = {
       acao: 'uploadDocumento',
       email: emailUsuario,
@@ -351,44 +350,38 @@ function fazerUpload() {
       form.appendChild(input);
     }
     
-    // Criar iframe de destino se não existir
-    let iframe = document.getElementById('uploadTarget');
-    if (!iframe) {
-      iframe = document.createElement('iframe');
-      iframe.id = 'uploadTarget';
-      iframe.name = 'uploadTarget';
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
+    // Abrir popup centrada
+    const w = 400, h = 300;
+    const left = (screen.width - w) / 2;
+    const top = (screen.height - h) / 2;
+    const popup = window.open('', 'uploadPopup', `width=${w},height=${h},left=${left},top=${top}`);
+    
+    if (!popup) {
+      alert("Permita popups para realizar o upload.");
+      esconderLoading();
+      return;
     }
-    
-    // Listener para capturar a resposta do iframe (redirecionamento)
-    iframe.onload = function() {
-      // O callback enviará um postMessage que capturaremos
-    };
-    
-    // Listener global para receber a mensagem do callback
-    window.addEventListener('message', function handler(event) {
-      if (event.data && (event.data.status === 'ok' || event.data.status === 'error')) {
-        esconderLoading();
-        if (event.data.status === 'ok') {
-          alert("✅ Upload realizado com sucesso!");
-          fileInput.value = "";
-          document.getElementById("uploadNomeAluno").value = "";
-          document.getElementById("uploadTipoDoc").value = "";
-          if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
-        } else {
-          alert("Erro: " + (event.data.msg || "Falha no upload"));
-        }
-        window.removeEventListener('message', handler);
-      }
-    });
     
     document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);
+    
+    // Verificar quando a popup fechar
+    const timer = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(timer);
+        esconderLoading();
+        alert("✅ Upload concluído!");
+        fileInput.value = "";
+        document.getElementById("uploadNomeAluno").value = "";
+        document.getElementById("uploadTipoDoc").value = "";
+        if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+      }
+    }, 500);
   };
   reader.readAsDataURL(file);
 }
+
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
