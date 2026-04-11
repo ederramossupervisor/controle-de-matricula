@@ -1081,3 +1081,17 @@ textarea:focus {
 [data-theme="dark"] .btn-edocs-icon {
   background-color: #3b82f6;
 }
+.btn-icone {
+  background: none;
+  border: none;
+  font-size: 18px;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+.btn-icone:hover {
+  background: var(--card-border);
+  color: var(--btn-primary-bg);
+}
