@@ -1004,7 +1004,10 @@ function renderLista(dados) {
       : "?";
 
     div.innerHTML = `
-      <div class="aluno-avatar" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;">${inicial}</div>
+      ${aluno.FOTO_URL ? 
+  `<img src="${aluno.FOTO_URL}" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;">` : 
+  `<div class="aluno-avatar" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;">${inicial}</div>`
+}
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${aluno.ALUNO || ''}">${aluno.ALUNO || 'Nome inválido'}</div>
         ${aluno.TURMA ? `<div style="font-size:11px;color:#64748b;margin-bottom:4px;">📚 ${aluno.TURMA}</div>` : ''}
@@ -1697,10 +1700,8 @@ function renderListaTurmas(turmas) {
     const div = document.createElement("div");
     div.className = "usuario-card";
     div.innerHTML = `
-      ${aluno.FOTO_URL ? 
-        `<img src="${aluno.FOTO_URL}" style="width:44px;height:44px;border-radius:12px;object-fit:cover;">` : 
-        `<div class="aluno-avatar" style="...">${inicial}</div>`
-      }      <div class="usuario-info">
+      <div class="usuario-avatar">📚</div>
+      <div class="usuario-info">
         <strong>${t.turma}</strong>
         <p>🏫 ${t.escola}</p>
       </div>
