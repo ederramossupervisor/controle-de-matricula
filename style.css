@@ -317,7 +317,7 @@ input:focus, select:focus {
 .painel-metricas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
+  gap: 12px;
   padding: 20px;
 }
 
