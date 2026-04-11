@@ -321,13 +321,54 @@ input:focus, select:focus {
   padding: 20px;
 }
 
+/* Cards de métricas com cores personalizadas */
 .metrica-card {
-  background: var(--card-bg);
   border-radius: 20px;
   padding: 20px;
   box-shadow: 0 4px 12px var(--shadow-sm);
   border: 1px solid var(--card-border);
   transition: transform 0.2s;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 120px; /* garante altura uniforme */
+}
+
+/* Cores de fundo específicas (com gradiente leve) */
+.metrica-card.metrica-total,
+.metrica-card.metrica-escola {
+  background: linear-gradient(145deg, #f8fafc, #eef2f6); /* cinza muito claro */
+}
+
+.metrica-card.metrica-completos {
+  background: linear-gradient(145deg, #dcfce7, #bbf7d0); /* verde claro */
+}
+
+.metrica-card.metrica-pendentes {
+  background: linear-gradient(145deg, #fef9c3, #fef08a); /* amarelo claro */
+}
+
+.metrica-card.metrica-vencidos {
+  background: linear-gradient(145deg, #fee2e2, #fecaca); /* vermelho claro */
+}
+
+/* Ajustes para modo escuro (opcional, mas recomendado) */
+[data-theme="dark"] .metrica-card.metrica-total,
+[data-theme="dark"] .metrica-card.metrica-escola {
+  background: linear-gradient(145deg, #1e293b, #334155);
+}
+
+[data-theme="dark"] .metrica-card.metrica-completos {
+  background: linear-gradient(145deg, #14532d, #166534);
+}
+
+[data-theme="dark"] .metrica-card.metrica-pendentes {
+  background: linear-gradient(145deg, #713f12, #854d0e);
+}
+
+[data-theme="dark"] .metrica-card.metrica-vencidos {
+  background: linear-gradient(145deg, #7f1d1d, #991b1b);
 }
 
 .metrica-card:hover {
