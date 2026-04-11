@@ -245,7 +245,18 @@ async function cadastrarProcesso() {
   if (!codigo) { alert("Informe o código do processo."); return; }
   
   let aluno = "", categoria = "", subcategoria = "";
-  if (tipo === "Cuidador" || tipo === "Regularização AEE") {
+  
+  // Lista de tipos que exigem o nome do aluno
+  const tiposComAluno = [
+    "Cuidador", 
+    "Regularização AEE", 
+    "Regularização de Vida Escolar",
+    "Manifestação GENPRO",
+    "Ata Especial de RVE",
+    "Ata de Classificação/Reclassificação/Avanço Escolar"
+  ];
+  
+  if (tiposComAluno.includes(tipo)) {
     aluno = document.getElementById("cadastroProcessoAluno")?.value.trim() || "";
     if (!aluno) { alert("Informe o nome do aluno."); return; }
   } else if (tipo === "Livro de ponto") {
@@ -291,7 +302,6 @@ async function cadastrarProcesso() {
     alert("Erro de conexão.");
   }
 }
-
 async function buscarProcessos() {
   const tipo = document.getElementById("filtroProcessoTipo").value;
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroProcessoEscola").value : "";
