@@ -120,6 +120,20 @@ function abrirModalProcessos() {
   mostrarAbaCadastroProcesso(); // inicia no cadastro
 }
 
+function copiarCodigo(codigo) {
+  if (!codigo) return;
+  
+  navigator.clipboard.writeText(codigo)
+    .then(() => {
+      // Feedback visual rápido (opcional)
+      alert(`✅ Código ${codigo} copiado!`);
+    })
+    .catch(err => {
+      console.error('Erro ao copiar:', err);
+      alert('❌ Não foi possível copiar o código.');
+    });
+}
+
 function fecharModalProcessos() {
   document.getElementById("modalProcessos").style.display = "none";
 }
@@ -307,12 +321,15 @@ function renderizarListaProcessos(processos) {
     if (p.observacoes) detalhes += `<br>📝 ${p.observacoes}`;
     
     div.innerHTML = `
-      <div class="usuario-avatar">📄</div>
-      <div class="usuario-info">
+    <div class="usuario-avatar">📄</div>
+    <div class="usuario-info">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
         <strong>${p.codigo || 'Sem código'} (${p.tipo || 'Sem tipo'})</strong>
-        <p>${detalhes}</p>
+        <button class="btn-icone" onclick="copiarCodigo('${p.codigo}')" title="Copiar código" style="margin-left: 8px;">📋</button>
       </div>
-    `;
+      <p>${detalhes}</p>
+    </div>
+  `;
     container.appendChild(div);
   });
 }
