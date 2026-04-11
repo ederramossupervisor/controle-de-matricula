@@ -529,93 +529,62 @@ function preencherSelectEscolasDoc() {
   }
 }
 
-/**
- * Redimensiona uma imagem para dimensões máximas e qualidade especificadas.
- * Retorna uma Promise com a string Base64 (já sem o cabeçalho "data:image/jpeg;base64,").
- */
-function resizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        // Calcula novas dimensões mantendo proporção
-        if (width > height) {
-          if (width > maxWidth) {
-            height *= maxWidth / width;
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width *= maxHeight / height;
-            height = maxHeight;
-          }
+async function fazerUpload() {
+  const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("uploadEscola").value : escolaUsuario;
+  const tipo = document.getElementById("uploadTipoDoc").value;
+  const nomeAluno = document.getElementById("uploadNomeAluno").value.trim();
+  const fileInput = document.getElementById("arquivoUpload");
+  const file = fileInput.files[0];
+  
+  if (!escola) { alert("Selecione a escola."); return; }
+  if (!tipo) { alert("Selecione o tipo de documento."); return; }
+  if (!nomeAluno) { alert("Digite o nome do aluno."); return; }
+  if (!file) { alert("Selecione um arquivo."); return; }
+  
+  mostrarLoading();
+  
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const base64 = e.target.result.split(',')[1];
+    
+    try {
+      const resp = await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          acao: "uploadDocumento",
+          email: emailUsuario,
+          escola: escola,
+          tipo: tipo,
+          nomeAluno: nomeAluno,
+          fileName: file.name,
+          mimeType: file.type,
+          fileBase64: base64
+        })
+      });
+      
+      const result = await resp.json();
+      esconderLoading();
+      
+      if (result.status === "ok") {
+        alert("✅ Upload realizado com sucesso!");
+        fileInput.value = "";
+        document.getElementById("uploadNomeAluno").value = "";
+        document.getElementById("uploadTipoDoc").value = "";
+        if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+        
+        // Recarregar lista de documentos se o modal estiver aberto
+        if (document.getElementById("modalDocumentos").style.display === "flex") {
+          buscarDocumentos();
         }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Converte para Base64 no formato JPEG com qualidade ajustável
-        const base64 = canvas.toDataURL('image/jpeg', quality);
-        // Remove o prefixo "data:image/jpeg;base64," para enviar apenas os dados
-        const base64Data = base64.split(',')[1];
-        resolve(base64Data);
-      };
-      img.onerror = reject;
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-/**
- * Faz upload da foto do aluno via fetch (sem popup).
- * Retorna a URL pública da imagem no Drive.
- */
-async function fazerUploadFoto(file) {
-  try {
-    // 1. Redimensiona a imagem para evitar strings Base64 enormes
-    const base64Data = await resizeImage(file, 800, 800, 0.8);
-
-    // 2. Prepara os dados para envio
-    const payload = {
-      acao: "uploadFoto",
-      email: emailUsuario || localStorage.getItem('emailUsuario'),
-      escola: escolaUsuario,  // será usada se for supervisor (pode enviar vazio)
-      nomeAluno: "temp",       // nome temporário (será atualizado depois)
-      fileName: file.name,
-      mimeType: file.type || "image/jpeg",
-      fileBase64: base64Data
-    };
-
-    // 3. Envia via POST com fetch
-    const response = await fetch(API_URL, {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-
-    if (result.status === "ok") {
-      return result.fileUrl;
-    } else {
-      throw new Error(result.msg || "Erro desconhecido no upload");
+      } else {
+        alert("Erro: " + (result.msg || "Falha no upload"));
+      }
+    } catch (error) {
+      esconderLoading();
+      alert("Erro de conexão: " + error.message);
     }
-  } catch (error) {
-    console.error("Erro no upload da foto:", error);
-    throw error;
-  }
+  };
+  reader.readAsDataURL(file);
 }
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
@@ -1003,10 +972,7 @@ function renderLista(dados) {
       : "?";
 
     div.innerHTML = `
-      ${aluno.FOTO_URL ? 
-  `<img src="${aluno.FOTO_URL}" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;">` : 
-  `<div class="aluno-avatar" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;">${inicial}</div>`
-}
+      <div class="aluno-avatar" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;">${inicial}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${aluno.ALUNO || ''}">${aluno.ALUNO || 'Nome inválido'}</div>
         ${aluno.TURMA ? `<div style="font-size:11px;color:#64748b;margin-bottom:4px;">📚 ${aluno.TURMA}</div>` : ''}
@@ -1449,21 +1415,6 @@ async function salvarAluno() {
     return;
   }
 
-  const fotoInput = document.getElementById("fotoAluno");
-  const fotoFile = fotoInput.files[0];
-  let fotoUrl = "";
-  
-  if (fotoFile) {
-  mostrarLoading();
-  try {
-    fotoUrl = await fazerUploadFoto(fotoFile);
-  } catch (e) {
-    alert("Erro ao enviar foto: " + e);
-    esconderLoading();
-    return;
-  }
-}
-
   // Mostrar loading no botão
   btnText.style.display = "none";
   spinner.style.display = "inline-block";
@@ -1480,8 +1431,7 @@ async function salvarAluno() {
         turma: document.getElementById("selectTurmaAluno").value,
         dataMatricula: dataMatriculaInput,
         edEspecial: edEspecial,   // ✅ enviando o valor
-        email: emailUsuario,
-        fotoUrl: fotoUrl
+        email: emailUsuario
       })
     });
 
