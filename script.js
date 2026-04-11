@@ -564,7 +564,6 @@ async function fazerUploadFoto(file) {
     reader.readAsDataURL(file);
   });
 }
-
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
