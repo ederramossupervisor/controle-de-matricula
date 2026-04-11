@@ -319,6 +319,7 @@
       <div class="header-actions">
         <button onclick="abrirNovoAluno()" class="btn-primary" id="btnNovoAluno">➕ Novo Aluno</button>
         <button onclick="abrirModalDocumentos()" id="btnDocumentos">📂 Documentos</button>
+        <button onclick="abrirModalProcessos()" id="btnProcessos">📁 Edocs</button>
         <button onclick="abrirModalTurmas()" id="btnTurmas">🏫 Turmas</button>
         <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios">👥 Usuários</button>
         <button onclick="abrirModalCadastroUsuario()" id="btnCadastrarUsuario">➕ Usuário</button>
@@ -387,7 +388,84 @@
         </div>
       </div>
     </div>
-
+    <!-- 📁 MODAL DE PROCESSOS (Edocs) -->
+    <div id="modalProcessos" class="modal-overlay" style="display:none;">
+      <div class="modal-card modal-card--grande">
+        <div class="modal-header">
+          <h2>📁 Gerenciar Processos (Edocs)</h2>
+          <button class="close-btn" onclick="fecharModalProcessos()">✕</button>
+        </div>
+        <div class="modal-body">
+          <!-- Abas -->
+          <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn-pequeno" onclick="mostrarAbaCadastroProcesso()">➕ Cadastrar</button>
+            <button class="btn-pequeno" onclick="mostrarAbaBuscaProcesso()">🔍 Buscar</button>
+          </div>
+          
+          <!-- Aba de Cadastro -->
+          <div id="abaCadastroProcesso" style="display:block;">
+            <div class="input-icon" id="cadastroProcessoEscolaWrapper">
+              <span class="icon">🏫</span>
+              <select id="cadastroProcessoEscola">
+                <option value="">Selecione a escola</option>
+              </select>
+            </div>
+            <div class="input-icon">
+              <span class="icon">🏷️</span>
+              <select id="cadastroProcessoTipo" onchange="atualizarCamposProcesso()">
+                <option value="">Tipo de processo</option>
+                <option value="Cuidador">Cuidador</option>
+                <option value="Regularização AEE">Regularização AEE</option>
+                <option value="Calendário">Calendário</option>
+                <option value="Livro de ponto">Livro de ponto</option>
+              </select>
+            </div>
+            <div class="input-icon">
+              <span class="icon">🆔</span>
+              <input type="text" id="cadastroProcessoCodigo" placeholder="Código do processo (ex: 2026-92HQ2D)">
+            </div>
+            <!-- Campos dinâmicos (aluno, categoria, subcategoria) serão inseridos aqui via JS -->
+            <div id="camposExtrasProcesso"></div>
+            <div class="input-icon">
+              <span class="icon">📝</span>
+              <textarea id="cadastroProcessoObs" rows="2" placeholder="Observações (opcional)"></textarea>
+            </div>
+            <div class="modal-actions">
+              <button class="btn-salvar" onclick="cadastrarProcesso()">Salvar</button>
+              <button class="btn-cancelar" onclick="fecharModalProcessos()">Cancelar</button>
+            </div>
+          </div>
+          
+          <!-- Aba de Busca -->
+          <div id="abaBuscaProcesso" style="display:none;">
+            <div class="filtros-container" style="padding:0; margin-bottom:16px;">
+              <div class="input-icon">
+                <span class="icon">🏷️</span>
+                <select id="filtroProcessoTipo">
+                  <option value="">Todos os tipos</option>
+                  <option value="Cuidador">Cuidador</option>
+                  <option value="Regularização AEE">Regularização AEE</option>
+                  <option value="Calendário">Calendário</option>
+                  <option value="Livro de ponto">Livro de ponto</option>
+                </select>
+              </div>
+              <div class="input-icon" id="filtroProcessoEscolaWrapper">
+                <span class="icon">🏫</span>
+                <select id="filtroProcessoEscola">
+                  <option value="">Todas as escolas</option>
+                </select>
+              </div>
+              <div class="input-icon" style="flex:2;">
+                <span class="icon">🔍</span>
+                <input type="text" id="filtroProcessoCodigo" placeholder="Buscar por código...">
+              </div>
+              <button class="btn-primary" onclick="buscarProcessos()">🔍 Buscar</button>
+            </div>
+            <div id="listaProcessosContainer" style="max-height:400px; overflow-y:auto;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
    <!-- FILTROS -->
     <div class="filtros-container">
       <!-- Filtro de Escola (visível apenas para supervisor) -->
