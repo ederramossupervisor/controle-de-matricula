@@ -287,7 +287,8 @@ async function buscarProcessos() {
   try {
     let url = `${API_URL}?tipo=processos&email=${emailUsuario}`;
     if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;
-    if (escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
+    // Só envia filtroEscola se for supervisor
+    if (perfilUsuario === "SUPERVISOR" && escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
     
     const resp = await fetch(url);
     const processos = await resp.json();
@@ -297,7 +298,6 @@ async function buscarProcessos() {
   }
   esconderLoading();
 }
-
 function renderizarListaProcessos(processos) {
   const container = document.getElementById("listaProcessosContainer");
   container.innerHTML = "";
