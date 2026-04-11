@@ -837,14 +837,14 @@ function fazerUploadFoto(file) {
       form.style.display = 'none';
       
       const fields = {
-        acao: 'uploadFoto',
-        email: emailUsuario,
-        escola: escolaUsuario,
-        nomeAluno: 'temp',
-        fileName: file.name,
-        mimeType: file.type,
-        fileBase64: base64
-      };
+      acao: 'uploadFoto',
+      email: emailUsuario || localStorage.getItem('emailUsuario'),
+      escola: escolaUsuario || '',
+      nomeAluno: 'temp',
+      fileName: file.name,
+      mimeType: file.type,
+      fileBase64: base64
+    };
       
       for (let key in fields) {
         const input = document.createElement('input');
