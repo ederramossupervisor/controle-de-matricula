@@ -816,6 +816,38 @@ async function alterarSituacaoAluno(novaSituacao) {
   esconderLoading();
 }
 
+async function fazerUploadFoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+      const base64 = e.target.result.split(',')[1];
+      try {
+        const resp = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            acao: "uploadFoto",
+            email: emailUsuario,
+            escola: escolaUsuario,
+            nomeAluno: "temp", // será substituído depois
+            fileName: file.name,
+            mimeType: file.type,
+            fileBase64: base64
+          })
+        });
+        const result = await resp.json();
+        if (result.status === "ok") {
+          resolve(result.fileUrl);
+        } else {
+          reject(result.msg);
+        }
+      } catch (e) {
+        reject(e.message);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 // =========================
 // CARREGAR DADOS
 // =========================
@@ -1415,6 +1447,21 @@ async function salvarAluno() {
     return;
   }
 
+  const fotoInput = document.getElementById("fotoAluno");
+  const fotoFile = fotoInput.files[0];
+  let fotoUrl = "";
+  
+  if (fotoFile) {
+    mostrarLoading();
+    try {
+      fotoUrl = await fazerUploadFoto(fotoFile);
+    } catch (e) {
+      alert("Erro ao enviar foto: " + e);
+      esconderLoading();
+      return;
+    }
+  }
+
   // Mostrar loading no botão
   btnText.style.display = "none";
   spinner.style.display = "inline-block";
@@ -1431,7 +1478,8 @@ async function salvarAluno() {
         turma: document.getElementById("selectTurmaAluno").value,
         dataMatricula: dataMatriculaInput,
         edEspecial: edEspecial,   // ✅ enviando o valor
-        email: emailUsuario
+        email: emailUsuario,
+        fotoUrl: fotoUrl
       })
     });
 
@@ -1649,8 +1697,10 @@ function renderListaTurmas(turmas) {
     const div = document.createElement("div");
     div.className = "usuario-card";
     div.innerHTML = `
-      <div class="usuario-avatar">📚</div>
-      <div class="usuario-info">
+      ${aluno.FOTO_URL ? 
+        `<img src="${aluno.FOTO_URL}" style="width:44px;height:44px;border-radius:12px;object-fit:cover;">` : 
+        `<div class="aluno-avatar" style="...">${inicial}</div>`
+      }      <div class="usuario-info">
         <strong>${t.turma}</strong>
         <p>🏫 ${t.escola}</p>
       </div>
