@@ -822,56 +822,78 @@ function fazerUploadFoto(file) {
     reader.onload = function(e) {
       const base64 = e.target.result.split(',')[1];
       
-      // Cria iframe oculto se não existir
-      let iframe = document.getElementById('uploadFotoFrame');
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.id = 'uploadFotoFrame';
-        iframe.style.display = 'none';
-        document.body.appendChild(iframe);
-        iframe.src = API_URL + '?tipo=uploadFotoFrame';
+      // Cria um iframe oculto para receber a resposta
+      const iframeId = 'uploadFotoTarget_' + Date.now();
+      const iframe = document.createElement('iframe');
+      iframe.name = iframeId;
+      iframe.id = iframeId;
+      iframe.style.display = 'none';
+      document.body.appendChild(iframe);
+      
+      // Cria o formulário
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = API_URL;
+      form.target = iframeId;
+      form.style.display = 'none';
+      
+      // Adiciona os campos
+      const fields = {
+        acao: 'uploadFoto',
+        email: emailUsuario,
+        escola: escolaUsuario,
+        nomeAluno: 'temp',
+        fileName: file.name,
+        mimeType: file.type,
+        fileBase64: base64
+      };
+      
+      for (let key in fields) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = fields[key];
+        form.appendChild(input);
       }
       
-      // Aguarda o iframe sinalizar que está pronto
-      function handleReady(event) {
-        if (event.data && event.data.status === 'ready') {
-          window.removeEventListener('message', handleReady);
+      document.body.appendChild(form);
+      
+      // Quando o iframe carregar a resposta
+      iframe.onload = function() {
+        try {
+          // Tenta extrair o JSON da resposta (pode estar dentro de uma tag <pre>)
+          const doc = iframe.contentDocument || iframe.contentWindow.document;
+          const bodyText = doc.body.innerText || doc.body.textContent || '';
+          console.log('📄 Resposta bruta do iframe:', bodyText);
           
-          // Envia os dados da foto
-          iframe.contentWindow.postMessage({
-            action: 'uploadFoto',
-            base64: base64,
-            fileName: file.name,
-            mimeType: file.type,
-            email: emailUsuario,
-            escola: escolaUsuario,
-            nomeAluno: 'temp'
-          }, '*');
-        }
-      }
-      window.addEventListener('message', handleReady);
-      
-      // Listener para a resposta final
-      function handleResult(event) {
-        if (event.data && (event.data.status === 'ok' || event.data.status === 'error')) {
-          window.removeEventListener('message', handleResult);
-          if (event.data.status === 'ok') {
-            resolve(event.data.result.fileUrl);
+          const jsonMatch = bodyText.match(/\{.*\}/);
+          if (jsonMatch) {
+            const result = JSON.parse(jsonMatch[0]);
+            if (result.status === 'ok') {
+              resolve(result.fileUrl);
+            } else {
+              reject(result.msg || 'Erro desconhecido');
+            }
           } else {
-            reject(event.data.error);
+            reject('Resposta inválida do servidor');
           }
+        } catch (error) {
+          reject('Erro ao processar resposta: ' + error.message);
+        } finally {
+          // Limpeza
+          setTimeout(() => {
+            document.body.removeChild(iframe);
+            document.body.removeChild(form);
+          }, 1000);
         }
-      }
-      window.addEventListener('message', handleResult);
+      };
       
-      // Se o iframe já estiver carregado, força o onload
-      if (iframe.contentWindow) {
-        iframe.contentWindow.postMessage({ action: 'ping' }, '*');
-      }
+      form.submit();
     };
     reader.readAsDataURL(file);
   });
 }
+
 // =========================
 // CARREGAR DADOS
 // =========================
