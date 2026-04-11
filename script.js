@@ -822,22 +822,20 @@ function fazerUploadFoto(file) {
     reader.onload = function(e) {
       const base64 = e.target.result.split(',')[1];
       
-      // Cria um iframe oculto para receber a resposta
-      const iframeId = 'uploadFotoTarget_' + Date.now();
-      const iframe = document.createElement('iframe');
-      iframe.name = iframeId;
-      iframe.id = iframeId;
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
+      // Abre uma popup que exibirá o resultado
+      const popup = window.open('', '_blank', 'width=400,height=300');
+      if (!popup) {
+        reject('Permita popups para este site.');
+        return;
+      }
       
-      // Cria o formulário
+      // Cria um formulário que será submetido na popup
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = API_URL;
-      form.target = iframeId;
+      form.target = popup.name;  // associa à popup
       form.style.display = 'none';
       
-      // Adiciona os campos
       const fields = {
         acao: 'uploadFoto',
         email: emailUsuario,
@@ -857,43 +855,34 @@ function fazerUploadFoto(file) {
       }
       
       document.body.appendChild(form);
-      
-      // Quando o iframe carregar a resposta
-      iframe.onload = function() {
-        try {
-          // Tenta extrair o JSON da resposta (pode estar dentro de uma tag <pre>)
-          const doc = iframe.contentDocument || iframe.contentWindow.document;
-          const bodyText = doc.body.innerText || doc.body.textContent || '';
-          console.log('📄 Resposta bruta do iframe:', bodyText);
-          
-          const jsonMatch = bodyText.match(/\{.*\}/);
-          if (jsonMatch) {
-            const result = JSON.parse(jsonMatch[0]);
-            if (result.status === 'ok') {
-              resolve(result.fileUrl);
-            } else {
-              reject(result.msg || 'Erro desconhecido');
-            }
-          } else {
-            reject('Resposta inválida do servidor');
-          }
-        } catch (error) {
-          reject('Erro ao processar resposta: ' + error.message);
-        } finally {
-          // Limpeza
-          setTimeout(() => {
-            document.body.removeChild(iframe);
-            document.body.removeChild(form);
-          }, 1000);
-        }
-      };
-      
       form.submit();
+      document.body.removeChild(form);
+      
+      // Aguarda a mensagem da popup
+      function handleMessage(event) {
+        if (event.data && event.data.type === 'uploadFotoResult') {
+          window.removeEventListener('message', handleMessage);
+          if (event.data.status === 'ok') {
+            resolve(event.data.fileUrl);
+          } else {
+            reject(event.data.error || 'Erro desconhecido');
+          }
+        }
+      }
+      window.addEventListener('message', handleMessage);
+      
+      // Se a popup for fechada antes de responder
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+          reject('Upload cancelado');
+        }
+      }, 500);
     };
     reader.readAsDataURL(file);
   });
 }
-
 // =========================
 // CARREGAR DADOS
 // =========================
