@@ -1526,22 +1526,22 @@ function gerarResumo(dados) {
 function renderPainel(resumo) {
   const painel = document.getElementById("painel");
   painel.innerHTML = `
-    <div class="metrica-card">
+    <div class="metrica-card metrica-total">
       <div class="metrica-titulo">📋 Total de alunos</div>
       <div class="metrica-valor">${resumo.total}</div>
       <div class="metrica-detalhe">matriculados</div>
     </div>
-    <div class="metrica-card">
+    <div class="metrica-card metrica-completos">
       <div class="metrica-titulo">✅ Completos</div>
       <div class="metrica-valor">${resumo.completos}</div>
       <div class="metrica-detalhe">documentação ok</div>
     </div>
-    <div class="metrica-card">
+    <div class="metrica-card metrica-pendentes">
       <div class="metrica-titulo">⚠️ Pendentes</div>
       <div class="metrica-valor">${resumo.pendentes}</div>
       <div class="metrica-detalhe">faltam documentos</div>
     </div>
-    <div class="metrica-card">
+    <div class="metrica-card metrica-vencidos">
       <div class="metrica-titulo">🔴 Vencidos</div>
       <div class="metrica-valor">${resumo.vencidos}</div>
       <div class="metrica-detalhe">prazo expirado</div>
