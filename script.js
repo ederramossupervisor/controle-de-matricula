@@ -177,8 +177,20 @@ function atualizarCamposProcesso() {
   const container = document.getElementById("camposExtrasProcesso");
   container.innerHTML = "";
   
-  if (tipo === "Cuidador" || tipo === "Regularização AEE") {
-    // Campo de aluno (poderia ser um select, mas vamos simplificar com input por enquanto)
+  // Tipos que exigem o nome do aluno
+  const tiposComAluno = [
+    "Cuidador", 
+    "Regularização AEE", 
+    "Regularização de Vida Escolar",
+    "Manifestação GENPRO",
+    "Ata Especial de RVE",
+    "Ata de Classificação/Reclassificação/Avanço Escolar"
+  ];
+  
+  // Tipos que exigem apenas a escola (já preenchida automaticamente pela secretaria, mas para supervisor pode ser selecionável)
+  // A maioria já tem o campo escola disponível para supervisor.
+  
+  if (tiposComAluno.includes(tipo)) {
     container.innerHTML = `
       <div class="input-icon">
         <span class="icon">👤</span>
@@ -186,6 +198,7 @@ function atualizarCamposProcesso() {
       </div>
     `;
   } else if (tipo === "Livro de ponto") {
+    // Mantém a lógica existente para Livro de ponto
     container.innerHTML = `
       <div class="input-icon">
         <span class="icon">📂</span>
@@ -207,8 +220,8 @@ function atualizarCamposProcesso() {
       </div>
     `;
   }
+  // Para os demais tipos, nenhum campo extra é exibido.
 }
-
 function atualizarSubcategorias() {
   const cat = document.getElementById("cadastroProcessoCategoria")?.value;
   const wrapper = document.getElementById("subcategoriaWrapper");
@@ -282,13 +295,14 @@ async function cadastrarProcesso() {
 async function buscarProcessos() {
   const tipo = document.getElementById("filtroProcessoTipo").value;
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroProcessoEscola").value : "";
+  const aluno = document.getElementById("filtroProcessoAluno")?.value.trim() || "";
   
   mostrarLoading();
   try {
     let url = `${API_URL}?tipo=processos&email=${emailUsuario}`;
     if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;
-    // Só envia filtroEscola se for supervisor
     if (perfilUsuario === "SUPERVISOR" && escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
+    if (aluno) url += `&filtroAluno=${encodeURIComponent(aluno)}`;
     
     const resp = await fetch(url);
     const processos = await resp.json();
@@ -298,6 +312,7 @@ async function buscarProcessos() {
   }
   esconderLoading();
 }
+
 function renderizarListaProcessos(processos) {
   const container = document.getElementById("listaProcessosContainer");
   container.innerHTML = "";
