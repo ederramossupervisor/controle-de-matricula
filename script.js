@@ -268,14 +268,12 @@ async function cadastrarProcesso() {
 async function buscarProcessos() {
   const tipo = document.getElementById("filtroProcessoTipo").value;
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroProcessoEscola").value : "";
-  const codigo = document.getElementById("filtroProcessoCodigo").value.trim();
   
   mostrarLoading();
   try {
     let url = `${API_URL}?tipo=processos&email=${emailUsuario}`;
-    if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;        // ✅ renomeado
-    if (escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;  // ✅ renomeado
-    if (codigo) url += `&filtroCodigo=${encodeURIComponent(codigo)}`;  // ✅ renomeado
+    if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;
+    if (escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
     
     const resp = await fetch(url);
     const processos = await resp.json();
@@ -285,6 +283,7 @@ async function buscarProcessos() {
   }
   esconderLoading();
 }
+
 function renderizarListaProcessos(processos) {
   const container = document.getElementById("listaProcessosContainer");
   container.innerHTML = "";
