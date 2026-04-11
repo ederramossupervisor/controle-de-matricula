@@ -1454,15 +1454,15 @@ async function salvarAluno() {
   let fotoUrl = "";
   
   if (fotoFile) {
-    mostrarLoading();
-    try {
-      fotoUrl = await fazerUploadFoto(fotoFile);
-    } catch (e) {
-      alert("Erro ao enviar foto: " + e);
-      esconderLoading();
-      return;
-    }
+  mostrarLoading();
+  try {
+    fotoUrl = await fazerUploadFoto(fotoFile);
+  } catch (e) {
+    alert("Erro ao enviar foto: " + e);
+    esconderLoading();
+    return;
   }
+}
 
   // Mostrar loading no botão
   btnText.style.display = "none";
