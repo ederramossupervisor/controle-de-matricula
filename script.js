@@ -529,70 +529,94 @@ function preencherSelectEscolasDoc() {
   }
 }
 
-function fazerUploadFoto(file) {
+/**
+ * Redimensiona uma imagem para dimensões máximas e qualidade especificadas.
+ * Retorna uma Promise com a string Base64 (já sem o cabeçalho "data:image/jpeg;base64,").
+ */
+function resizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = function(e) {
-      const base64 = e.target.result.split(',')[1];
-      
-      const popup = window.open('', '_blank', 'width=400,height=300');
-      if (!popup) {
-        reject('Permita popups para este site.');
-        return;
-      }
-      
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = API_URL;
-      form.target = popup.name;
-      form.style.display = 'none';
-      
-      const fields = {
-        acao: 'uploadFoto',
-        email: emailUsuario || localStorage.getItem('emailUsuario'),
-        escola: escolaUsuario,
-        nomeAluno: 'temp',
-        fileName: file.name,
-        mimeType: file.type,
-        fileBase64: base64
-      };
-      
-      for (let key in fields) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = fields[key];
-        form.appendChild(input);
-      }
-      
-      document.body.appendChild(form);
-      form.submit();
-      document.body.removeChild(form);
-      
-      function handleMessage(event) {
-        if (event.data && event.data.type === 'uploadFotoResult') {
-          window.removeEventListener('message', handleMessage);
-          if (event.data.status === 'ok') {
-            resolve(event.data.fileUrl);
-          } else {
-            reject(event.data.error || 'Erro desconhecido');
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        // Calcula novas dimensões mantendo proporção
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
           }
         }
-      }
-      window.addEventListener('message', handleMessage);
-      
-      const checkClosed = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkClosed);
-          window.removeEventListener('message', handleMessage);
-          reject('Upload cancelado');
-        }
-      }, 500);
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Converte para Base64 no formato JPEG com qualidade ajustável
+        const base64 = canvas.toDataURL('image/jpeg', quality);
+        // Remove o prefixo "data:image/jpeg;base64," para enviar apenas os dados
+        const base64Data = base64.split(',')[1];
+        resolve(base64Data);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
     };
+    reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
+/**
+ * Faz upload da foto do aluno via fetch (sem popup).
+ * Retorna a URL pública da imagem no Drive.
+ */
+async function fazerUploadFoto(file) {
+  try {
+    // 1. Redimensiona a imagem para evitar strings Base64 enormes
+    const base64Data = await resizeImage(file, 800, 800, 0.8);
+
+    // 2. Prepara os dados para envio
+    const payload = {
+      acao: "uploadFoto",
+      email: emailUsuario || localStorage.getItem('emailUsuario'),
+      escola: escolaUsuario,  // será usada se for supervisor (pode enviar vazio)
+      nomeAluno: "temp",       // nome temporário (será atualizado depois)
+      fileName: file.name,
+      mimeType: file.type || "image/jpeg",
+      fileBase64: base64Data
+    };
+
+    // 3. Envia via POST com fetch
+    const response = await fetch(API_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json();
+
+    if (result.status === "ok") {
+      return result.fileUrl;
+    } else {
+      throw new Error(result.msg || "Erro desconhecido no upload");
+    }
+  } catch (error) {
+    console.error("Erro no upload da foto:", error);
+    throw error;
+  }
+}
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
