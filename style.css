@@ -1062,3 +1062,22 @@ textarea:focus {
   pointer-events: none;
   z-index: 1;
 }
+
+/* Ícone personalizado Edocs */
+.btn-edocs-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: #2563eb;
+  border-radius: 6px;
+  margin-right: 6px;
+  font-weight: 700;
+  font-size: 16px;
+  color: white;
+}
+
+[data-theme="dark"] .btn-edocs-icon {
+  background-color: #3b82f6;
+}
