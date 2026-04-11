@@ -1574,23 +1574,16 @@ function resumoPorEscola(dados) {
 
 function renderPorEscola(mapa) {
   const painel = document.getElementById("painel");
-
-  let html = `<div class="card"><h3>🏫 Por Escola</h3>`;
-
+  let html = `<div class="metrica-card metrica-escola">`;
+  html += `<div class="metrica-titulo">🏫 Por Escola</div>`;
+  
   for (let escola in mapa) {
-    html += `
-      <p>
-        ${escola}: 
-        ${mapa[escola].pendentes} pendentes / ${mapa[escola].total}
-      </p>
-    `;
+    html += `<p style="margin:4px 0; font-size:14px;"><strong>${escola}:</strong> ${mapa[escola].pendentes} pendentes / ${mapa[escola].total}</p>`;
   }
-
+  
   html += `</div>`;
-
   painel.innerHTML += html;
 }
-
 // =========================
 // LOGOUT
 // =========================
