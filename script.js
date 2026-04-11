@@ -110,6 +110,209 @@ function toggleDarkMode() {
   updateDarkModeIcon(newTheme);
 }
 
+// =========================
+// GESTÃO DE PROCESSOS (Edocs)
+// =========================
+
+function abrirModalProcessos() {
+  document.getElementById("modalProcessos").style.display = "flex";
+  preencherSelectsProcessos();
+  mostrarAbaCadastroProcesso(); // inicia no cadastro
+}
+
+function fecharModalProcessos() {
+  document.getElementById("modalProcessos").style.display = "none";
+}
+
+function mostrarAbaCadastroProcesso() {
+  document.getElementById("abaCadastroProcesso").style.display = "block";
+  document.getElementById("abaBuscaProcesso").style.display = "none";
+}
+
+function mostrarAbaBuscaProcesso() {
+  document.getElementById("abaCadastroProcesso").style.display = "none";
+  document.getElementById("abaBuscaProcesso").style.display = "block";
+  buscarProcessos(); // já carrega a lista
+}
+
+function preencherSelectsProcessos() {
+  const selectEscolaCad = document.getElementById("cadastroProcessoEscola");
+  const selectEscolaFiltro = document.getElementById("filtroProcessoEscola");
+  
+  [selectEscolaCad, selectEscolaFiltro].forEach(select => {
+    if (!select) return;
+    select.innerHTML = '<option value="">' + (select.id.includes('filtro') ? 'Todas as escolas' : 'Selecione a escola') + '</option>';
+    LISTA_ESCOLAS.forEach(esc => select.appendChild(new Option(esc, esc)));
+  });
+  
+  // Visibilidade dos campos de escola conforme perfil
+  const cadWrapper = document.getElementById("cadastroProcessoEscolaWrapper");
+  const filtroWrapper = document.getElementById("filtroProcessoEscolaWrapper");
+  if (perfilUsuario === "SECRETARIA") {
+    if (cadWrapper) cadWrapper.style.display = "none";
+    if (filtroWrapper) filtroWrapper.style.display = "none";
+    // Para secretaria, a escola é automática (escolaUsuario)
+  } else {
+    if (cadWrapper) cadWrapper.style.display = "block";
+    if (filtroWrapper) filtroWrapper.style.display = "block";
+  }
+}
+
+function atualizarCamposProcesso() {
+  const tipo = document.getElementById("cadastroProcessoTipo").value;
+  const container = document.getElementById("camposExtrasProcesso");
+  container.innerHTML = "";
+  
+  if (tipo === "Cuidador" || tipo === "Regularização AEE") {
+    // Campo de aluno (poderia ser um select, mas vamos simplificar com input por enquanto)
+    container.innerHTML = `
+      <div class="input-icon">
+        <span class="icon">👤</span>
+        <input type="text" id="cadastroProcessoAluno" placeholder="Nome do aluno">
+      </div>
+    `;
+  } else if (tipo === "Livro de ponto") {
+    container.innerHTML = `
+      <div class="input-icon">
+        <span class="icon">📂</span>
+        <select id="cadastroProcessoCategoria" onchange="atualizarSubcategorias()">
+          <option value="">Categoria</option>
+          <option value="Técnico Administrativo">Técnico Administrativo</option>
+          <option value="Profissionais do Magistério">Profissionais do Magistério</option>
+        </select>
+      </div>
+      <div class="input-icon" id="subcategoriaWrapper" style="display:none;">
+        <span class="icon">📑</span>
+        <select id="cadastroProcessoSubcategoria">
+          <option value="">Subcategoria</option>
+          <option value="Técnico Pedagógico">Técnico Pedagógico</option>
+          <option value="Matutino ou Integral">Matutino ou Integral</option>
+          <option value="Vespertino">Vespertino</option>
+          <option value="Noturno">Noturno</option>
+        </select>
+      </div>
+    `;
+  }
+}
+
+function atualizarSubcategorias() {
+  const cat = document.getElementById("cadastroProcessoCategoria")?.value;
+  const wrapper = document.getElementById("subcategoriaWrapper");
+  if (cat === "Profissionais do Magistério") {
+    wrapper.style.display = "block";
+  } else {
+    wrapper.style.display = "none";
+    // Limpa seleção
+    document.getElementById("cadastroProcessoSubcategoria").value = "";
+  }
+}
+
+async function cadastrarProcesso() {
+  const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("cadastroProcessoEscola").value : escolaUsuario;
+  const tipo = document.getElementById("cadastroProcessoTipo").value;
+  const codigo = document.getElementById("cadastroProcessoCodigo").value.trim();
+  const observacoes = document.getElementById("cadastroProcessoObs").value.trim();
+  
+  if (!escola) { alert("Selecione a escola."); return; }
+  if (!tipo) { alert("Selecione o tipo de processo."); return; }
+  if (!codigo) { alert("Informe o código do processo."); return; }
+  
+  let aluno = "", categoria = "", subcategoria = "";
+  if (tipo === "Cuidador" || tipo === "Regularização AEE") {
+    aluno = document.getElementById("cadastroProcessoAluno")?.value.trim() || "";
+    if (!aluno) { alert("Informe o nome do aluno."); return; }
+  } else if (tipo === "Livro de ponto") {
+    categoria = document.getElementById("cadastroProcessoCategoria")?.value || "";
+    if (!categoria) { alert("Selecione a categoria."); return; }
+    if (categoria === "Profissionais do Magistério") {
+      subcategoria = document.getElementById("cadastroProcessoSubcategoria")?.value || "";
+      if (!subcategoria) { alert("Selecione a subcategoria."); return; }
+    }
+  }
+  
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "cadastrarProcesso",
+        email: emailUsuario,
+        escola: escola,
+        tipo: tipo,
+        codigo: codigo,
+        aluno: aluno,
+        categoria: categoria,
+        subcategoria: subcategoria,
+        observacoes: observacoes
+      })
+    });
+    const result = await resp.json();
+    esconderLoading();
+    if (result.status === "ok") {
+      alert("✅ Processo cadastrado com sucesso!");
+      // Limpar campos
+      document.getElementById("cadastroProcessoCodigo").value = "";
+      document.getElementById("cadastroProcessoObs").value = "";
+      document.getElementById("cadastroProcessoTipo").value = "";
+      document.getElementById("camposExtrasProcesso").innerHTML = "";
+      if (perfilUsuario === "SUPERVISOR") document.getElementById("cadastroProcessoEscola").value = "";
+    } else {
+      alert("Erro: " + (result.msg || "Falha no cadastro"));
+    }
+  } catch (e) {
+    esconderLoading();
+    alert("Erro de conexão.");
+  }
+}
+
+async function buscarProcessos() {
+  const tipo = document.getElementById("filtroProcessoTipo").value;
+  const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroProcessoEscola").value : "";
+  const codigo = document.getElementById("filtroProcessoCodigo").value.trim();
+  
+  mostrarLoading();
+  try {
+    let url = `${API_URL}?tipo=processos&email=${emailUsuario}`;
+    if (tipo) url += `&tipo=${encodeURIComponent(tipo)}`;
+    if (escola) url += `&escola=${encodeURIComponent(escola)}`;
+    if (codigo) url += `&codigo=${encodeURIComponent(codigo)}`;
+    
+    const resp = await fetch(url);
+    const processos = await resp.json();
+    renderizarListaProcessos(processos);
+  } catch (e) {
+    alert("Erro ao buscar processos.");
+  }
+  esconderLoading();
+}
+
+function renderizarListaProcessos(processos) {
+  const container = document.getElementById("listaProcessosContainer");
+  container.innerHTML = "";
+  if (!processos.length) {
+    container.innerHTML = "<p>Nenhum processo encontrado.</p>";
+    return;
+  }
+  processos.forEach(p => {
+    const div = document.createElement("div");
+    div.className = "usuario-card";
+    let detalhes = `🏫 ${p.escola}`;
+    if (p.aluno) detalhes += ` | 👤 ${p.aluno}`;
+    if (p.categoria) detalhes += ` | 📂 ${p.categoria}`;
+    if (p.subcategoria) detalhes += ` / ${p.subcategoria}`;
+    if (p.observacoes) detalhes += `<br>📝 ${p.observacoes}`;
+    
+    div.innerHTML = `
+      <div class="usuario-avatar">📄</div>
+      <div class="usuario-info">
+        <strong>${p.codigo} (${p.tipo})</strong>
+        <p>${detalhes}</p>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
 // Máscara para telefone
 function aplicarMascaraTelefone(event) {
   let valor = event.target.value.replace(/\D/g, ''); // remove tudo que não é dígito
@@ -656,6 +859,11 @@ async function carregarAlunos() {
     // Resumo por escola (opcional, pode manter ou remover)
     const mapa = resumoPorEscola(dadosGlobais);
     renderPorEscola(mapa);
+
+    const btnProcessos = document.getElementById("btnProcessos");
+    if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
+      if (btnProcessos) btnProcessos.style.display = "inline-block";
+    }
 
   } catch (erro) {
     console.error("Erro:", erro);
