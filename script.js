@@ -530,7 +530,6 @@ function preencherSelectEscolasDoc() {
 }
 
 async function fazerUploadFoto(file) {
-  // Garante que temos o e‑mail (do escopo global ou do localStorage)
   const email = emailUsuario || localStorage.getItem('emailUsuario');
   if (!email) throw new Error('Usuário não autenticado');
 
@@ -552,6 +551,7 @@ async function fazerUploadFoto(file) {
           })
         });
         const result = await resp.json();
+        console.log('📦 Resposta completa do servidor:', result);
         if (result.status === 'ok') {
           resolve(result.fileUrl);
         } else {
@@ -564,6 +564,7 @@ async function fazerUploadFoto(file) {
     reader.readAsDataURL(file);
   });
 }
+
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
