@@ -529,34 +529,70 @@ function preencherSelectEscolasDoc() {
   }
 }
 
-async function fazerUploadFoto(file) {
-  const email = emailUsuario || localStorage.getItem('emailUsuario');
-  if (!email) throw new Error('Usuário não autenticado');
-
-  const formData = new FormData();
-  formData.append('acao', 'uploadFoto');
-  formData.append('email', email);
-  formData.append('escola', escolaUsuario);
-  formData.append('nomeAluno', 'temp');
-  formData.append('fileName', file.name);
-  formData.append('mimeType', file.type);
-  formData.append('file', file); // envia o arquivo binário
-
-  try {
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      body: formData
-    });
-    const result = await resp.json();
-    if (result.status === 'ok') {
-      return result.fileUrl;
-    } else {
-      throw new Error(result.msg || 'Erro desconhecido');
-    }
-  } catch (error) {
-    throw new Error(error.message);
-  }
+function fazerUploadFoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const base64 = e.target.result.split(',')[1];
+      
+      const popup = window.open('', '_blank', 'width=400,height=300');
+      if (!popup) {
+        reject('Permita popups para este site.');
+        return;
+      }
+      
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = API_URL;
+      form.target = popup.name;
+      form.style.display = 'none';
+      
+      const fields = {
+        acao: 'uploadFoto',
+        email: emailUsuario || localStorage.getItem('emailUsuario'),
+        escola: escolaUsuario,
+        nomeAluno: 'temp',
+        fileName: file.name,
+        mimeType: file.type,
+        fileBase64: base64
+      };
+      
+      for (let key in fields) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = fields[key];
+        form.appendChild(input);
+      }
+      
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+      
+      function handleMessage(event) {
+        if (event.data && event.data.type === 'uploadFotoResult') {
+          window.removeEventListener('message', handleMessage);
+          if (event.data.status === 'ok') {
+            resolve(event.data.fileUrl);
+          } else {
+            reject(event.data.error || 'Erro desconhecido');
+          }
+        }
+      }
+      window.addEventListener('message', handleMessage);
+      
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+          reject('Upload cancelado');
+        }
+      }, 500);
+    };
+    reader.readAsDataURL(file);
+  });
 }
+
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
