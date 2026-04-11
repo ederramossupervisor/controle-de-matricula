@@ -1062,3 +1062,22 @@ textarea:focus {
   pointer-events: none;
   z-index: 1;
 }
+/* Botão Edocs com destaque azul */
+#btnProcessos {
+  background-color: #e0f2fe;   /* azul bem claro */
+  color: #0369a1;              /* texto azul escuro */
+  border-color: #bae6fd;
+}
+
+#btnProcessos:hover {
+  background-color: #bae6fd;   /* azul um pouco mais escuro no hover */
+}
+
+[data-theme="dark"] #btnProcessos {
+  background-color: #1e3a5f;
+  color: #93c5fd;
+  border-color: #2d4a6e;
+}
+[data-theme="dark"] #btnProcessos:hover {
+  background-color: #2d4a6e;
+}
