@@ -273,9 +273,9 @@ async function buscarProcessos() {
   mostrarLoading();
   try {
     let url = `${API_URL}?tipo=processos&email=${emailUsuario}`;
-    if (tipo) url += `&tipo=${encodeURIComponent(tipo)}`;
-    if (escola) url += `&escola=${encodeURIComponent(escola)}`;
-    if (codigo) url += `&codigo=${encodeURIComponent(codigo)}`;
+    if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;        // ✅ renomeado
+    if (escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;  // ✅ renomeado
+    if (codigo) url += `&filtroCodigo=${encodeURIComponent(codigo)}`;  // ✅ renomeado
     
     const resp = await fetch(url);
     const processos = await resp.json();
@@ -285,7 +285,6 @@ async function buscarProcessos() {
   }
   esconderLoading();
 }
-
 function renderizarListaProcessos(processos) {
   const container = document.getElementById("listaProcessosContainer");
   container.innerHTML = "";
