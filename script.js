@@ -816,38 +816,62 @@ async function alterarSituacaoAluno(novaSituacao) {
   esconderLoading();
 }
 
-async function fazerUploadFoto(file) {
+function fazerUploadFoto(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = async function(e) {
+    reader.onload = function(e) {
       const base64 = e.target.result.split(',')[1];
-      try {
-        const resp = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            acao: "uploadFoto",
-            email: emailUsuario,
-            escola: escolaUsuario,
-            nomeAluno: "temp", // será substituído depois
+      
+      // Cria iframe oculto se não existir
+      let iframe = document.getElementById('uploadFotoFrame');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = 'uploadFotoFrame';
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        iframe.src = API_URL + '?tipo=uploadFotoFrame';
+      }
+      
+      // Aguarda o iframe sinalizar que está pronto
+      function handleReady(event) {
+        if (event.data && event.data.status === 'ready') {
+          window.removeEventListener('message', handleReady);
+          
+          // Envia os dados da foto
+          iframe.contentWindow.postMessage({
+            action: 'uploadFoto',
+            base64: base64,
             fileName: file.name,
             mimeType: file.type,
-            fileBase64: base64
-          })
-        });
-        const result = await resp.json();
-        if (result.status === "ok") {
-          resolve(result.fileUrl);
-        } else {
-          reject(result.msg);
+            email: emailUsuario,
+            escola: escolaUsuario,
+            nomeAluno: 'temp'
+          }, '*');
         }
-      } catch (e) {
-        reject(e.message);
+      }
+      window.addEventListener('message', handleReady);
+      
+      // Listener para a resposta final
+      function handleResult(event) {
+        if (event.data && (event.data.status === 'ok' || event.data.status === 'error')) {
+          window.removeEventListener('message', handleResult);
+          if (event.data.status === 'ok') {
+            resolve(event.data.result.fileUrl);
+          } else {
+            reject(event.data.error);
+          }
+        }
+      }
+      window.addEventListener('message', handleResult);
+      
+      // Se o iframe já estiver carregado, força o onload
+      if (iframe.contentWindow) {
+        iframe.contentWindow.postMessage({ action: 'ping' }, '*');
       }
     };
     reader.readAsDataURL(file);
   });
 }
-
 // =========================
 // CARREGAR DADOS
 // =========================
