@@ -288,14 +288,20 @@ async function buscarProcessos() {
 function renderizarListaProcessos(processos) {
   const container = document.getElementById("listaProcessosContainer");
   container.innerHTML = "";
-  if (!processos.length) {
+  
+  if (!processos || processos.length === 0) {
     container.innerHTML = "<p>Nenhum processo encontrado.</p>";
     return;
   }
+  
   processos.forEach(p => {
+    // Ignora itens sem código ou tipo (segurança extra)
+    if (!p.codigo && !p.tipo) return;
+    
     const div = document.createElement("div");
     div.className = "usuario-card";
-    let detalhes = `🏫 ${p.escola}`;
+    
+    let detalhes = `🏫 ${p.escola || '—'}`;
     if (p.aluno) detalhes += ` | 👤 ${p.aluno}`;
     if (p.categoria) detalhes += ` | 📂 ${p.categoria}`;
     if (p.subcategoria) detalhes += ` / ${p.subcategoria}`;
@@ -304,14 +310,13 @@ function renderizarListaProcessos(processos) {
     div.innerHTML = `
       <div class="usuario-avatar">📄</div>
       <div class="usuario-info">
-        <strong>${p.codigo} (${p.tipo})</strong>
+        <strong>${p.codigo || 'Sem código'} (${p.tipo || 'Sem tipo'})</strong>
         <p>${detalhes}</p>
       </div>
     `;
     container.appendChild(div);
   });
 }
-
 // Máscara para telefone
 function aplicarMascaraTelefone(event) {
   let valor = event.target.value.replace(/\D/g, ''); // remove tudo que não é dígito
