@@ -1368,14 +1368,24 @@ function renderUsuarios(usuarios) {
   });
 }
 
-// Salvar usuário (atualizada)
 async function salvarUsuario() {
   const email = document.getElementById("novoEmail").value.trim();
   const perfil = document.getElementById("perfil").value;
-  const escola = document.getElementById("escola").value.trim();
+  const escola = perfil === "SECRETARIA" ? document.getElementById("escola").value : "";
+  
+  let escolasSupervisionadas = [];
+  if (perfil === "SUPERVISOR") {
+    const checkboxes = document.querySelectorAll('#checkboxesEscolas input[type="checkbox"]:checked');
+    escolasSupervisionadas = Array.from(checkboxes).map(cb => cb.value);
+    if (escolasSupervisionadas.length === 0) {
+      alert("Selecione pelo menos uma escola para o supervisor.");
+      return;
+    }
+  }
+  
   const erroDiv = document.getElementById("erroUsuario");
   
-  // Validação
+  // Validação de e-mail
   if (!email) {
     erroDiv.textContent = "E-mail obrigatório";
     erroDiv.style.display = "block";
@@ -1403,7 +1413,8 @@ async function salvarUsuario() {
         acao: "cadastrarUsuario",
         email: email,
         perfil: perfil,
-        escola: escola
+        escola: escola,
+        escolasSupervisionadas: escolasSupervisionadas
       })
     });
     
@@ -1416,7 +1427,7 @@ async function salvarUsuario() {
       await new Promise(r => setTimeout(r, 600));
       
       fecharModalCadastroUsuario();
-      // Se o modal de lista estiver aberto, recarregar a lista
+      // Se o modal de lista de usuários estiver aberto, recarregar a lista
       if (document.getElementById("modalListaUsuarios").style.display === "flex") {
         carregarUsuarios();
       }
@@ -1435,7 +1446,6 @@ async function salvarUsuario() {
     btnSalvar.disabled = false;
   }
 }
-
 async function salvarAluno() {
   const nomeInput = document.getElementById("nomeAluno");
   const responsavelInput = document.getElementById("nomeResponsavel");
