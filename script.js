@@ -82,6 +82,81 @@ const FUNDOS_ESCOLAS = {
   "default": "fundos/default.png"
 };
 
+function chamarAPI(acao, dados = {}) {
+  return new Promise((resolve, reject) => {
+    const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.name = requestId;
+    document.body.appendChild(iframe);
+
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Tempo limite excedido'));
+    }, 30000);
+
+    const cleanup = () => {
+      clearTimeout(timeout);
+      window.removeEventListener('message', handler);
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    };
+
+    const handler = (event) => {
+      if (event.data && event.data.requestId === requestId) {
+        cleanup();
+        if (event.data.status === 'success') {
+          try {
+            const payload = typeof event.data.payload === 'string' 
+              ? JSON.parse(event.data.payload) 
+              : event.data.payload;
+            resolve(payload);
+          } catch (e) {
+            resolve(event.data.payload);
+          }
+        } else {
+          reject(new Error(event.data.error || 'Erro desconhecido'));
+        }
+      }
+    };
+    window.addEventListener('message', handler);
+
+    const dadosCompletos = {
+      ...dados,
+      acao: acao,
+      email: emailUsuario || localStorage.getItem('emailUsuario') || '',
+      requestId: requestId
+    };
+
+    // Ações que tradicionalmente usam GET
+    const acoesGET = ['carregarAlunos', 'listarProcessos', 'listarDocumentos', 'listarMensagens',
+                      'turmas', 'usuarios', 'processos', 'escolasSupervisionadas', 'supervisoresDaEscola'];
+    const usarPOST = !acoesGET.includes(acao);
+
+    if (usarPOST) {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = API_URL;
+      form.target = requestId;
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'data';
+      input.value = JSON.stringify(dadosCompletos);
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+      document.body.removeChild(form);
+    } else {
+      const url = new URL(API_URL);
+      Object.keys(dadosCompletos).forEach(key => {
+        let valor = dadosCompletos[key];
+        if (typeof valor === 'object') valor = JSON.stringify(valor);
+        url.searchParams.append(key, valor);
+      });
+      iframe.src = url.toString();
+    }
+  });
+}
+
 function aplicarFundoPorEscola(escola) {
   const body = document.body;
   let imagemFundo = FUNDOS_ESCOLAS[escola];
