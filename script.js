@@ -278,7 +278,6 @@ async function cadastrarProcesso() {
   
   let aluno = "", categoria = "", subcategoria = "";
   
-  // Lista de tipos que exigem o nome do aluno
   const tiposComAluno = [
     "Cuidador", 
     "Regularização AEE", 
@@ -302,25 +301,20 @@ async function cadastrarProcesso() {
   
   mostrarLoading();
   try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "cadastrarProcesso",
-        email: emailUsuario,
-        escola: escola,
-        tipo: tipo,
-        codigo: codigo,
-        aluno: aluno,
-        categoria: categoria,
-        subcategoria: subcategoria,
-        observacoes: observacoes
-      })
+    const result = await chamarAPI('cadastrarProcesso', {
+      email: emailUsuario,
+      escola: escola,
+      tipo: tipo,
+      codigo: codigo,
+      aluno: aluno,
+      categoria: categoria,
+      subcategoria: subcategoria,
+      observacoes: observacoes
     });
-    const result = await resp.json();
+    
     esconderLoading();
     if (result.status === "ok") {
       alert("✅ Processo cadastrado com sucesso!");
-      // Limpar campos
       document.getElementById("cadastroProcessoCodigo").value = "";
       document.getElementById("cadastroProcessoObs").value = "";
       document.getElementById("cadastroProcessoTipo").value = "";
@@ -334,6 +328,7 @@ async function cadastrarProcesso() {
     alert("Erro de conexão.");
   }
 }
+
 async function buscarProcessos() {
   const tipo = document.getElementById("filtroProcessoTipo").value;
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroProcessoEscola").value : "";
@@ -341,13 +336,11 @@ async function buscarProcessos() {
   
   mostrarLoading();
   try {
-    let url = `${API_URL}?tipo=processos&email=${emailUsuario}`;
-    if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;
-    if (perfilUsuario === "SUPERVISOR" && escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
-    if (aluno) url += `&filtroAluno=${encodeURIComponent(aluno)}`;
-    
-    const resp = await fetch(url);
-    const processos = await resp.json();
+    const processos = await chamarAPI('listarProcessos', {
+      filtroTipo: tipo,
+      filtroEscola: escola,
+      filtroAluno: aluno
+    });
     renderizarListaProcessos(processos);
   } catch (e) {
     alert("Erro ao buscar processos.");
@@ -461,7 +454,6 @@ async function salvarDadosAluno() {
     return;
   }
 
-   // 🔥 VALIDAÇÃO DE TELEFONE (INSIRA AQUI)
   const telefoneNumeros = telefone.replace(/\D/g, '');
   if (telefoneNumeros.length > 0 && telefoneNumeros.length < 10) {
     alert("Telefone incompleto. Informe DDD + número (mínimo 10 dígitos).");
@@ -477,21 +469,15 @@ async function salvarDadosAluno() {
   btn.disabled = true;
   
   try {
-    const resposta = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "atualizarDadosAluno",
-        row: dadosAlunoAtual._row,
-        nome: nome,
-        responsavel: responsavel,
-        telefone: telefone,
-        turma: turma,
-        edEspecial: edEspecial,
-        email: emailUsuario
-      })
+    const resultado = await chamarAPI('atualizarDadosAluno', {
+      row: dadosAlunoAtual._row,
+      nome: nome,
+      responsavel: responsavel,
+      telefone: telefone,
+      turma: turma,
+      edEspecial: edEspecial,
+      email: emailUsuario
     });
-    
-    const resultado = await resposta.json();
     
     if (resultado.status === "ok") {
       dadosAlunoAtual.ALUNO = nome;
@@ -605,7 +591,6 @@ async function fazerUpload() {
     const base64 = e.target.result.split(',')[1];
     
     try {
-      // 🚀 ÚNICA MUDANÇA: chamarAPI em vez de fetch
       const result = await chamarAPI('uploadDocumento', {
         email: emailUsuario,
         escola: escola,
@@ -626,7 +611,7 @@ async function fazerUpload() {
         if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
         
         if (document.getElementById("modalDocumentos").style.display === "flex") {
-          buscarDocumentos(); // também será migrado para chamarAPI
+          buscarDocumentos();
         }
       } else {
         alert("Erro: " + (result.msg || "Falha no upload"));
@@ -646,19 +631,17 @@ async function buscarDocumentos() {
   
   mostrarLoading();
   try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "listarDocumentos",
-        email: emailUsuario,
-        escola: escola,
-        tipo: tipo,
-        nomeAluno: nomeAluno
-      })
+    const docs = await chamarAPI('listarDocumentos', {
+      email: emailUsuario,
+      escola: escola,
+      tipo: tipo,
+      nomeAluno: nomeAluno
     });
-    const docs = await resp.json();
     renderizarListaDocumentos(docs);
-  } catch (e) { console.error(e); alert("Erro ao buscar documentos."); }
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao buscar documentos.");
+  }
   esconderLoading();
 }
 
@@ -846,16 +829,12 @@ async function alterarSituacaoAluno(novaSituacao) {
   
   mostrarLoading();
   try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "alterarSituacao",
-        row: dadosAlunoAtual._row,
-        situacao: novaSituacao,
-        email: emailUsuario
-      })
+    const result = await chamarAPI('alterarSituacao', {
+      row: dadosAlunoAtual._row,
+      situacao: novaSituacao,
+      email: emailUsuario
     });
-    const result = await resp.json();
+    
     if (result.status === "ok") {
       fecharModalDetalhes();
       await carregarAlunos();
@@ -875,23 +854,20 @@ async function alterarSituacaoAluno(novaSituacao) {
 async function carregarAlunos() {
   mostrarLoading();
   try {
-    const resposta = await fetch(`${API_URL}?email=${emailUsuario}`);
-    const dados = await resposta.json();
-
+    const dados = await chamarAPI('carregarAlunos', {});
+    
     if (dados.erro) {
       alert("Acesso não autorizado");
       esconderLoading();
       return;
     }
 
-    // Guardar perfil/escola
     perfilUsuario = dados.perfil;
     escolaUsuario = dados.escola;
 
     document.getElementById("escolaUsuarioDisplay").textContent = 
       perfilUsuario === "SUPERVISOR" ? "🔭 Supervisor" : `🏫 ${escolaUsuario}`;
 
-    // Verificação extra: se alunos não for array, algo deu errado
     if (!Array.isArray(dados.alunos)) {
       console.error("Resposta inválida, 'alunos' não é array:", dados);
       alert("Erro na comunicação com o servidor.");
@@ -899,11 +875,9 @@ async function carregarAlunos() {
       return;
     }
 
-    // Aplicar fundo personalizado para secretarias
     if (perfilUsuario === "SECRETARIA") {
       aplicarFundoPorEscola(escolaUsuario);
     } else {
-      // Supervisor pode ter fundo padrão ou nenhum
       aplicarFundoPorEscola("default");
     }
 
@@ -914,23 +888,15 @@ async function carregarAlunos() {
 
     iniciarPollingNotificacoes();
     ajustarInterfacePorPerfil();
-
-    // Inicializar os filtros (preenche selects de escola, status etc.)
     inicializarFiltros();
 
-    // Para secretária, carregar imediatamente as turmas da escola dela
     if (perfilUsuario === "SECRETARIA") {
       await carregarTurmasParaFiltro();
     }
 
-    // Renderizar a lista com todos os alunos (os filtros ainda estão vazios)
     renderLista(dadosGlobais);
-
-    // Atualizar painel de resumo
     const resumo = gerarResumo(dadosGlobais);
     renderPainel(resumo);
-
-    // Resumo por escola (opcional, pode manter ou remover)
     const mapa = resumoPorEscola(dadosGlobais);
     renderPorEscola(mapa);
 
@@ -938,12 +904,12 @@ async function carregarAlunos() {
     if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
       if (btnProcessos) btnProcessos.style.display = "inline-block";
     }
-
   } catch (erro) {
     console.error("Erro:", erro);
   }
   esconderLoading();
 }
+
 // =========================
 // LISTA
 // =========================
@@ -1114,7 +1080,7 @@ async function salvarAlteracoesEmLote(row) {
   
   for (let chave in alteracoesPendentes) {
     const [linha, coluna] = chave.split('_').map(Number);
-    if (linha === row) { // só envia alterações da linha atual (aluno aberto)
+    if (linha === row) {
       alteracoes.push({
         row: linha,
         coluna: coluna,
@@ -1131,31 +1097,20 @@ async function salvarAlteracoesEmLote(row) {
   mostrarLoading();
   
   try {
-    const resposta = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "atualizarDocumentosEmLote",
-        alteracoes: alteracoes,
-        email: emailUsuario
-      })
+    const resultado = await chamarAPI('atualizarDocumentosEmLote', {
+      alteracoes: alteracoes,
+      email: emailUsuario
     });
     
-    const resultado = await resposta.json();
-    
     if (resultado.status === "ok") {
-    // Limpar pendências da linha salva
-    for (let chave in alteracoesPendentes) {
+      for (let chave in alteracoesPendentes) {
         const [linha] = chave.split('_').map(Number);
         if (linha === row) delete alteracoesPendentes[chave];
-    }
-    
-    // Fechar o modal
-    fecharModalDetalhes();
-    
-    // Recarregar os dados da lista (já atualiza tudo)
-    await carregarAlunos();
+      }
+      fecharModalDetalhes();
+      await carregarAlunos();
     } else {
-    alert("Erro ao salvar: " + (resultado.msg || "Tente novamente"));
+      alert("Erro ao salvar: " + (resultado.msg || "Tente novamente"));
     }
   } catch (erro) {
     console.error("Erro:", erro);
@@ -1322,15 +1277,13 @@ function fecharModalCadastroUsuario() {
 async function carregarUsuarios() {
   mostrarLoading();
   try {
-    const resposta = await fetch(`${API_URL}?tipo=usuarios&email=${emailUsuario}`);
-    const dados = await resposta.json();
-
+    const dados = await chamarAPI('listarUsuarios', {});
+    
     if (dados.erro) {
       alert("Acesso não autorizado");
       esconderLoading();
       return;
     }
-
     renderUsuarios(dados);
   } catch (erro) {
     console.error("Erro:", erro);
@@ -1388,7 +1341,6 @@ async function salvarUsuario() {
   
   const erroDiv = document.getElementById("erroUsuario");
   
-  // Validação de e-mail
   if (!email) {
     erroDiv.textContent = "E-mail obrigatório";
     erroDiv.style.display = "block";
@@ -1410,18 +1362,12 @@ async function salvarUsuario() {
   btnSalvar.disabled = true;
   
   try {
-    const resposta = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "cadastrarUsuario",
-        email: email,
-        perfil: perfil,
-        escola: escola,
-        escolasSupervisionadas: escolasSupervisionadas
-      })
+    const resultado = await chamarAPI('cadastrarUsuario', {
+      email: email,
+      perfil: perfil,
+      escola: escola,
+      escolasSupervisionadas: escolasSupervisionadas
     });
-    
-    const resultado = await resposta.json();
     
     if (resultado.status === "ok") {
       btnText.textContent = "✅ Cadastrado!";
@@ -1430,7 +1376,6 @@ async function salvarUsuario() {
       await new Promise(r => setTimeout(r, 600));
       
       fecharModalCadastroUsuario();
-      // Se o modal de lista de usuários estiver aberto, recarregar a lista
       if (document.getElementById("modalListaUsuarios").style.display === "flex") {
         carregarUsuarios();
       }
@@ -1449,6 +1394,7 @@ async function salvarUsuario() {
     btnSalvar.disabled = false;
   }
 }
+
 async function salvarAluno() {
   const nomeInput = document.getElementById("nomeAluno");
   const responsavelInput = document.getElementById("nomeResponsavel");
@@ -1460,7 +1406,7 @@ async function salvarAluno() {
   const nome = nomeInput ? nomeInput.value.trim() : "";
   const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
   const telefone = telefoneInput ? telefoneInput.value.trim() : "";
-  const edEspecial = edEspecialCheck ? edEspecialCheck.checked : false;   // ✅ declaração correta
+  const edEspecial = edEspecialCheck ? edEspecialCheck.checked : false;
   const turma = turmaSelect ? turmaSelect.value : "";
   
   const erroDiv = document.getElementById("erroNome");
@@ -1468,7 +1414,6 @@ async function salvarAluno() {
   const btnText = btnSalvar.querySelector(".btn-text");
   const spinner = btnSalvar.querySelector(".spinner-btn");
 
-  // Validação (apenas nome obrigatório)
   if (!nome) {
     if (erroDiv) erroDiv.style.display = "block";
     if (nomeInput) nomeInput.style.borderColor = "#dc2626";
@@ -1478,34 +1423,26 @@ async function salvarAluno() {
   if (erroDiv) erroDiv.style.display = "none";
   if (nomeInput) nomeInput.style.borderColor = "#e2e8f0";
 
-  // 🔥 VALIDAÇÃO DE TELEFONE (INSIRA AQUI)
   const telefoneNumeros = telefone.replace(/\D/g, '');
   if (telefoneNumeros.length > 0 && telefoneNumeros.length < 10) {
     alert("Telefone incompleto. Informe DDD + número (mínimo 10 dígitos).");
     return;
   }
 
-  // Mostrar loading no botão
   btnText.style.display = "none";
   spinner.style.display = "inline-block";
   btnSalvar.disabled = true;
 
   try {
-    const resposta = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "cadastrarAluno",
-        nome: nome,
-        responsavel: responsavel,
-        telefone: telefone,
-        turma: document.getElementById("selectTurmaAluno").value,
-        dataMatricula: dataMatriculaInput,
-        edEspecial: edEspecial,   // ✅ enviando o valor
-        email: emailUsuario
-      })
+    const resultado = await chamarAPI('cadastrarAluno', {
+      nome: nome,
+      responsavel: responsavel,
+      telefone: telefone,
+      turma: turma,
+      dataMatricula: dataMatriculaInput,
+      edEspecial: edEspecial,
+      email: emailUsuario
     });
-
-    const resultado = await resposta.json();
 
     if (resultado.status === "ok") {
       btnText.textContent = "✅ Cadastrado!";
@@ -1513,19 +1450,17 @@ async function salvarAluno() {
       btnText.style.display = "inline";
       document.getElementById("dataMatricula").value = "";
 
-      // Limpar campos
       if (nomeInput) nomeInput.value = "";
       if (responsavelInput) responsavelInput.value = "";
       if (telefoneInput) telefoneInput.value = "";
       if (edEspecialCheck) edEspecialCheck.checked = false;
       document.getElementById("selectTurmaAluno").selectedIndex = 0;
 
-      // Fechar modal e voltar à lista
       document.getElementById("novoAluno").style.display = "none";
       document.getElementById("lista").style.display = "";
       document.getElementById("painel").style.display = "";
 
-      await carregarAlunos(); // recarrega a lista
+      await carregarAlunos();
     } else {
       alert("Erro: " + (resultado.msg || "Tente novamente"));
     }
@@ -1539,6 +1474,7 @@ async function salvarAluno() {
     btnSalvar.disabled = false;
   }
 }
+
 function voltarApp() {
   // Esconde os modais (com verificação)
   const idsParaEsconder = ["usuarios", "cadastro", "novoAluno", "modalListaUsuarios", "modalCadastroUsuario"];
@@ -1694,8 +1630,7 @@ function iniciarPollingNotificacoes() {
 async function verificarNovasMensagens() {
   if (!emailUsuario) return;
   try {
-    const resp = await fetch(`${API_URL}?tipo=mensagens&email=${emailUsuario}`);
-    const mensagens = await resp.json();
+    const mensagens = await chamarAPI('listarMensagens', {});
     const naoLidas = mensagens.filter(m => !m.lida).length;
     atualizarBadge(naoLidas);
     mensagensCache = mensagens;
@@ -1726,13 +1661,11 @@ function fecharModalMensagens() {
 async function atualizarMensagens() {
   mostrarLoading();
   try {
-    const resp = await fetch(`${API_URL}?tipo=mensagens&email=${emailUsuario}`);
-    const mensagens = await resp.json();
+    const mensagens = await chamarAPI('listarMensagens', {});
     mensagensCache = mensagens;
     renderizarMensagens(mensagens);
-    // Marcar como lidas
     mensagens.filter(m => !m.lida).forEach(m => marcarComoLida(m.id));
-    verificarNovasMensagens(); // atualiza badge
+    verificarNovasMensagens();
   } catch (e) {
     alert("Erro ao carregar mensagens.");
   }
@@ -1769,10 +1702,7 @@ function renderizarMensagens(mensagens) {
 }
 
 async function marcarComoLida(id) {
-  await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify({ acao: 'marcarComoLida', email: emailUsuario, id: id })
-  });
+  await chamarAPI('marcarComoLida', { email: emailUsuario, id: id });
 }
 
 function responderMensagem(emailRemetente, assuntoOriginal) {
@@ -1799,9 +1729,7 @@ async function preencherSelectDestino() {
   const select = document.getElementById('selectDestinoMensagem');
   select.innerHTML = '<option value="">Selecione...</option>';
   if (perfilUsuario === 'SECRETARIA') {
-    // Buscar supervisores da escola
-    const resp = await fetch(`${API_URL}?tipo=supervisoresDaEscola&escola=${encodeURIComponent(escolaUsuario)}&email=${emailUsuario}`);
-    const supervisores = await resp.json();
+    const supervisores = await chamarAPI('supervisoresDaEscola', { escola: escolaUsuario });
     if (supervisores.length === 0) {
       select.innerHTML = '<option value="">Nenhum supervisor cadastrado</option>';
     } else {
@@ -1816,10 +1744,7 @@ async function preencherSelectDestino() {
       }
     }
   } else if (perfilUsuario === 'SUPERVISOR') {
-    // Listar escolas que supervisiona (obtidas do login)
-    // Você pode usar a variável global escolasSupervisionadas ou buscar do servidor
-    const resp = await fetch(`${API_URL}?tipo=escolasSupervisionadas&email=${emailUsuario}`);
-    const escolas = await resp.json();
+    const escolas = await chamarAPI('escolasSupervisionadas', {});
     escolas.forEach(esc => {
       const opt = document.createElement('option');
       opt.value = `ESCOLA|${esc}`;
@@ -1859,19 +1784,15 @@ async function enviarMensagem() {
 
   mostrarLoading();
   try {
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        acao: 'enviarMensagem',
-        email: emailUsuario,
-        destinoTipo,
-        destinoValor,
-        assunto,
-        mensagem,
-        anexos
-      })
+    const result = await chamarAPI('enviarMensagem', {
+      email: emailUsuario,
+      destinoTipo,
+      destinoValor,
+      assunto,
+      mensagem,
+      anexos
     });
-    const result = await resp.json();
+    
     esconderLoading();
     if (result.status === 'ok') {
       alert("Mensagem enviada com sucesso!");
@@ -1906,9 +1827,7 @@ let turmasGlobais = [];
 async function carregarTurmas(escola = "") {
   mostrarLoading();
   try {
-    const url = `${API_URL}?tipo=turmas&email=${emailUsuario}` + (escola ? `&escola=${encodeURIComponent(escola)}` : "");
-    const resposta = await fetch(url);
-    const turmas = await resposta.json();
+    const turmas = await chamarAPI('listarTurmas', { escola: escola });
     turmasGlobais = turmas;
     renderListaTurmas(turmas);
     preencherSelectEscolasTurma();
@@ -1973,73 +1892,20 @@ function fecharModalCadastroTurma() {
 }
 
 // NOVA FUNÇÃO SALVAR TURMA (MÚLTIPLAS LINHAS)
-async function salvarTurma() {
-  const escola = document.getElementById("selectEscolaTurma").value;
-  const turmasTexto = document.getElementById("nomeTurma").value.trim();
-  const erroDiv = document.getElementById("erroTurma");
-  
-  if (!escola) {
-    erroDiv.textContent = "Selecione uma escola.";
-    erroDiv.style.display = "block";
-    return;
-  }
-  if (!turmasTexto) {
-    erroDiv.textContent = "Digite pelo menos uma turma.";
-    erroDiv.style.display = "block";
-    return;
-  }
-  
-  const turmas = turmasTexto.split('\n')
-    .map(t => t.trim())
-    .filter(t => t !== "");
-  
-  if (turmas.length === 0) {
-    erroDiv.textContent = "Nenhuma turma válida informada.";
-    erroDiv.style.display = "block";
-    return;
-  }
-  
-  erroDiv.style.display = "none";
+async function carregarTurmas(escola = "") {
   mostrarLoading();
-  
-  let sucessos = 0;
-  let erros = [];
-  
-  for (let turma of turmas) {
-    try {
-      const resp = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          acao: "cadastrarTurma",
-          email: emailUsuario,
-          escola: escola,
-          turma: turma
-        })
-      });
-      const result = await resp.json();
-      if (result.status === "ok") {
-        sucessos++;
-      } else {
-        erros.push(`${turma}: ${result.msg || "Erro desconhecido"}`);
-      }
-    } catch (e) {
-      erros.push(`${turma}: Erro de conexão`);
-    }
+  try {
+    const turmas = await chamarAPI('listarTurmas', { escola: escola });
+    turmasGlobais = turmas;
+    renderListaTurmas(turmas);
+    preencherSelectEscolasTurma();
+  } catch (erro) {
+    console.error("Erro ao carregar turmas:", erro);
+    alert("Erro ao carregar turmas.");
   }
-  
   esconderLoading();
-  
-  let mensagem = "";
-  if (sucessos > 0) mensagem += `✅ ${sucessos} turma(s) cadastrada(s) com sucesso.`;
-  if (erros.length > 0) mensagem += `\n❌ Erros:\n${erros.join('\n')}`;
-  
-  alert(mensagem);
-  
-  if (sucessos > 0) {
-    fecharModalCadastroTurma();
-    carregarTurmas(document.getElementById("filtroEscolaTurma").value);
-  }
 }
+
 // Listener para filtro de turmas (pode ficar aqui)
 document.addEventListener("DOMContentLoaded", function() {
   const filtro = document.getElementById("filtroEscolaTurma");
