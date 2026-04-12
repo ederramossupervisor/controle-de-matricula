@@ -85,41 +85,48 @@ const FUNDOS_ESCOLAS = {
 function chamarAPI(acao, dados = {}) {
   return new Promise((resolve, reject) => {
     const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-    const callbackName = '_callback_' + requestId;
+    
+    // Abre um popup pequeno e oculto (ou minimamente visível)
+    const popup = window.open('', '_blank', 'width=400,height=300,left=9999,top=9999');
+    if (!popup) {
+      reject(new Error('Popup bloqueado. Permita popups para este site.'));
+      return;
+    }
 
-    // Registra o callback global temporário
-    window[callbackName] = (status, payload, error) => {
-      cleanup();
-      if (status === 'success') {
-        try {
-          const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload;
-          resolve(parsed);
-        } catch (e) {
-          resolve(payload);
-        }
-      } else {
-        reject(new Error(error || 'Erro desconhecido'));
-      }
-    };
-
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.name = requestId;
-    document.body.appendChild(iframe);
-
-    console.log(`[chamarAPI] Iniciando ${acao} (${requestId})`);
+    console.log(`[chamarAPI] Iniciando ${acao} via popup (${requestId})`);
 
     const timeout = setTimeout(() => {
       cleanup();
-      console.error(`[chamarAPI] Timeout para ${acao}`);
       reject(new Error('Tempo limite excedido'));
     }, 30000);
 
     const cleanup = () => {
       clearTimeout(timeout);
-      delete window[callbackName];
-      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+      window.removeEventListener('message', handler);
+      if (popup && !popup.closed) popup.close();
     };
+
+    const handler = (event) => {
+      // Em desenvolvimento, aceitamos qualquer origem. Em produção, restrinja se desejar.
+      // if (event.origin !== 'https://script.google.com') return;
+      
+      if (event.data && event.data.requestId === requestId) {
+        cleanup();
+        if (event.data.status === 'success') {
+          try {
+            const payload = typeof event.data.payload === 'string' 
+              ? JSON.parse(event.data.payload) 
+              : event.data.payload;
+            resolve(payload);
+          } catch (e) {
+            resolve(event.data.payload);
+          }
+        } else {
+          reject(new Error(event.data.error || 'Erro desconhecido'));
+        }
+      }
+    };
+    window.addEventListener('message', handler);
 
     const dadosCompletos = {
       ...dados,
@@ -133,10 +140,11 @@ function chamarAPI(acao, dados = {}) {
     const usarPOST = !acoesGET.includes(acao);
 
     if (usarPOST) {
+      // Cria formulário dinâmico com target no popup
       const form = document.createElement('form');
       form.method = 'POST';
       form.action = API_URL;
-      form.target = requestId;
+      form.target = popup.name || '_blank';
       const input = document.createElement('input');
       input.type = 'hidden';
       input.name = 'data';
@@ -146,14 +154,18 @@ function chamarAPI(acao, dados = {}) {
       form.submit();
       document.body.removeChild(form);
     } else {
+      // GET: monta URL e define como src do popup
       const url = new URL(API_URL);
       Object.keys(dadosCompletos).forEach(key => {
         let valor = dadosCompletos[key];
         if (typeof valor === 'object') valor = JSON.stringify(valor);
         url.searchParams.append(key, valor);
       });
-      iframe.src = url.toString();
+      popup.location.href = url.toString();
     }
+
+    // Foco opcional (pode ajudar a evitar bloqueios)
+    popup.focus();
   });
 }
 
