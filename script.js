@@ -85,18 +85,26 @@ const FUNDOS_ESCOLAS = {
 function chamarAPI(acao, dados = {}) {
   return new Promise((resolve, reject) => {
     const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
-    
-    // Listener global temporário para depuração (log de todas as mensagens)
-    const debugListener = (e) => {
-      console.log('[DEBUG postMessage] origem:', e.origin, 'dados:', e.data);
+    const callbackName = '_callback_' + requestId;
+
+    // Registra o callback global temporário
+    window[callbackName] = (status, payload, error) => {
+      cleanup();
+      if (status === 'success') {
+        try {
+          const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload;
+          resolve(parsed);
+        } catch (e) {
+          resolve(payload);
+        }
+      } else {
+        reject(new Error(error || 'Erro desconhecido'));
+      }
     };
-    window.addEventListener('message', debugListener);
-    
+
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     iframe.name = requestId;
-    // Adicionar sandbox pode ajudar (experimental)
-    iframe.sandbox = 'allow-scripts allow-same-origin allow-forms';
     document.body.appendChild(iframe);
 
     console.log(`[chamarAPI] Iniciando ${acao} (${requestId})`);
@@ -109,32 +117,9 @@ function chamarAPI(acao, dados = {}) {
 
     const cleanup = () => {
       clearTimeout(timeout);
-      window.removeEventListener('message', handler);
-      window.removeEventListener('message', debugListener);
+      delete window[callbackName];
       if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
     };
-
-    const handler = (event) => {
-      // Não filtrar por origem para teste
-      console.log(`[handler] Mensagem recebida:`, event.data);
-      
-      if (event.data && event.data.requestId === requestId) {
-        cleanup();
-        if (event.data.status === 'success') {
-          try {
-            const payload = typeof event.data.payload === 'string' 
-              ? JSON.parse(event.data.payload) 
-              : event.data.payload;
-            resolve(payload);
-          } catch (e) {
-            resolve(event.data.payload);
-          }
-        } else {
-          reject(new Error(event.data.error || 'Erro desconhecido'));
-        }
-      }
-    };
-    window.addEventListener('message', handler);
 
     const dadosCompletos = {
       ...dados,
@@ -171,6 +156,7 @@ function chamarAPI(acao, dados = {}) {
     }
   });
 }
+
 function aplicarFundoPorEscola(escola) {
   const body = document.body;
   let imagemFundo = FUNDOS_ESCOLAS[escola];
