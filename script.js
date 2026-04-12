@@ -1371,7 +1371,8 @@ async function salvarUsuario() {
         acao: "cadastrarUsuario",
         email: email,
         perfil: perfil,
-        escola: escola
+        escola: escola,
+        emailLogado: emailUsuario
       })
     });
     
