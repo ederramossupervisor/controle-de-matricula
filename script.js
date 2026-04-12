@@ -1278,6 +1278,9 @@ function abrirModalCadastroUsuario() {
   document.getElementById("novoEmail").value = "";
   document.getElementById("perfil").value = "SECRETARIA";
   document.getElementById("erroUsuario").style.display = "none";
+  ajustarOpcoesCadastroUsuario();
+  document.getElementById("modalCadastroUsuario").style.display = "flex";
+}
 
   // Preencher dropdown de escolas (usando a constante LISTA_ESCOLAS)
   const selectEscola = document.getElementById("escola");
