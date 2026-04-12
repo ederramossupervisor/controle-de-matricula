@@ -222,6 +222,38 @@ function atualizarCamposProcesso() {
   }
   // Para os demais tipos, nenhum campo extra é exibido.
 }
+
+function configurarCadastroUsuario() {
+  const perfilSelect = document.getElementById('perfil');
+  const campoEscolaContainer = document.getElementById('campoEscolaContainer');
+  const campoEscolasSupervisor = document.getElementById('campoEscolasSupervisor');
+  
+  perfilSelect.addEventListener('change', function() {
+    if (this.value === 'SUPERVISOR') {
+      campoEscolaContainer.style.display = 'none';
+      campoEscolasSupervisor.style.display = 'block';
+      popularCheckboxesEscolas();
+    } else {
+      campoEscolaContainer.style.display = 'block';
+      campoEscolasSupervisor.style.display = 'none';
+    }
+  });
+}
+
+function popularCheckboxesEscolas(escolasSelecionadas = []) {
+  const container = document.getElementById('checkboxesEscolas');
+  container.innerHTML = '';
+  LISTA_ESCOLAS.forEach(escola => {
+    const div = document.createElement('div');
+    div.className = 'checkbox-moderno';
+    div.innerHTML = `
+      <input type="checkbox" id="esc_${escola.replace(/\s+/g, '_')}" value="${escola}" ${escolasSelecionadas.includes(escola) ? 'checked' : ''}>
+      <label for="esc_${escola.replace(/\s+/g, '_')}">${escola}</label>
+    `;
+    container.appendChild(div);
+  });
+}
+
 function atualizarSubcategorias() {
   const cat = document.getElementById("cadastroProcessoCategoria")?.value;
   const wrapper = document.getElementById("subcategoriaWrapper");
