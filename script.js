@@ -85,9 +85,18 @@ const FUNDOS_ESCOLAS = {
 function chamarAPI(acao, dados = {}) {
   return new Promise((resolve, reject) => {
     const requestId = 'req_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+    
+    // Listener global temporário para depuração (log de todas as mensagens)
+    const debugListener = (e) => {
+      console.log('[DEBUG postMessage] origem:', e.origin, 'dados:', e.data);
+    };
+    window.addEventListener('message', debugListener);
+    
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     iframe.name = requestId;
+    // Adicionar sandbox pode ajudar (experimental)
+    iframe.sandbox = 'allow-scripts allow-same-origin allow-forms';
     document.body.appendChild(iframe);
 
     console.log(`[chamarAPI] Iniciando ${acao} (${requestId})`);
@@ -101,14 +110,13 @@ function chamarAPI(acao, dados = {}) {
     const cleanup = () => {
       clearTimeout(timeout);
       window.removeEventListener('message', handler);
+      window.removeEventListener('message', debugListener);
       if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
     };
 
     const handler = (event) => {
-      // Aceitar qualquer origem durante desenvolvimento (depois restrinja para 'https://script.google.com')
-      // if (event.origin !== 'https://script.google.com') return;
-      
-      console.log(`[chamarAPI] Mensagem recebida:`, event.data);
+      // Não filtrar por origem para teste
+      console.log(`[handler] Mensagem recebida:`, event.data);
       
       if (event.data && event.data.requestId === requestId) {
         cleanup();
