@@ -605,21 +605,17 @@ async function fazerUpload() {
     const base64 = e.target.result.split(',')[1];
     
     try {
-      const resp = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          acao: "uploadDocumento",
-          email: emailUsuario,
-          escola: escola,
-          tipo: tipo,
-          nomeAluno: nomeAluno,
-          fileName: file.name,
-          mimeType: file.type,
-          fileBase64: base64
-        })
+      // 🚀 ÚNICA MUDANÇA: chamarAPI em vez de fetch
+      const result = await chamarAPI('uploadDocumento', {
+        email: emailUsuario,
+        escola: escola,
+        tipo: tipo,
+        nomeAluno: nomeAluno,
+        fileName: file.name,
+        mimeType: file.type,
+        fileBase64: base64
       });
       
-      const result = await resp.json();
       esconderLoading();
       
       if (result.status === "ok") {
@@ -629,9 +625,8 @@ async function fazerUpload() {
         document.getElementById("uploadTipoDoc").value = "";
         if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
         
-        // Recarregar lista de documentos se o modal estiver aberto
         if (document.getElementById("modalDocumentos").style.display === "flex") {
-          buscarDocumentos();
+          buscarDocumentos(); // também será migrado para chamarAPI
         }
       } else {
         alert("Erro: " + (result.msg || "Falha no upload"));
@@ -643,6 +638,7 @@ async function fazerUpload() {
   };
   reader.readAsDataURL(file);
 }
+
 async function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
