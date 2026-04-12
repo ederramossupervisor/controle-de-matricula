@@ -1297,7 +1297,7 @@ function abrirModalCadastroUsuario() {
   document.getElementById("perfil").value = "SECRETARIA";
   document.getElementById("erroUsuario").style.display = "none";
 
-  // Preencher dropdown de escolas (usando a constante LISTA_ESCOLAS)
+  // Preencher dropdown de escolas
   const selectEscola = document.getElementById("escola");
   selectEscola.innerHTML = '<option value="">Selecione a escola</option>';
   LISTA_ESCOLAS.forEach(esc => {
@@ -1306,11 +1306,17 @@ function abrirModalCadastroUsuario() {
     opt.textContent = esc;
     selectEscola.appendChild(opt);
   });
-  selectEscola.value = ""; // garante que nenhuma escola fique selecionada
+  selectEscola.value = "";
+
+  // 🔥 Reset da visibilidade dos containers
+  document.getElementById('campoEscolaContainer').style.display = 'block';
+  document.getElementById('campoEscolasSupervisor').style.display = 'none';
+  
+  // Limpar checkboxes
+  popularCheckboxesEscolas([]);
 
   document.getElementById("modalCadastroUsuario").style.display = "flex";
 }
-
 function fecharModalCadastroUsuario() {
   document.getElementById("modalCadastroUsuario").style.display = "none";
 }
@@ -1847,7 +1853,11 @@ window.onload = function () {
     document.getElementById("email").value = emailSalvo;
     carregarAlunos();
   }
+
+  configurarCadastroUsuario();
 };
+
+
 
 document.getElementById("novoAluno").addEventListener("click", function(e) {
   if (e.target === this) {
