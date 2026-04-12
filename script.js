@@ -90,8 +90,11 @@ function chamarAPI(acao, dados = {}) {
     iframe.name = requestId;
     document.body.appendChild(iframe);
 
+    console.log(`[chamarAPI] Iniciando ${acao} (${requestId})`);
+
     const timeout = setTimeout(() => {
       cleanup();
+      console.error(`[chamarAPI] Timeout para ${acao}`);
       reject(new Error('Tempo limite excedido'));
     }, 30000);
 
@@ -102,6 +105,11 @@ function chamarAPI(acao, dados = {}) {
     };
 
     const handler = (event) => {
+      // Aceitar qualquer origem durante desenvolvimento (depois restrinja para 'https://script.google.com')
+      // if (event.origin !== 'https://script.google.com') return;
+      
+      console.log(`[chamarAPI] Mensagem recebida:`, event.data);
+      
       if (event.data && event.data.requestId === requestId) {
         cleanup();
         if (event.data.status === 'success') {
@@ -127,7 +135,6 @@ function chamarAPI(acao, dados = {}) {
       requestId: requestId
     };
 
-    // Ações que tradicionalmente usam GET
     const acoesGET = ['carregarAlunos', 'listarProcessos', 'listarDocumentos', 'listarMensagens',
                       'turmas', 'usuarios', 'processos', 'escolasSupervisionadas', 'supervisoresDaEscola'];
     const usarPOST = !acoesGET.includes(acao);
@@ -156,7 +163,6 @@ function chamarAPI(acao, dados = {}) {
     }
   });
 }
-
 function aplicarFundoPorEscola(escola) {
   const body = document.body;
   let imagemFundo = FUNDOS_ESCOLAS[escola];
