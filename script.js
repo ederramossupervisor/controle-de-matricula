@@ -112,7 +112,6 @@ function toggleDarkMode() {
 
 function getEscolasPermitidas() {
   if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'ecramos@sedu.es.gov.br') {
-    // Retorna as escolas supervisionadas já carregadas, ou array vazio se ainda não carregou
     return window.escolasSupervisionadas || [];
   }
   return LISTA_ESCOLAS;
@@ -865,12 +864,14 @@ async function carregarAlunos() {
       return;
     }
 
-    // Após receber os dados:
+    // 🔥 Armazenar escolas supervisionadas (para supervisores comuns)
     if (dados.escolasSupervisionadas) {
       window.escolasSupervisionadas = dados.escolasSupervisionadas;
+    } else {
+      window.escolasSupervisionadas = [];
     }
 
-    // Guardar perfil/escola
+    // Guardar perfil/escola do usuário
     perfilUsuario = dados.perfil;
     escolaUsuario = dados.escola;
 
@@ -889,7 +890,6 @@ async function carregarAlunos() {
     if (perfilUsuario === "SECRETARIA") {
       aplicarFundoPorEscola(escolaUsuario);
     } else {
-      // Supervisor pode ter fundo padrão ou nenhum
       aplicarFundoPorEscola("default");
     }
 
@@ -903,19 +903,24 @@ async function carregarAlunos() {
     // Inicializar os filtros (preenche selects de escola, status etc.)
     inicializarFiltros();
 
+    // 🔥 Recarregar os selects de escola com a lista restrita
+    preencherSelectsProcessos();
+    preencherSelectEscolasDoc();
+    preencherSelectEscolasTurma();
+
     // Para secretária, carregar imediatamente as turmas da escola dela
     if (perfilUsuario === "SECRETARIA") {
       await carregarTurmasParaFiltro();
     }
 
-    // Renderizar a lista com todos os alunos (os filtros ainda estão vazios)
+    // Renderizar a lista com todos os alunos
     renderLista(dadosGlobais);
 
     // Atualizar painel de resumo
     const resumo = gerarResumo(dadosGlobais);
     renderPainel(resumo);
 
-    // Resumo por escola (opcional, pode manter ou remover)
+    // Resumo por escola (opcional)
     const mapa = resumoPorEscola(dadosGlobais);
     renderPorEscola(mapa);
 
@@ -929,6 +934,7 @@ async function carregarAlunos() {
   }
   esconderLoading();
 }
+
 // =========================
 // LISTA
 // =========================
