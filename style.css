@@ -1157,7 +1157,7 @@ textarea:focus {
 }
 /* Fundo da tela de login */
 #login {
-  background-image: url('imagens/login-bg.jpg');
+  background-image: url('imagens/login-bg.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
