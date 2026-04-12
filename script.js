@@ -110,6 +110,17 @@ function toggleDarkMode() {
   updateDarkModeIcon(newTheme);
 }
 
+function getEscolasPermitidas() {
+  if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'ecramos@sedu.es.gov.br') {
+    // Idealmente, as escolas supervisionadas já vieram no login e estão armazenadas em algum lugar.
+    // Como não temos esse dado no front-end atualmente, faremos uma chamada ao GAS.
+    // Para simplificar, podemos armazenar as escolas supervisionadas em uma variável global
+    // durante o carregamento dos alunos.
+    return window.escolasSupervisionadas || [];
+  }
+  return LISTA_ESCOLAS;
+}
+
 // =========================
 // GESTÃO DE PROCESSOS (Edocs)
 // =========================
@@ -854,6 +865,11 @@ async function carregarAlunos() {
       alert("Acesso não autorizado");
       esconderLoading();
       return;
+    }
+
+    // Após receber os dados:
+    if (dados.escolasSupervisionadas) {
+      window.escolasSupervisionadas = dados.escolasSupervisionadas;
     }
 
     // Guardar perfil/escola
