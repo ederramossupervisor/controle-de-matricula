@@ -112,15 +112,11 @@ function toggleDarkMode() {
 
 function getEscolasPermitidas() {
   if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'ecramos@sedu.es.gov.br') {
-    // Idealmente, as escolas supervisionadas já vieram no login e estão armazenadas em algum lugar.
-    // Como não temos esse dado no front-end atualmente, faremos uma chamada ao GAS.
-    // Para simplificar, podemos armazenar as escolas supervisionadas em uma variável global
-    // durante o carregamento dos alunos.
+    // Retorna as escolas supervisionadas já carregadas, ou array vazio se ainda não carregou
     return window.escolasSupervisionadas || [];
   }
   return LISTA_ESCOLAS;
 }
-
 // =========================
 // GESTÃO DE PROCESSOS (Edocs)
 // =========================
@@ -163,11 +159,12 @@ function mostrarAbaBuscaProcesso() {
 function preencherSelectsProcessos() {
   const selectEscolaCad = document.getElementById("cadastroProcessoEscola");
   const selectEscolaFiltro = document.getElementById("filtroProcessoEscola");
+  const escolas = getEscolasPermitidas();
   
   [selectEscolaCad, selectEscolaFiltro].forEach(select => {
     if (!select) return;
     select.innerHTML = '<option value="">' + (select.id.includes('filtro') ? 'Todas as escolas' : 'Selecione a escola') + '</option>';
-    LISTA_ESCOLAS.forEach(esc => select.appendChild(new Option(esc, esc)));
+    escolas.forEach(esc => select.appendChild(new Option(esc, esc)));
   });
   
   // Visibilidade dos campos de escola conforme perfil
@@ -176,7 +173,6 @@ function preencherSelectsProcessos() {
   if (perfilUsuario === "SECRETARIA") {
     if (cadWrapper) cadWrapper.style.display = "none";
     if (filtroWrapper) filtroWrapper.style.display = "none";
-    // Para secretaria, a escola é automática (escolaUsuario)
   } else {
     if (cadWrapper) cadWrapper.style.display = "block";
     if (filtroWrapper) filtroWrapper.style.display = "block";
@@ -547,10 +543,12 @@ function mostrarAbaListagem() {
 function preencherSelectEscolasDoc() {
   const selectUpload = document.getElementById("uploadEscola");
   const selectFiltro = document.getElementById("filtroEscolaDoc");
+  const escolas = getEscolasPermitidas();
+  
   [selectUpload, selectFiltro].forEach(select => {
     if (!select) return;
     select.innerHTML = '<option value="">' + (select.id === 'filtroEscolaDoc' ? 'Todas as escolas' : 'Selecione a escola') + '</option>';
-    LISTA_ESCOLAS.forEach(esc => select.appendChild(new Option(esc, esc)));
+    escolas.forEach(esc => select.appendChild(new Option(esc, esc)));
   });
   
   // Ajustar visibilidade conforme perfil
@@ -564,7 +562,6 @@ function preencherSelectEscolasDoc() {
     if (filtroWrapper) filtroWrapper.style.display = "block";
   }
 }
-
 async function fazerUpload() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("uploadEscola").value : escolaUsuario;
   const tipo = document.getElementById("uploadTipoDoc").value;
@@ -672,8 +669,9 @@ function inicializarFiltros() {
   // Preencher escolas (apenas supervisor, mas já preenchemos para usar no filtro de turmas)
   const selectEscola = document.getElementById("filtroEscola");
   if (selectEscola) {
+    const escolas = getEscolasPermitidas();
     selectEscola.innerHTML = '<option value="">Todas as escolas</option>';
-    LISTA_ESCOLAS.forEach(esc => {
+    escolas.forEach(esc => {
       const opt = document.createElement("option");
       opt.value = esc;
       opt.textContent = esc;
@@ -1294,24 +1292,24 @@ function abrirModalCadastroUsuario() {
   document.getElementById("novoEmail").value = "";
   document.getElementById("perfil").value = "SECRETARIA";
   document.getElementById("erroUsuario").style.display = "none";
-  ajustarOpcoesCadastroUsuario();
-  document.getElementById("modalCadastroUsuario").style.display = "flex";
-}
 
-  // Preencher dropdown de escolas (usando a constante LISTA_ESCOLAS)
+  // Preencher dropdown de escolas com as escolas permitidas
   const selectEscola = document.getElementById("escola");
+  const escolas = getEscolasPermitidas();
   selectEscola.innerHTML = '<option value="">Selecione a escola</option>';
-  LISTA_ESCOLAS.forEach(esc => {
+  escolas.forEach(esc => {
     const opt = document.createElement("option");
     opt.value = esc;
     opt.textContent = esc;
     selectEscola.appendChild(opt);
   });
-  selectEscola.value = ""; // garante que nenhuma escola fique selecionada
+  selectEscola.value = "";
+
+  // Remover opção de Supervisor se for supervisor comum
+  ajustarOpcoesCadastroUsuario();
 
   document.getElementById("modalCadastroUsuario").style.display = "flex";
 }
-
 function fecharModalCadastroUsuario() {
   document.getElementById("modalCadastroUsuario").style.display = "none";
 }
@@ -1721,11 +1719,12 @@ function renderListaTurmas(turmas) {
 function preencherSelectEscolasTurma() {
   const selectFiltro = document.getElementById("filtroEscolaTurma");
   const selectCadastro = document.getElementById("selectEscolaTurma");
+  const escolas = getEscolasPermitidas();
   
   [selectFiltro, selectCadastro].forEach(select => {
     if (!select) return;
     select.innerHTML = '<option value="">Todas as escolas</option>';
-    LISTA_ESCOLAS.forEach(esc => {
+    escolas.forEach(esc => {
       const opt = document.createElement("option");
       opt.value = esc;
       opt.textContent = esc;
