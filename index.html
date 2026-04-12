@@ -365,6 +365,12 @@
           <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
             <button class="btn-primary" onclick="abrirModalCadastroUsuario()" style="padding: 10px 20px;">➕ Novo usuário</button>
           </div>
+          <div id="campoEscolasSupervisor" style="display:none; margin-top: 16px;">
+            <label style="font-weight: 500; margin-bottom: 8px; display: block;">🏫 Escolas que supervisiona:</label>
+            <div id="checkboxesEscolas" style="max-height: 200px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px;">
+              <!-- Checkboxes serão populados via JS -->
+            </div>
+          </div>
           <div id="listaUsuariosContainer"></div>
           <div class="modal-actions" style="margin-top: 20px;">
             <button class="btn-cancelar" onclick="fecharModalListaUsuarios()">Fechar</button>
