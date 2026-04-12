@@ -1155,3 +1155,30 @@ textarea:focus {
   background: var(--text-muted);
   border-radius: 10px;
 }
+/* Fundo da tela de login */
+#login {
+  background-image: url('imagens/login-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Overlay escuro opcional (melhora a legibilidade do card de login) */
+#login::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.25);   /* 25% de preto – ajuste conforme desejar */
+  z-index: 1;
+}
+
+/* Garante que o conteúdo fique acima do overlay */
+#login .login-container {
+  position: relative;
+  z-index: 2;
+}
