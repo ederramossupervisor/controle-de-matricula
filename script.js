@@ -916,6 +916,7 @@ async function carregarAlunos() {
     document.getElementById("login").style.display = "none";
     document.getElementById("app").style.display = "block";
 
+    iniciarPollingNotificacoes();
     ajustarInterfacePorPerfil();
 
     // Inicializar os filtros (preenche selects de escola, status etc.)
@@ -1670,6 +1671,7 @@ function renderPorEscola(mapa) {
 // =========================
 function logout() {
   if (!confirm("Deseja sair do sistema?")) return;
+  if (pollingInterval) clearInterval(pollingInterval);
 
   emailUsuario = "";
   localStorage.removeItem("emailUsuario");
@@ -1686,6 +1688,217 @@ function logout() {
 
   document.getElementById("email").value = "";
   dadosGlobais = [];
+}
+
+function iniciarPollingNotificacoes() {
+  if (pollingInterval) clearInterval(pollingInterval);
+  pollingInterval = setInterval(verificarNovasMensagens, 30000);
+}
+
+async function verificarNovasMensagens() {
+  if (!emailUsuario) return;
+  try {
+    const resp = await fetch(`${API_URL}?tipo=mensagens&email=${emailUsuario}`);
+    const mensagens = await resp.json();
+    const naoLidas = mensagens.filter(m => !m.lida).length;
+    atualizarBadge(naoLidas);
+    mensagensCache = mensagens;
+  } catch (e) {
+    console.error("Erro ao buscar notificações", e);
+  }
+}
+
+function atualizarBadge(qtd) {
+  const badge = document.getElementById('badgeNotificacoes');
+  if (qtd > 0) {
+    badge.style.display = 'block';
+    badge.textContent = qtd > 9 ? '9+' : qtd;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+async function abrirModalMensagens() {
+  document.getElementById('modalMensagens').style.display = 'flex';
+  await atualizarMensagens();
+}
+
+function fecharModalMensagens() {
+  document.getElementById('modalMensagens').style.display = 'none';
+}
+
+async function atualizarMensagens() {
+  mostrarLoading();
+  try {
+    const resp = await fetch(`${API_URL}?tipo=mensagens&email=${emailUsuario}`);
+    const mensagens = await resp.json();
+    mensagensCache = mensagens;
+    renderizarMensagens(mensagens);
+    // Marcar como lidas
+    mensagens.filter(m => !m.lida).forEach(m => marcarComoLida(m.id));
+    verificarNovasMensagens(); // atualiza badge
+  } catch (e) {
+    alert("Erro ao carregar mensagens.");
+  }
+  esconderLoading();
+}
+
+function renderizarMensagens(mensagens) {
+  const container = document.getElementById('listaMensagensContainer');
+  container.innerHTML = '';
+  if (!mensagens.length) {
+    container.innerHTML = '<p>Nenhuma mensagem.</p>';
+    return;
+  }
+  mensagens.forEach(msg => {
+    const div = document.createElement('div');
+    div.className = 'usuario-card';
+    div.style.backgroundColor = msg.lida ? '#fff' : '#f0f7ff';
+    const data = new Date(msg.dataHora).toLocaleString('pt-BR');
+    const anexosHtml = msg.anexos.map(a => 
+      `<a href="${a.url}" target="_blank" style="margin-right:8px;">📎 ${a.nome}</a>`
+    ).join('');
+    div.innerHTML = `
+      <div class="usuario-avatar">${msg.remetentePerfil === 'SUPERVISOR' ? '👑' : '📋'}</div>
+      <div class="usuario-info">
+        <strong>${msg.assunto || '(sem assunto)'}</strong>
+        <p>De: ${msg.remetenteEmail} | ${data}</p>
+        <p>${msg.mensagem}</p>
+        ${anexosHtml ? `<div>${anexosHtml}</div>` : ''}
+        <button class="btn-pequeno" onclick="responderMensagem('${msg.remetenteEmail}', '${msg.assunto}')">↩️ Responder</button>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+async function marcarComoLida(id) {
+  await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ acao: 'marcarComoLida', email: emailUsuario, id: id })
+  });
+}
+
+function responderMensagem(emailRemetente, assuntoOriginal) {
+  abrirModalNovaMensagem();
+  document.getElementById('assuntoMensagem').value = 'Re: ' + assuntoOriginal;
+  // Para secretaria, o destinatário é supervisor; para supervisor, precisamos definir a escola
+  // Vamos simplificar: o usuário escolhe no dropdown.
+}
+
+// Modal Nova Mensagem
+async function abrirModalNovaMensagem() {
+  document.getElementById('modalNovaMensagem').style.display = 'flex';
+  await preencherSelectDestino();
+}
+
+function fecharModalNovaMensagem() {
+  document.getElementById('modalNovaMensagem').style.display = 'none';
+  document.getElementById('assuntoMensagem').value = '';
+  document.getElementById('textoMensagem').value = '';
+  document.getElementById('anexosMensagem').value = '';
+}
+
+async function preencherSelectDestino() {
+  const select = document.getElementById('selectDestinoMensagem');
+  select.innerHTML = '<option value="">Selecione...</option>';
+  if (perfilUsuario === 'SECRETARIA') {
+    // Buscar supervisores da escola
+    const resp = await fetch(`${API_URL}?tipo=supervisoresDaEscola&escola=${encodeURIComponent(escolaUsuario)}&email=${emailUsuario}`);
+    const supervisores = await resp.json();
+    if (supervisores.length === 0) {
+      select.innerHTML = '<option value="">Nenhum supervisor cadastrado</option>';
+    } else {
+      supervisores.forEach(sup => {
+        const opt = document.createElement('option');
+        opt.value = `SUPERVISOR|${sup.email}`;
+        opt.textContent = sup.nome || sup.email;
+        select.appendChild(opt);
+      });
+      if (supervisores.length === 1) {
+        select.value = `SUPERVISOR|${supervisores[0].email}`;
+      }
+    }
+  } else if (perfilUsuario === 'SUPERVISOR') {
+    // Listar escolas que supervisiona (obtidas do login)
+    // Você pode usar a variável global escolasSupervisionadas ou buscar do servidor
+    const resp = await fetch(`${API_URL}?tipo=escolasSupervisionadas&email=${emailUsuario}`);
+    const escolas = await resp.json();
+    escolas.forEach(esc => {
+      const opt = document.createElement('option');
+      opt.value = `ESCOLA|${esc}`;
+      opt.textContent = esc;
+      select.appendChild(opt);
+    });
+  }
+}
+
+async function enviarMensagem() {
+  const select = document.getElementById('selectDestinoMensagem');
+  const destinoStr = select.value;
+  if (!destinoStr) {
+    alert("Selecione um destinatário.");
+    return;
+  }
+  const [destinoTipo, destinoValor] = destinoStr.split('|');
+  const assunto = document.getElementById('assuntoMensagem').value.trim();
+  const mensagem = document.getElementById('textoMensagem').value.trim();
+  if (!mensagem) {
+    alert("Digite uma mensagem.");
+    return;
+  }
+
+  const anexosInput = document.getElementById('anexosMensagem');
+  const anexos = [];
+  if (anexosInput.files.length > 0) {
+    for (let file of anexosInput.files) {
+      const base64 = await fileToBase64(file);
+      anexos.push({
+        nome: file.name,
+        mimeType: file.type,
+        base64: base64.split(',')[1]
+      });
+    }
+  }
+
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        acao: 'enviarMensagem',
+        email: emailUsuario,
+        destinoTipo,
+        destinoValor,
+        assunto,
+        mensagem,
+        anexos
+      })
+    });
+    const result = await resp.json();
+    esconderLoading();
+    if (result.status === 'ok') {
+      alert("Mensagem enviada com sucesso!");
+      fecharModalNovaMensagem();
+      if (document.getElementById('modalMensagens').style.display === 'flex') {
+        atualizarMensagens();
+      }
+    } else {
+      alert("Erro: " + (result.msg || "Falha ao enviar"));
+    }
+  } catch (e) {
+    esconderLoading();
+    alert("Erro de conexão.");
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 // =========================
@@ -1840,6 +2053,9 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 });
+
+let mensagensCache = [];
+let pollingInterval = null;
 
 // =========================
 // AUTO LOGIN
