@@ -1016,6 +1016,20 @@ function renderLista(dados) {
     lista.appendChild(div);
   });
 }
+
+function ajustarOpcoesCadastroUsuario() {
+  const selectPerfil = document.getElementById('perfil');
+  if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'ecramos@sedu.es.gov.br') {
+    // Remove a opção Supervisor
+    for (let i = 0; i < selectPerfil.options.length; i++) {
+      if (selectPerfil.options[i].value === 'SUPERVISOR') {
+        selectPerfil.remove(i);
+        break;
+      }
+    }
+  }
+}
+
 function ajustarInterfacePorPerfil() {
   const btnCadastroUsuario = document.querySelector("button[onclick*='abrirModalCadastroUsuario']");
   const btnListarUsuarios = document.querySelector("button[onclick*='abrirModalListaUsuarios']");
