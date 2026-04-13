@@ -122,13 +122,27 @@ function atualizarListaPaginada() {
 function renderizarPaginacao(totalPaginas) {
   const container = document.getElementById('paginacao');
   if (!container) return;
-  if (totalPaginas <= 1) {
+  if (totalPaginas <= 1 && alunosPorPagina >= dadosFiltradosGlobais.length) {
     container.style.display = 'none';
     return;
   }
   container.style.display = 'flex';
   container.innerHTML = '';
 
+  // Botão Primeira Página
+  const btnFirst = document.createElement('button');
+  btnFirst.innerHTML = '<i class="fas fa-angle-double-left"></i>';
+  btnFirst.className = 'btn-paginacao';
+  btnFirst.disabled = (paginaAtual === 1);
+  btnFirst.addEventListener('click', () => {
+    if (paginaAtual !== 1) {
+      paginaAtual = 1;
+      atualizarListaPaginada();
+    }
+  });
+  container.appendChild(btnFirst);
+
+  // Botão Anterior
   const btnPrev = document.createElement('button');
   btnPrev.innerHTML = '<i class="fas fa-chevron-left"></i>';
   btnPrev.className = 'btn-paginacao';
@@ -141,11 +155,14 @@ function renderizarPaginacao(totalPaginas) {
   });
   container.appendChild(btnPrev);
 
+  // Informação de página + total de registros
   const paginaSpan = document.createElement('span');
   paginaSpan.className = 'pagina-info';
-  paginaSpan.textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+  const totalRegistros = dadosFiltradosGlobais.length;
+  paginaSpan.textContent = `Página ${paginaAtual} de ${totalPaginas} (${totalRegistros} registros)`;
   container.appendChild(paginaSpan);
 
+  // Botão Próximo
   const btnNext = document.createElement('button');
   btnNext.innerHTML = '<i class="fas fa-chevron-right"></i>';
   btnNext.className = 'btn-paginacao';
@@ -157,6 +174,37 @@ function renderizarPaginacao(totalPaginas) {
     }
   });
   container.appendChild(btnNext);
+
+  // Botão Última Página
+  const btnLast = document.createElement('button');
+  btnLast.innerHTML = '<i class="fas fa-angle-double-right"></i>';
+  btnLast.className = 'btn-paginacao';
+  btnLast.disabled = (paginaAtual === totalPaginas);
+  btnLast.addEventListener('click', () => {
+    if (paginaAtual !== totalPaginas) {
+      paginaAtual = totalPaginas;
+      atualizarListaPaginada();
+    }
+  });
+  container.appendChild(btnLast);
+
+  // Seletor de itens por página
+  const selectItens = document.createElement('select');
+  selectItens.className = 'btn-paginacao';
+  selectItens.style.marginLeft = '12px';
+  [20, 50, 100, 200].forEach(qtd => {
+    const opt = document.createElement('option');
+    opt.value = qtd;
+    opt.textContent = `${qtd} por página`;
+    if (alunosPorPagina === qtd) opt.selected = true;
+    selectItens.appendChild(opt);
+  });
+  selectItens.addEventListener('change', (e) => {
+    alunosPorPagina = parseInt(e.target.value);
+    paginaAtual = 1;
+    atualizarListaPaginada();
+  });
+  container.appendChild(selectItens);
 }
 // =========================
 // TOAST NOTIFICATIONS
