@@ -311,7 +311,7 @@ function toggleDarkMode() {
 }
 
 function getEscolasPermitidas() {
-  if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'ecramos@sedu.es.gov.br') {
+  if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
     return window.escolasSupervisionadas || [];
   }
   return LISTA_ESCOLAS;
@@ -1227,7 +1227,7 @@ function renderLista(dados) {
 }
 function ajustarOpcoesCadastroUsuario() {
   const selectPerfil = document.getElementById('perfil');
-  if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'ecramos@sedu.es.gov.br') {
+  if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
     // Remove a opção Supervisor
     for (let i = 0; i < selectPerfil.options.length; i++) {
       if (selectPerfil.options[i].value === 'SUPERVISOR') {
@@ -1824,21 +1824,57 @@ function resumoPorEscola(dados) {
 function renderPorEscola(mapa) {
   const painel = document.getElementById("painel");
   
-  let listaEscolas = '';
-  for (let escola in mapa) {
-    listaEscolas += `<p style="margin:2px 0; font-size:13px;"><strong>${escola}:</strong> ${mapa[escola].pendentes} pendentes / ${mapa[escola].total}</p>`;
-  }
+  const isMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
   
   const card = document.createElement('div');
   card.className = 'metrica-card metrica-escola';
-  card.innerHTML = `
-    <div class="metrica-titulo"><i class="fas fa-school"></i> Por Escola</div>
-    <div class="metrica-valor" style="font-size: 24px; line-height: 1.2;"><i class="fas fa-chart-bar"></i></div>
-    <div class="metrica-detalhe" style="margin-top: 8px;">${listaEscolas}</div>
-  `;
+  
+  if (isMaster) {
+    // Supervisor master: resumo agregado da SRE
+    const totalAlunos = dadosGlobais.length;
+    const pendentes = dadosGlobais.filter(a => a.STATUS === "⚠️ Pendente").length;
+    const completos = dadosGlobais.filter(a => a.STATUS === "✅ Completo").length;
+    const vencidos = dadosGlobais.filter(a => a.STATUS !== "✅ Completo" && a.ALERTA === "🔴 Vencido").length;
+    
+    card.innerHTML = `
+      <div class="metrica-titulo"><i class="fas fa-building"></i> Por SRE</div>
+      <div class="metrica-valor" style="font-size: 28px;">${totalAlunos}</div>
+      <div class="metrica-detalhe">total de alunos</div>
+      <div style="margin-top: 12px; display: flex; justify-content: space-between; gap: 8px;">
+        <div style="text-align: center; flex:1;">
+          <span style="font-weight:bold; color:#10b981;">${completos}</span><br>
+          <span style="font-size:11px;">Completos</span>
+        </div>
+        <div style="text-align: center; flex:1;">
+          <span style="font-weight:bold; color:#f59e0b;">${pendentes}</span><br>
+          <span style="font-size:11px;">Pendentes</span>
+        </div>
+        <div style="text-align: center; flex:1;">
+          <span style="font-weight:bold; color:#dc2626;">${vencidos}</span><br>
+          <span style="font-size:11px;">Vencidos</span>
+        </div>
+      </div>
+    `;
+  } else {
+    // Demais perfis: lista de escolas (com scroll se necessário)
+    let listaEscolas = '';
+    for (let escola in mapa) {
+      listaEscolas += `<p style="margin:2px 0; font-size:13px;">
+        <strong>${escola}:</strong> ${mapa[escola].pendentes} pendentes / ${mapa[escola].total}
+      </p>`;
+    }
+    card.innerHTML = `
+      <div class="metrica-titulo"><i class="fas fa-school"></i> Por Escola</div>
+      <div class="metrica-valor" style="font-size: 24px; line-height: 1.2;"><i class="fas fa-chart-bar"></i></div>
+      <div class="metrica-detalhe" style="margin-top: 8px; max-height: 200px; overflow-y: auto;">
+        ${listaEscolas}
+      </div>
+    `;
+  }
   
   painel.appendChild(card);
 }
+
 // =========================
 // LOGOUT
 // =========================
