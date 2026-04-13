@@ -2071,26 +2071,61 @@ document.getElementById("filtroEscola")?.addEventListener("change", function() {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Adiciona estilo para tooltip abaixo
+  // Adiciona estilo para tooltip abaixo (com !important para garantir)
   const style = document.createElement('style');
   style.textContent = `
     [data-tooltip].tooltip-below:before {
       bottom: auto !important;
       top: 125% !important;
     }
+    [data-tooltip].tooltip-below:after {
+      bottom: auto !important;
+      top: 125% !important;
+      border-top: none !important;
+      border-bottom: 6px solid #1e293b !important;
+    }
+    [data-theme="dark"] [data-tooltip].tooltip-below:after {
+      border-bottom-color: #f1f5f9 !important;
+    }
   `;
   document.head.appendChild(style);
 
+  // Função para verificar posição e aplicar classe
+  function checkTooltipPosition(el) {
+    const rect = el.getBoundingClientRect();
+    // Se o topo do elemento estiver a menos de 80px do topo da janela
+    if (rect.top < 80) {
+      el.classList.add('tooltip-below');
+    } else {
+      el.classList.remove('tooltip-below');
+    }
+  }
+
+  // Aplica a todos os elementos com data-tooltip
   document.querySelectorAll('[data-tooltip]').forEach(el => {
     el.addEventListener('mouseenter', function() {
-      const rect = this.getBoundingClientRect();
-      if (rect.top < 60) {
-        this.classList.add('tooltip-below');
-      } else {
-        this.classList.remove('tooltip-below');
-      }
+      checkTooltipPosition(this);
     });
   });
-});
 
-  
+  // Também verificar elementos adicionados dinamicamente (como cards)
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      mutation.addedNodes.forEach(function(node) {
+        if (node.nodeType === 1 && node.hasAttribute && node.hasAttribute('data-tooltip')) {
+          node.addEventListener('mouseenter', function() {
+            checkTooltipPosition(this);
+          });
+        }
+        if (node.nodeType === 1 && node.querySelectorAll) {
+          node.querySelectorAll('[data-tooltip]').forEach(el => {
+            el.addEventListener('mouseenter', function() {
+              checkTooltipPosition(this);
+            });
+          });
+        }
+      });
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+});
