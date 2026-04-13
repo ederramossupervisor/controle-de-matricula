@@ -110,48 +110,54 @@ function processarCSV() {
     return;
   }
 
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    delimiter: ";",
-    encoding: "UTF-8",
-    complete: function(results) {
-      const dados = results.data;
-      if (dados.length === 0) {
-        alert('Nenhum dado encontrado no CSV.');
-        return;
-      }
-      
-      alunosImportados = dados.map(linha => {
-        const dataMatricula = linha['Aluno: Data de matrícula'] || '';
-        const edEspecial = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotaçăo'] || '').toLowerCase() === 'sim';
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const csvText = e.target.result;
+    
+    Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      delimiter: ";",
+      complete: function(results) {
+        const dados = results.data;
+        if (dados.length === 0) {
+          alert('Nenhum dado encontrado no CSV.');
+          return;
+        }
         
-        return {
-          nome: linha['Aluno: Nome'] || '',
-          responsavel: linha['Aluno: Nome do responsável'] || '',
-          telefone: extrairPrimeiroTelefone(linha['Aluno: Telefones']),
-          escola: linha['Escola: Nome'] || '',
-          turma: linha['Turma: Nome'] || '',
-          dataMatricula: dataMatricula,
-          edEspecial: edEspecial,
-          cpfAluno: linha['Aluno: CPF'] || '',
-          sus: linha['Aluno: Cartão do SUS'] || '',
-          certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
-          rg: linha['Aluno: Identidade'] || '',
-          residencia: linha['Endereço: Código de instalação elétrica'] || '',
-          observacaoExtra: ''
-        };
-      }).filter(a => a.nome && a.escola);
+        alunosImportados = dados.map(linha => {
+          const dataMatricula = linha['Aluno: Data de matrícula'] || '';
+          const edEspecial = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotaçăo'] || '').toLowerCase() === 'sim';
+          
+          return {
+            nome: linha['Aluno: Nome'] || '',
+            responsavel: linha['Aluno: Nome do responsável'] || '',
+            telefone: extrairPrimeiroTelefone(linha['Aluno: Telefones']),
+            escola: linha['Escola: Nome'] || '',
+            turma: linha['Turma: Nome'] || '',
+            dataMatricula: dataMatricula,
+            edEspecial: edEspecial,
+            cpfAluno: linha['Aluno: CPF'] || '',
+            sus: linha['Aluno: Cartão do SUS'] || '',
+            certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
+            rg: linha['Aluno: Identidade'] || '',
+            residencia: linha['Endereço: Código de instalação elétrica'] || '',
+            observacaoExtra: ''
+          };
+        }).filter(a => a.nome && a.escola);
 
-      renderizarPreview(alunosImportados);
-      document.getElementById('btnExecutarImportacao').disabled = (alunosImportados.length === 0);
-    },
-    error: function(err) {
-      alert('Erro ao processar CSV: ' + err);
-    }
-  });
+        renderizarPreview(alunosImportados);
+        document.getElementById('btnExecutarImportacao').disabled = (alunosImportados.length === 0);
+      },
+      error: function(err) {
+        alert('Erro ao processar CSV: ' + err);
+      }
+    });
+  };
+  
+  // 🔥 Lê o arquivo com codificação ISO-8859-1 (Windows-1252)
+  reader.readAsText(file, 'ISO-8859-1');
 }
-
 function renderizarPreview(alunos) {
   const container = document.getElementById('previewContainer');
   if (alunos.length === 0) {
