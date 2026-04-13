@@ -1223,7 +1223,6 @@ async function carregarAlunos() {
       await carregarTurmasParaFiltro();
     }
 
-    renderLista(dadosGlobais);
     const resumo = gerarResumo(dadosGlobais);
     renderPainel(resumo);
     const mapa = resumoPorEscola(dadosGlobais);
