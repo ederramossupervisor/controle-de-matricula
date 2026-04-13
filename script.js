@@ -150,6 +150,60 @@ function extrairPrimeiroTelefone(telefones) {
 }
 
 function processarCSV() {
+  const fileInput = document.getElementById('arquivoCSV');
+  const file = fileInput.files[0];
+  if (!file) {
+    mostrarToast('Selecione um arquivo CSV.', 'warning');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const csvText = e.target.result;
+    
+    Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true,
+      delimiter: ";",
+      complete: function(results) {
+        const dados = results.data;
+        if (dados.length === 0) {
+          mostrarToast('Nenhum dado encontrado no CSV.', 'warning');
+          return;
+        }
+        
+        alunosImportados = dados.map(linha => {
+          const dataMatricula = linha['Aluno: Data de matrícula'] || '';
+          const edEspecial = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotaçăo'] || '').toLowerCase() === 'sim';
+          
+          return {
+            nome: linha['Aluno: Nome'] || '',
+            responsavel: linha['Aluno: Nome do responsável'] || '',
+            telefone: extrairPrimeiroTelefone(linha['Aluno: Telefones']),
+            escola: linha['Escola: Nome'] || '',
+            turma: linha['Turma: Nome'] || '',
+            dataMatricula: dataMatricula,
+            edEspecial: edEspecial,
+            cpfAluno: linha['Aluno: CPF'] || '',
+            sus: linha['Aluno: Cartão do SUS'] || '',
+            certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
+            rg: linha['Aluno: Identidade'] || '',
+            residencia: linha['Endereço: Código de instalação elétrica'] || '',
+            observacaoExtra: ''
+          };
+        }).filter(a => a.nome && a.escola);
+
+        renderizarPreview(alunosImportados);
+        document.getElementById('btnExecutarImportacao').disabled = (alunosImportados.length === 0);
+      },
+      error: function(err) {
+        mostrarToast('Erro ao processar CSV: ' + err, 'error');
+      }
+    });
+  };
+  
+  reader.readAsText(file, 'ISO-8859-1');
+}
 
 function renderizarPreview(alunos) {
   const container = document.getElementById('previewContainer');
@@ -878,6 +932,42 @@ async function carregarTurmas(escola = "") {
   }
   esconderLoading();
 }
+
+async function carregarTurmasParaFiltro() {
+  const selectTurma = document.getElementById("filtroTurma");
+  if (!selectTurma) return;
+
+  let escolaFiltro = "";
+  if (perfilUsuario === "SUPERVISOR") {
+    escolaFiltro = document.getElementById("filtroEscola").value;
+  } else {
+    escolaFiltro = escolaUsuario;
+  }
+
+  if (!escolaFiltro) {
+    selectTurma.innerHTML = '<option value="">Selecione uma escola primeiro</option>';
+    return;
+  }
+
+  selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
+
+  try {
+    const resp = await fetch(`${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escolaFiltro)}`);
+    const turmas = await resp.json();
+    turmasDisponiveis = turmas;
+
+    selectTurma.innerHTML = '<option value="">Todas as turmas</option>';
+    turmas.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.turma;
+      opt.textContent = t.turma;
+      selectTurma.appendChild(opt);
+    });
+  } catch (e) {
+    selectTurma.innerHTML = '<option value="">Erro ao carregar</option>';
+  }
+}
+
 function abrirModalTurmas() {
   document.getElementById("modalTurmas").style.display = "flex";
   carregarTurmas();
@@ -1795,22 +1885,6 @@ function logout() {
 // =========================
 
 let turmasGlobais = [];
-
-async function carregarTurmas(escola = "") {
-  mostrarLoading();
-  try {
-    const url = `${API_URL}?tipo=turmas&email=${emailUsuario}` + (escola ? `&escola=${encodeURIComponent(escola)}` : "");
-    const resposta = await fetch(url);
-    const turmas = await resposta.json();
-    turmasGlobais = turmas;
-    renderListaTurmas(turmas);
-    preencherSelectEscolasTurma();
-  } catch (erro) {
-    console.error("Erro ao carregar turmas:", erro);
-    alert("Erro ao carregar turmas.");
-  }
-  esconderLoading();
-}
 
 function renderListaTurmas(turmas) {
   const container = document.getElementById("listaTurmasContainer");
