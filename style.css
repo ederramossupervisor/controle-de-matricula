@@ -1201,6 +1201,7 @@ textarea:focus {
   z-index: 1000;
 }
 
+/* Caixa de texto */
 [data-tooltip]:before {
   content: attr(data-tooltip);
   background: #1e293b;
@@ -1217,6 +1218,7 @@ textarea:focus {
   margin-bottom: 8px;
 }
 
+/* Seta */
 [data-tooltip]:after {
   content: '';
   border-left: 6px solid transparent;
@@ -1228,39 +1230,23 @@ textarea:focus {
   margin-bottom: 2px;
 }
 
-[data-tooltip]:hover:before,
-[data-tooltip]:hover:after {
-  visibility: visible;
-  opacity: 1;
+/* Quando o elemento está no topo da tela, mostramos o tooltip ABAIXO */
+@media (max-height: 600px) {
+  [data-tooltip]:before {
+    bottom: auto;
+    top: 125%;
+    margin-bottom: 0;
+    margin-top: 8px;
+  }
+  [data-tooltip]:after {
+    bottom: auto;
+    top: 125%;
+    margin-bottom: 0;
+    margin-top: 2px;
+    border-top: none;
+    border-bottom: 6px solid #1e293b;
+  }
 }
 
-/* Ajuste para tooltips à direita (evitar corte na borda) */
-[data-tooltip].tooltip-right:before {
-  left: auto;
-  right: 0;
-  transform: translateX(0);
-}
-[data-tooltip].tooltip-right:after {
-  left: auto;
-  right: 20px;
-  transform: translateX(50%);
-}
-
-/* Ajuste para tooltips à esquerda */
-[data-tooltip].tooltip-left:before {
-  left: 0;
-  transform: translateX(0);
-}
-[data-tooltip].tooltip-left:after {
-  left: 20px;
-  transform: translateX(-50%);
-}
-
-/* Modo escuro - tooltip claro */
-[data-theme="dark"] [data-tooltip]:before {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-[data-theme="dark"] [data-tooltip]:after {
-  border-top-color: #f1f5f9;
-}
+/* Correção automática via JS (opcional) - preferível usar CSS puro */
+/* Caso o media query não seja suficiente, podemos usar um pequeno script */
