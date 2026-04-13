@@ -31,29 +31,29 @@
     <div class="login-container">
       <div class="login-card">
         <div class="login-avatar">
-          <span>📚</span>
+          <i class="fas fa-school"></i>
         </div>
         <h2>Secretaria Escolar</h2>
         <p class="login-subtitle">Acesse com seu e-mail institucional</p>
-
+  
         <div class="input-icon">
-          <span class="icon">✉️</span>
+          <span class="icon"><i class="fas fa-envelope"></i></span>
           <input type="email" id="email" placeholder="escola@sedu.es.gov.br" autofocus>
         </div>
-
-        <button onclick="login()">Entrar no sistema</button>
-
+  
+        <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Entrar no sistema</button>
+  
         <!-- Seção de Ajuda -->
         <div class="login-ajuda">
           <a href="docs/tutorial.pdf" target="_blank" class="link-ajuda">
-            <span class="ajuda-icone">📘</span> Tutorial em PDF
+            <i class="fas fa-file-pdf"></i> Tutorial em PDF
           </a>
           <span class="separador">•</span>
           <a href="mailto:ecramos@sedu.es.gov.br" class="link-ajuda">
-            <span class="ajuda-icone">📧</span> ecramos@sedu.es.gov.br
+            <i class="fas fa-envelope"></i> ecramos@sedu.es.gov.br
           </a>
         </div>
-
+  
         <p class="login-footer">Secretaria Escolar • SRE Afonso Cláudio</p>
       </div>
     </div>
@@ -65,54 +65,54 @@
     <div id="novoAluno" class="modal-overlay" style="display:none;">
       <div class="modal-card">
         <div class="modal-header">
-          <h2>➕ Novo Aluno</h2>
-          <button class="close-btn" onclick="voltarApp()">✕</button>
+          <h2><i class="fas fa-user-plus"></i> Novo Aluno</h2>
+          <button class="close-btn" onclick="voltarApp()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
           <div class="info-escola" id="infoEscolaCadastro">
-            <span>🏫</span>
+            <span><i class="fas fa-school"></i></span>
             <span id="escolaVinculada">Carregando...</span>
           </div>
-
+  
           <div class="input-icon">
-            <span class="icon">👤</span>
+            <span class="icon"><i class="fas fa-user"></i></span>
             <input type="text" id="nomeAluno" placeholder="Nome completo do aluno" autofocus>
           </div>
-
+  
           <!-- NOVOS CAMPOS -->
           <div class="input-icon">
-            <span class="icon">👥</span>
+            <span class="icon"><i class="fas fa-user-friends"></i></span>
             <input type="text" id="nomeResponsavel" placeholder="Nome do responsável">
           </div>
           <div class="input-icon">
-            <span class="icon">📞</span>
+            <span class="icon"><i class="fas fa-phone-alt"></i></span>
             <input type="tel" id="telefoneContato" placeholder="Telefone de contato" oninput="aplicarMascaraTelefone(event)">
           </div>
-
+  
           <!-- CAMPO DATA DE MATRÍCULA -->
           <div class="input-icon" style="margin-bottom: 8px;">
-            <span class="icon">📅</span>
+            <span class="icon"><i class="fas fa-calendar-alt"></i></span>
             <input type="date" id="dataMatricula" style="padding-left: 50px;">
           </div>
           <div style="display: flex; justify-content: flex-end; margin-top: -8px; margin-bottom: 12px;">
             <button type="button" class="btn-pequeno" onclick="preencherDataHoje()">Hoje</button>
           </div>
-
+  
           <!-- CAMPO TURMA -->
           <div class="input-icon">
-            <span class="icon">📚</span>
+            <span class="icon"><i class="fas fa-book"></i></span>
             <select id="selectTurmaAluno" style="padding-left: 50px;">
               <option value="">Selecione a turma</option>
             </select>
           </div>
-
+  
           <div class="checkbox-moderno" style="margin-top: 16px;">
             <input type="checkbox" id="alunoEdEspecial">
-            <label for="alunoEdEspecial" style="font-weight: 500;">🧩 Aluno público da Educação Especial</label>
+            <label for="alunoEdEspecial" style="font-weight: 500;"><i class="fas fa-puzzle-piece"></i> Aluno público da Educação Especial</label>
           </div>
-
-          <div class="error-msg" id="erroNome" style="display:none;">⚠️ Nome do aluno obrigatório</div>
-
+  
+          <div class="error-msg" id="erroNome" style="display:none;"><i class="fas fa-exclamation-triangle"></i> Nome do aluno obrigatório</div>
+  
           <div class="modal-actions">
             <button class="btn-salvar" id="btnSalvarAluno" onclick="salvarAluno()">
               <span class="btn-text">Salvar</span>
@@ -123,68 +123,68 @@
         </div>
       </div>
     </div>
-
+  
     <!-- 🔍 MODAL DE DETALHES DO ALUNO -->
     <div id="modalDetalhes" class="modal-overlay" style="display:none;">
       <div class="modal-card modal-card--grande">
         <div class="modal-header">
           <h2 id="detalhesTitulo">Carregando...</h2>
-          <button class="close-btn" onclick="fecharModalDetalhes()">✕</button>
+          <button class="close-btn" onclick="fecharModalDetalhes()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-        <!-- DADOS EDITÁVEIS DO ALUNO -->
-        <div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
-          <h3 style="margin-bottom: 12px;">📝 Informações do Aluno</h3>
-          
-          <div class="input-icon">
-            <span class="icon">👤</span>
-            <input type="text" id="editNomeAluno" placeholder="Nome completo">
-          </div>
-          
-          <div class="input-icon">
-            <span class="icon">👥</span>
-            <input type="text" id="editResponsavel" placeholder="Nome do responsável">
-          </div>
-          
-          <div class="input-icon">
-            <span class="icon">📞</span>
-            <input type="tel" id="editTelefone" placeholder="Telefone de contato">
-          </div>
-          
-          <div class="input-icon">
-            <span class="icon">📚</span>
-            <select id="editTurma" style="padding-left: 50px;">
-              <option value="">Carregando turmas...</option>
-            </select>
-          </div>
-          <div class="checkbox-moderno" style="margin-top: 16px;">
-            <input type="checkbox" id="editEdEspecial">
-            <label for="editEdEspecial" style="font-weight: 500;">🧩 Aluno público da Educação Especial</label>
-          </div>
-          <div style="margin-top: 12px;">
-            <button class="btn-salvar" id="btnSalvarInfoAluno" onclick="salvarDadosAluno()" style="width: 100%;">
-              <span class="btn-text">💾 Salvar informações</span>
-              <span class="spinner-btn" style="display:none;"></span>
-            </button>
-          </div>
-        </div>  
+          <!-- DADOS EDITÁVEIS DO ALUNO -->
+          <div style="margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0;">
+            <h3 style="margin-bottom: 12px;"><i class="fas fa-info-circle"></i> Informações do Aluno</h3>
+            
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-user"></i></span>
+              <input type="text" id="editNomeAluno" placeholder="Nome completo">
+            </div>
+            
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-user-friends"></i></span>
+              <input type="text" id="editResponsavel" placeholder="Nome do responsável">
+            </div>
+            
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-phone-alt"></i></span>
+              <input type="tel" id="editTelefone" placeholder="Telefone de contato">
+            </div>
+            
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-book"></i></span>
+              <select id="editTurma" style="padding-left: 50px;">
+                <option value="">Carregando turmas...</option>
+              </select>
+            </div>
+            <div class="checkbox-moderno" style="margin-top: 16px;">
+              <input type="checkbox" id="editEdEspecial">
+              <label for="editEdEspecial" style="font-weight: 500;"><i class="fas fa-puzzle-piece"></i> Aluno público da Educação Especial</label>
+            </div>
+            <div style="margin-top: 12px;">
+              <button class="btn-salvar" id="btnSalvarInfoAluno" onclick="salvarDadosAluno()" style="width: 100%;">
+                <span class="btn-text"><i class="fas fa-save"></i> Salvar informações</span>
+                <span class="spinner-btn" style="display:none;"></span>
+              </button>
+            </div>
+          </div>  
           <div id="detalhesConteudo"></div>
           <div class="modal-actions" style="flex-wrap: wrap; gap: 10px;">
             <!-- Seção Encerrar matrícula -->
             <div style="width: 100%; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 8px;">
-              <p style="margin: 0 0 8px; font-weight: 500;">📌 Encerrar matrícula:</p>
+              <p style="margin: 0 0 8px; font-weight: 500;"><i class="fas fa-thumbtack"></i> Encerrar matrícula:</p>
               <div style="display: flex; gap: 8px;">
-                <button class="btn-cancelar" onclick="alterarSituacaoAluno('Transferido')" style="flex:1;">🔄 Transferido</button>
-                <button class="btn-cancelar" onclick="alterarSituacaoAluno('Concluído')" style="flex:1;">🎓 Concluído</button>
+                <button class="btn-cancelar" onclick="alterarSituacaoAluno('Transferido')" style="flex:1;"><i class="fas fa-exchange-alt"></i> Transferido</button>
+                <button class="btn-cancelar" onclick="alterarSituacaoAluno('Concluído')" style="flex:1;"><i class="fas fa-graduation-cap"></i> Concluído</button>
               </div>
             </div>
             
             <!-- Botão Reativar -->
-            <button class="btn-primary" onclick="alterarSituacaoAluno('Ativo')" style="flex:1;">✅ Reativar aluno</button>
+            <button class="btn-primary" onclick="alterarSituacaoAluno('Ativo')" style="flex:1;"><i class="fas fa-check-circle"></i> Reativar aluno</button>
             
             <!-- Ações principais -->
             <button class="btn-salvar" id="btnSalvarDetalhes" onclick="salvarAlteracoesEmLote(dadosAlunoAtual._row)" style="flex:2;">
-              💾 Salvar alterações
+              <i class="fas fa-save"></i> Salvar alterações
             </button>
             <button class="btn-cancelar" onclick="fecharModalDetalhes()" style="flex:1;">Voltar</button>
           </div>
@@ -196,15 +196,15 @@
     <div id="modalTurmas" class="modal-overlay" style="display:none;">
       <div class="modal-card modal-card--grande">
         <div class="modal-header">
-          <h2>🏫 Gerenciar Turmas</h2>
-          <button class="close-btn" onclick="fecharModalTurmas()">✕</button>
+          <h2><i class="fas fa-school"></i> Gerenciar Turmas</h2>
+          <button class="close-btn" onclick="fecharModalTurmas()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
           <div style="display: flex; gap: 16px; margin-bottom: 20px;">
             <select id="filtroEscolaTurma" class="input-icon" style="flex:2;">
               <option value="">Todas as escolas</option>
             </select>
-            <button class="btn-primary" onclick="abrirModalCadastroTurma()" style="flex:1;">➕ Nova turma</button>
+            <button class="btn-primary" onclick="abrirModalCadastroTurma()" style="flex:1;"><i class="fas fa-plus"></i> Nova turma</button>
           </div>
           <div id="listaTurmasContainer"></div>
           <div class="modal-actions">
@@ -213,23 +213,23 @@
         </div>
       </div>
     </div>
-
+  
     <!-- ➕ MODAL DE CADASTRO DE TURMA -->
     <div id="modalCadastroTurma" class="modal-overlay" style="display:none;">
       <div class="modal-card">
         <div class="modal-header">
-          <h2>➕ Nova Turma</h2>
-          <button class="close-btn" onclick="fecharModalCadastroTurma()">✕</button>
+          <h2><i class="fas fa-plus"></i> Nova Turma</h2>
+          <button class="close-btn" onclick="fecharModalCadastroTurma()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
           <div class="input-icon">
-            <span class="icon">🏫</span>
+            <span class="icon"><i class="fas fa-school"></i></span>
             <select id="selectEscolaTurma">
               <option value="">Selecione a escola</option>
             </select>
           </div>
           <div class="input-icon" style="align-items: flex-start;">
-            <span class="icon" style="top: 16px;">📚</span>
+            <span class="icon" style="top: 16px;"><i class="fas fa-book"></i></span>
             <textarea id="nomeTurma" rows="4" placeholder="Digite uma turma por linha&#10;Ex:&#10;1º Ano A&#10;1º Ano B&#10;2º Ano A" style="padding-left: 50px; padding-top: 14px; line-height: 1.5; resize: vertical;"></textarea>
           </div>
           <p style="font-size: 12px; color: #64748b; margin-top: -8px; margin-left: 50px;">Digite uma turma por linha.</p>
@@ -245,26 +245,26 @@
     <div id="modalDocumentos" class="modal-overlay" style="display:none;">
       <div class="modal-card modal-card--grande">
         <div class="modal-header">
-          <h2>📂 Gerenciar Documentos</h2>
-          <button class="close-btn" onclick="fecharModalDocumentos()">✕</button>
+          <h2><i class="fas fa-folder-open"></i> Gerenciar Documentos</h2>
+          <button class="close-btn" onclick="fecharModalDocumentos()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
           <!-- Abas Upload / Listagem -->
           <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button class="btn-pequeno" onclick="mostrarAbaUpload()">⬆️ Upload</button>
-            <button class="btn-pequeno" onclick="mostrarAbaListagem()">📋 Listar/Baixar</button>
+            <button class="btn-pequeno" onclick="mostrarAbaUpload()"><i class="fas fa-upload"></i> Upload</button>
+            <button class="btn-pequeno" onclick="mostrarAbaListagem()"><i class="fas fa-list"></i> Listar/Baixar</button>
           </div>
           
           <!-- Aba de Upload -->
           <div id="abaUpload" style="display:block;">
             <div class="input-icon" id="uploadEscolaWrapper">
-              <span class="icon">🏫</span>
+              <span class="icon"><i class="fas fa-school"></i></span>
               <select id="uploadEscola">
                 <option value="">Selecione a escola</option>
               </select>
             </div>
             <div class="input-icon">
-              <span class="icon">📄</span>
+              <span class="icon"><i class="fas fa-file"></i></span>
               <select id="uploadTipoDoc">
                 <option value="">Tipo de documento</option>
                 <option value="Certificado">Certificado</option>
@@ -283,15 +283,15 @@
               </select>
             </div>
             <div class="input-icon">
-              <span class="icon">👤</span>
+              <span class="icon"><i class="fas fa-user"></i></span>
               <input type="text" id="uploadNomeAluno" placeholder="Nome do aluno">
             </div>
             <div class="input-icon">
-              <span class="icon">📎</span>
+              <span class="icon"><i class="fas fa-paperclip"></i></span>
               <input type="file" id="arquivoUpload" accept=".pdf,.jpg,.jpeg,.png">
             </div>
             <div class="modal-actions">
-              <button class="btn-salvar" onclick="fazerUpload()">Enviar</button>
+              <button class="btn-salvar" onclick="fazerUpload()"><i class="fas fa-paper-plane"></i> Enviar</button>
               <button class="btn-cancelar" onclick="fecharModalDocumentos()">Cancelar</button>
             </div>
           </div>
@@ -300,13 +300,13 @@
           <div id="abaListagem" style="display:none;">
             <div class="filtros-container" style="padding:0; margin-bottom:16px;">
               <div class="input-icon" id="filtroEscolaDocWrapper">
-                <span class="icon">🏫</span>
+                <span class="icon"><i class="fas fa-school"></i></span>
                 <select id="filtroEscolaDoc">
                   <option value="">Todas as escolas</option>
                 </select>
               </div>
               <div class="input-icon">
-                <span class="icon">📄</span>
+                <span class="icon"><i class="fas fa-file"></i></span>
                 <select id="filtroTipoDoc">
                   <option value="">Todos os tipos</option>
                   <option value="Certificado">Certificado</option>
@@ -325,10 +325,10 @@
                 </select>
               </div>
               <div class="input-icon" style="flex:2;">
-                <span class="icon">🔍</span>
+                <span class="icon"><i class="fas fa-search"></i></span>
                 <input type="text" id="filtroNomeAlunoDoc" placeholder="Buscar por nome do aluno...">
               </div>
-              <button class="btn-primary" onclick="buscarDocumentos()">🔍 Buscar</button>
+              <button class="btn-primary" onclick="buscarDocumentos()"><i class="fas fa-search"></i> Buscar</button>
             </div>
             <div id="listaDocumentosContainer" style="max-height:400px; overflow-y:auto;"></div>
           </div>
