@@ -1104,7 +1104,58 @@ async function carregarAlunos() {
       esconderLoading();
       return;
     }
-    // ... resto do código
+
+    if (dados.escolasSupervisionadas) {
+      window.escolasSupervisionadas = dados.escolasSupervisionadas;
+    } else {
+      window.escolasSupervisionadas = [];
+    }
+
+    perfilUsuario = dados.perfil;
+    escolaUsuario = dados.escola;
+
+    document.getElementById("escolaUsuarioDisplay").textContent = 
+      perfilUsuario === "SUPERVISOR" ? "Supervisor" : `${escolaUsuario}`;
+
+    if (!Array.isArray(dados.alunos)) {
+      console.error("Resposta inválida, 'alunos' não é array:", dados);
+      mostrarToast("Erro na comunicação com o servidor.", "error");
+      esconderLoading();
+      return;
+    }
+
+    if (perfilUsuario === "SECRETARIA") {
+      aplicarFundoPorEscola(escolaUsuario);
+    } else {
+      aplicarFundoPorEscola("default");
+    }
+
+    dadosGlobais = dados.alunos;
+
+    document.getElementById("login").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    ajustarInterfacePorPerfil();
+    inicializarFiltros();
+    preencherSelectsProcessos();
+    preencherSelectEscolasDoc();
+    preencherSelectEscolasTurma();
+
+    if (perfilUsuario === "SECRETARIA") {
+      await carregarTurmasParaFiltro();
+    }
+
+    renderLista(dadosGlobais);
+    const resumo = gerarResumo(dadosGlobais);
+    renderPainel(resumo);
+    const mapa = resumoPorEscola(dadosGlobais);
+    renderPorEscola(mapa);
+
+    const btnProcessos = document.getElementById("btnProcessos");
+    if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
+      if (btnProcessos) btnProcessos.style.display = "inline-block";
+    }
+
   } catch (erro) {
     console.error("Erro:", erro);
     mostrarToast("Erro ao carregar dados.", "error");
