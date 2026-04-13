@@ -175,6 +175,40 @@ function renderizarPreview(alunos) {
   container.innerHTML = html;
 }
 
+async function importarDaPlanilha() {
+  if (!confirm("Certifique-se de que os dados do CSV foram colados na aba 'IMPORT_TEMP' da planilha. Deseja continuar?")) {
+    return;
+  }
+  
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify({
+        acao: 'importarDaAbaTemp',
+        email: emailUsuario
+      })
+    });
+    
+    const result = await resp.json();
+    esconderLoading();
+    
+    if (result.status === 'ok') {
+      let msg = `✅ Importação concluída!\n`;
+      msg += `📊 Alunos importados: ${result.importados || 0}\n`;
+      msg += `❌ Falhas: ${result.falhas || 0}`;
+      if (result.turmasCriadas) msg += `\n📚 Turmas criadas: ${result.turmasCriadas}`;
+      alert(msg);
+      carregarAlunos(); // recarrega a lista
+    } else {
+      alert(`❌ Erro: ${result.msg || 'Falha na importação'}`);
+    }
+  } catch (e) {
+    esconderLoading();
+    alert('Erro de conexão: ' + e.message);
+  }
+}
+
 async function executarImportacao() {
   if (alunosImportados.length === 0) return;
   
