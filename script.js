@@ -933,7 +933,72 @@ function preencherDataHoje() {
   document.getElementById("dataMatricula").value = dataFormatada;
 }
 
-abrirModalDetalhes
+function abrirModalDetalhes(aluno) {
+  dadosAlunoAtual = aluno;
+  
+  document.getElementById("detalhesTitulo").textContent = aluno.ALUNO;
+  
+  let html = `
+    <p style="margin-top:0; color:#64748b; display:flex; gap:12px;">
+      <span><i class="fas fa-school"></i> ${aluno.ESCOLA}</span>
+      <span><i class="fas fa-calendar-alt"></i> Matrícula: ${new Date(aluno.DATA_MATRICULA).toLocaleDateString('pt-BR')}</span>
+    </p>
+    <h3 style="margin-bottom:8px;">Documentos</h3>
+    <div class="checkboxes-container">
+  `;
+  
+  const docsBasicos = [
+    { label: "Certidão de Nascimento", coluna: 9, valor: aluno.CERTIDAO },
+    { label: "CPF do aluno", coluna: 10, valor: aluno.CPF },
+    { label: "RG do aluno", coluna: 11, valor: aluno.RG },
+    { label: "Carteira de Vacinação", coluna: 12, valor: aluno.VACINA },
+    { label: "Cartão do SUS", coluna: 13, valor: aluno.SUS },
+    { label: "Comprovante de Residência", coluna: 14, valor: aluno.RESIDENCIA },
+    { label: "Documentos do Responsável", coluna: 15, valor: aluno.RESP_DOCS },
+    { label: "Histórico Escolar", coluna: 16, valor: aluno.HISTORICO },
+    { label: "Declaração de Transferência", coluna: 17, valor: aluno.DECL_TRANSF }
+  ];
+  
+  docsBasicos.forEach(doc => {
+    const chave = `${aluno._row}_${doc.coluna}`;
+    const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : doc.valor;
+    html += `
+      <div class="checkbox-moderno">
+        <input type="checkbox" 
+          id="doc_${doc.coluna}" 
+          ${checked ? "checked" : ""} 
+          onchange="marcarAlteracao(${aluno._row}, ${doc.coluna}, this.checked)">
+        <label for="doc_${doc.coluna}">${doc.label}</label>
+      </div>
+    `;
+  });
+  
+  if (aluno.ED_ESPECIAL === true) {
+    const docEspecial = { label: "Laudo/Relatório Pedagógico (Ed. Especial)", coluna: 18, valor: aluno.ED_ESPECIAL };
+    const chave = `${aluno._row}_${docEspecial.coluna}`;
+    const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : docEspecial.valor;
+    html += `
+      <div class="checkbox-moderno">
+        <input type="checkbox" 
+          id="doc_${docEspecial.coluna}" 
+          ${checked ? "checked" : ""} 
+          onchange="marcarAlteracao(${aluno._row}, ${docEspecial.coluna}, this.checked)">
+        <label for="doc_${docEspecial.coluna}">${docEspecial.label}</label>
+      </div>
+    `;
+  }
+  
+  html += `</div>`;
+  
+  document.getElementById("detalhesConteudo").innerHTML = html;
+  document.getElementById("editNomeAluno").value = aluno.ALUNO || "";
+  document.getElementById("editResponsavel").value = aluno.RESPONSAVEL || "";
+  document.getElementById("editTelefone").value = aluno.TELEFONE || "";
+  document.getElementById("editEdEspecial").checked = aluno.ED_ESPECIAL === true;
+  
+  carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
+  document.getElementById("modalDetalhes").style.display = "flex";
+}
 function fecharModalDetalhes() {
   document.getElementById("modalDetalhes").style.display = "none";
   dadosAlunoAtual = null;
@@ -1759,7 +1824,6 @@ function resumoPorEscola(dados) {
 function renderPorEscola(mapa) {
   const painel = document.getElementById("painel");
   
-  // Constrói o conteúdo da lista de escolas
   let listaEscolas = '';
   for (let escola in mapa) {
     listaEscolas += `<p style="margin:2px 0; font-size:13px;"><strong>${escola}:</strong> ${mapa[escola].pendentes} pendentes / ${mapa[escola].total}</p>`;
@@ -1768,14 +1832,13 @@ function renderPorEscola(mapa) {
   const card = document.createElement('div');
   card.className = 'metrica-card metrica-escola';
   card.innerHTML = `
-    <div class="metrica-titulo">🏫 Por Escola</div>
-    <div class="metrica-valor" style="font-size: 24px; line-height: 1.2;">📊</div>
+    <div class="metrica-titulo"><i class="fas fa-school"></i> Por Escola</div>
+    <div class="metrica-valor" style="font-size: 24px; line-height: 1.2;"><i class="fas fa-chart-bar"></i></div>
     <div class="metrica-detalhe" style="margin-top: 8px;">${listaEscolas}</div>
   `;
   
   painel.appendChild(card);
 }
-
 // =========================
 // LOGOUT
 // =========================
@@ -1932,8 +1995,8 @@ async function salvarTurma() {
   esconderLoading();
   
   let mensagem = "";
-  if (sucessos > 0) mensagem += `✅ ${sucessos} turma(s) cadastrada(s) com sucesso.`;
-  if (erros.length > 0) mensagem += `\n❌ Erros:\n${erros.join('\n')}`;
+  if (sucessos > 0) mensagem += `${sucessos} turma(s) cadastrada(s) com sucesso.`;
+  if (erros.length > 0) mensagem += `\nErros:\n${erros.join('\n')}`;
   
   alert(mensagem);
   
