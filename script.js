@@ -93,6 +93,17 @@ function abrirModalImportacao() {
 }
 
 // =========================
+// DEBOUNCE
+// =========================
+function debounce(func, wait) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
+// =========================
 // TOAST NOTIFICATIONS
 // =========================
 function mostrarToast(mensagem, tipo = 'info', duracao = 4000) {
@@ -904,7 +915,7 @@ function renderizarListaDocumentos(docs) {
 }
 // Preenche os selects de filtro (escola, turma, status)
 function inicializarFiltros() {
-  // Preencher escolas (apenas supervisor, mas já preenchemos para usar no filtro de turmas)
+  // Preencher escolas
   const selectEscola = document.getElementById("filtroEscola");
   if (selectEscola) {
     const escolas = getEscolasPermitidas();
@@ -916,6 +927,19 @@ function inicializarFiltros() {
       selectEscola.appendChild(opt);
     });
   }
+
+  // Debounce na busca por nome
+  const campoBusca = document.getElementById("pesquisaNome");
+  if (campoBusca) {
+    const buscarDebounced = debounce(aplicarFiltros, 300);
+    // Remove listener anterior se houver (evita duplicação)
+    campoBusca.removeEventListener("input", buscarDebounced);
+    campoBusca.addEventListener("input", buscarDebounced);
+  }
+
+  // Carregar turmas para filtro
+  carregarTurmasParaFiltro();
+}
 
   // Status já está fixo no HTML, nada a fazer.
 
