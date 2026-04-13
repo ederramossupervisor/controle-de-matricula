@@ -92,6 +92,53 @@ function abrirModalImportacao() {
   document.getElementById('statusImportacao').innerHTML = '';
 }
 
+// =========================
+// TOAST NOTIFICATIONS
+// =========================
+function mostrarToast(mensagem, tipo = 'info', duracao = 4000) {
+  // Cria container se não existir
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  // Ícone baseado no tipo
+  let icone = '';
+  switch (tipo) {
+    case 'success': icone = '<i class="fas fa-check-circle"></i>'; break;
+    case 'error': icone = '<i class="fas fa-exclamation-circle"></i>'; break;
+    case 'warning': icone = '<i class="fas fa-exclamation-triangle"></i>'; break;
+    default: icone = '<i class="fas fa-info-circle"></i>';
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${tipo}`;
+  toast.innerHTML = `
+    ${icone}
+    <div class="toast-content">${mensagem}</div>
+    <button class="toast-close"><i class="fas fa-times"></i></button>
+  `;
+
+  container.appendChild(toast);
+
+  // Fechar ao clicar no X
+  const closeBtn = toast.querySelector('.toast-close');
+  closeBtn.addEventListener('click', () => {
+    toast.style.animation = 'fadeOut 0.3s ease forwards';
+    setTimeout(() => toast.remove(), 300);
+  });
+
+  // Auto-fechar após duração
+  setTimeout(() => {
+    if (toast.parentElement) {
+      toast.style.animation = 'fadeOut 0.3s ease forwards';
+      setTimeout(() => toast.remove(), 300);
+    }
+  }, duracao);
+}
+
 function fecharModalImportacao() {
   document.getElementById('modalImportacao').style.display = 'none';
 }
