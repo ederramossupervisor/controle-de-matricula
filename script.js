@@ -1077,7 +1077,6 @@ function fecharModalDetalhes() {
 function marcarAlteracao(row, coluna, valor) {
   const chave = `${row}_${coluna}`;
   alteracoesPendentes[chave] = valor;
-  console.log(`Alteração pendente: linha ${row}, coluna ${coluna} = ${valor}`);
 }
 
 async function alterarSituacaoAluno(novaSituacao) {
