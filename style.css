@@ -1307,3 +1307,19 @@ button i, .input-icon .icon i {
   align-items: center;
   justify-content: center;
 }
+
+
+/* Botões que contêm apenas ícone (sem texto) */
+.btn-icon-only {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0 !important;
+}
+
+.btn-icon-only i {
+  margin: 0 !important;
+  font-size: 1.2rem;
+}
