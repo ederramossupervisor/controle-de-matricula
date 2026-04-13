@@ -1411,6 +1411,12 @@ function ajustarInterfacePorPerfil() {
   const filtroSituacaoWrapper = document.getElementById("filtroSituacaoWrapper"); 
 
   const isSupervisorMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+  const btnLegalizacao = document.getElementById("btnLegalizacao");
+  if (perfilUsuario === "SUPERVISOR") {
+    if (btnLegalizacao) btnLegalizacao.style.display = "inline-block";
+  } else {
+    if (btnLegalizacao) btnLegalizacao.style.display = "none";
+  }
 
   if (perfilUsuario === "SECRETARIA") {
     // Secretaria
