@@ -1466,3 +1466,36 @@ button i, .input-icon .icon i {
   border-radius: 40px;
   border: 1px solid var(--card-border);
 }
+
+
+.btn-paginacao {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+.btn-paginacao:hover:not(:disabled) {
+  background: var(--btn-primary-bg);
+  color: white;
+  border-color: var(--btn-primary-bg);
+}
+.btn-paginacao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pagina-info {
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: var(--card-bg);
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--card-border);
+}
+select.btn-paginacao {
+  background-color: var(--card-bg);
+  cursor: pointer;
+}
