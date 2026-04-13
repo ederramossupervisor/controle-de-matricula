@@ -107,35 +107,28 @@ function debounce(func, wait) {
 }
 
 function atualizarListaPaginada() {
-  // dadosFiltradosGlobais já contém o resultado dos filtros
   const totalAlunos = dadosFiltradosGlobais.length;
   const totalPaginas = Math.ceil(totalAlunos / alunosPorPagina);
-  
-  // Ajusta página atual se necessário
   if (paginaAtual > totalPaginas && totalPaginas > 0) paginaAtual = totalPaginas;
   if (paginaAtual < 1) paginaAtual = 1;
-  
+
   const inicio = (paginaAtual - 1) * alunosPorPagina;
   const fim = inicio + alunosPorPagina;
   const alunosPagina = dadosFiltradosGlobais.slice(inicio, fim);
-  
   renderLista(alunosPagina);
   renderizarPaginacao(totalPaginas);
 }
 
 function renderizarPaginacao(totalPaginas) {
-  const containerPaginacao = document.getElementById('paginacao');
-  if (!containerPaginacao) return;
-  
+  const container = document.getElementById('paginacao');
+  if (!container) return;
   if (totalPaginas <= 1) {
-    containerPaginacao.style.display = 'none';
+    container.style.display = 'none';
     return;
   }
-  
-  containerPaginacao.style.display = 'flex';
-  containerPaginacao.innerHTML = '';
-  
-  // Botão Anterior
+  container.style.display = 'flex';
+  container.innerHTML = '';
+
   const btnPrev = document.createElement('button');
   btnPrev.innerHTML = '<i class="fas fa-chevron-left"></i>';
   btnPrev.className = 'btn-paginacao';
@@ -146,15 +139,13 @@ function renderizarPaginacao(totalPaginas) {
       atualizarListaPaginada();
     }
   });
-  containerPaginacao.appendChild(btnPrev);
-  
-  // Indicador de página (pode ser um select ou texto)
+  container.appendChild(btnPrev);
+
   const paginaSpan = document.createElement('span');
   paginaSpan.className = 'pagina-info';
   paginaSpan.textContent = `Página ${paginaAtual} de ${totalPaginas}`;
-  containerPaginacao.appendChild(paginaSpan);
-  
-  // Botão Próximo
+  container.appendChild(paginaSpan);
+
   const btnNext = document.createElement('button');
   btnNext.innerHTML = '<i class="fas fa-chevron-right"></i>';
   btnNext.className = 'btn-paginacao';
@@ -165,9 +156,8 @@ function renderizarPaginacao(totalPaginas) {
       atualizarListaPaginada();
     }
   });
-  containerPaginacao.appendChild(btnNext);
+  container.appendChild(btnNext);
 }
-
 // =========================
 // TOAST NOTIFICATIONS
 // =========================
@@ -1531,42 +1521,30 @@ function aplicarFiltros() {
 
   let dadosFiltrados = dadosGlobais;
 
-  // Filtro por escola (supervisor)
   if (perfilUsuario === "SUPERVISOR" && escolaSelecionada) {
     dadosFiltrados = dadosFiltrados.filter(a => a.ESCOLA === escolaSelecionada);
   }
-
-  // Filtro por turma
   if (turmaSelecionada) {
     dadosFiltrados = dadosFiltrados.filter(a => a.TURMA === turmaSelecionada);
   }
-
-  // Filtro por status
   if (statusSelecionado) {
     dadosFiltrados = dadosFiltrados.filter(a => a.STATUS === statusSelecionado);
   }
-
   if (perfilUsuario === "SUPERVISOR" && situacaoSelecionada) {
     dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === situacaoSelecionada);
   }
-
-  // Filtro por nome
   if (termoNome) {
-    dadosFiltrados = dadosFiltrados.filter(a =>
-      a.ALUNO.toLowerCase().includes(termoNome)
-    );
+    dadosFiltrados = dadosFiltrados.filter(a => a.ALUNO.toLowerCase().includes(termoNome));
   }
-
   if (perfilUsuario === "SECRETARIA") {
     dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === "Ativo");
   }
 
   dadosFiltradosGlobais = dadosFiltrados;
-  paginaAtual = 1; // reset para primeira página
+  paginaAtual = 1;
   atualizarListaPaginada();
 }
-  
-  
+   
 async function carregarTurmasParaCadastro(escola) {
   const select = document.getElementById("selectTurmaAluno");
   select.innerHTML = '<option value="">Carregando turmas...</option>';
