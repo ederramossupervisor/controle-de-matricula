@@ -82,8 +82,6 @@ const FUNDOS_ESCOLAS = {
   "default": "fundos/default.png"
 };
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-
 let alunosImportados = [];
 
 function abrirModalImportacao() {
