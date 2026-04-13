@@ -226,6 +226,7 @@ async function executarImportacao() {
   const loteSize = 20;
   let sucessos = 0;
   let falhas = 0;
+  let duplicatasPuladasTotal = 0;
   let turmasCriadasTotal = 0;
   
   for (let i = 0; i < alunosImportados.length; i += loteSize) {
@@ -492,7 +493,7 @@ async function cadastrarProcesso() {
     const result = await resp.json();
     esconderLoading();
     if (result.status === "ok") {
-      alert("✅ Processo cadastrado com sucesso!");
+      alert("Processo cadastrado com sucesso!");
       // Limpar campos
       document.getElementById("cadastroProcessoCodigo").value = "";
       document.getElementById("cadastroProcessoObs").value = "";
@@ -544,14 +545,14 @@ function renderizarListaProcessos(processos) {
     const div = document.createElement("div");
     div.className = "usuario-card";
     
-    let detalhes = `🏫 ${p.escola || '—'}`;
-    if (p.aluno) detalhes += ` | 👤 ${p.aluno}`;
-    if (p.categoria) detalhes += ` | 📂 ${p.categoria}`;
+    let detalhes = `<i class="fas fa-school"></i> ${p.escola || '—'}`;
+    if (p.aluno) detalhes += ` | <i class="fas fa-user"></i> ${p.aluno}`;
+    if (p.categoria) detalhes += ` | <i class="fas fa-folder"></i> ${p.categoria}`;
     if (p.subcategoria) detalhes += ` / ${p.subcategoria}`;
     if (p.observacoes) detalhes += `<br>📝 ${p.observacoes}`;
     
     div.innerHTML = `
-    <div class="usuario-avatar">📄</div>
+    <div class="usuario-avatar"><i class="fas fa-file-alt"></i></div>
     <div class="usuario-info">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <strong>${p.codigo || 'Sem código'} (${p.tipo || 'Sem tipo'})</strong>
@@ -585,7 +586,7 @@ function aplicarMascaraTelefone(event) {
 function updateDarkModeIcon(theme) {
   const btn = document.getElementById('darkModeToggle');
   if (btn) {
-    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    btn.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
   }
 }
 
@@ -848,10 +849,10 @@ function renderizarListaDocumentos(docs) {
     const div = document.createElement("div");
     div.className = "usuario-card";
     div.innerHTML = `
-      <div class="usuario-avatar">📄</div>
+      <div class="usuario-avatar"><i class="fas fa-file"></i></div>
       <div class="usuario-info">
         <strong>${doc.fileName}</strong>
-        <p>🏫 ${doc.escola} | 👤 ${doc.nomeAluno} | 📅 ${new Date(doc.dataUpload).toLocaleDateString()}</p>
+        <p><i class="fas fa-school"></i> ${doc.escola} | <i class="fas fa-user"></i> ${doc.nomeAluno} | <i class="fas fa-calendar-alt"></i> ${new Date(doc.dataUpload).toLocaleDateString()}</p>
         <div style="margin-top:8px;">
           <a href="${doc.viewUrl}" target="_blank" class="btn-pequeno">👁️ Visualizar</a>
           <a href="${doc.downloadUrl}" class="btn-pequeno">⬇️ Baixar</a>
@@ -941,8 +942,8 @@ function abrirModalDetalhes(aluno) {
   
   let html = `
     <p style="margin-top:0; color:#64748b; display:flex; gap:12px;">
-      <span>🏫 ${aluno.ESCOLA}</span>
-      <span>📅 Matrícula: ${new Date(aluno.DATA_MATRICULA).toLocaleDateString('pt-BR')}</span>
+      <span><i class="fas fa-school"></i> ${aluno.ESCOLA}</span>
+      <span><i class="fas fa-calendar-alt"></i> Matrícula: ${new Date(aluno.DATA_MATRICULA).toLocaleDateString('pt-BR')}</span>
     </p>
     <h3 style="margin-bottom:8px;">Documentos</h3>
     <div class="checkboxes-container">
@@ -1219,8 +1220,8 @@ function renderLista(dados) {
       <div class="aluno-avatar" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;">${inicial}</div>
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${aluno.ALUNO || ''}">${aluno.ALUNO || 'Nome inválido'}</div>
-        ${aluno.TURMA ? `<div style="font-size:11px;color:#64748b;margin-bottom:4px;">📚 ${aluno.TURMA}</div>` : ''}
-        ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;">📌 ${aluno.SITUACAO}</div>` : ''}
+        ${aluno.TURMA ? `<div style="font-size:11px;color:#64748b;margin-bottom:4px;"><i class="fas fa-book"></i> ${aluno.TURMA}</div>` : ''}
+        ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;"><i class="fas fa-thumbtack"></i> ${aluno.SITUACAO}</div>` : ''}  
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
           <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
           ${prazoTexto ? `<span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">${prazoTexto}</span>` : ''}
@@ -1228,7 +1229,7 @@ function renderLista(dados) {
         ${barraProgresso}
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
-        <button onclick="abrirAluno(${aluno._row})" data-tooltip="Abrir ficha do aluno" style="background:none;border:none;font-size:20px;padding:6px;border-radius:40px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748b;transition:all 0.2s;">👁️</button>
+        <button onclick="abrirAluno(${aluno._row})" data-tooltip="Abrir ficha do aluno" style="background:none;border:none;font-size:20px;padding:6px;border-radius:40px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748b;transition:all 0.2s;"><i class="fas fa-eye"></i></button>
       </div>
     `;
 
@@ -1559,13 +1560,13 @@ function renderUsuarios(usuarios) {
     div.className = "usuario-card";
     
     const perfilClass = u.PERFIL === "SUPERVISOR" ? "perfil-supervisor" : "perfil-secretaria";
-    const avatarIcon = u.PERFIL === "SUPERVISOR" ? "👑" : "📋";
+    const avatarIcon = u.PERFIL === 'SUPERVISOR' ? '<i class="fas fa-crown"></i>' : '<i class="fas fa-user-tie"></i>';
     
     div.innerHTML = `
       <div class="usuario-avatar">${avatarIcon}</div>
       <div class="usuario-info">
         <strong>${u.EMAIL}</strong>
-        <p>🏫 ${u.ESCOLA || "—"} · <span class="perfil-badge ${perfilClass}">${u.PERFIL}</span></p>
+        <p><i class="fas fa-school"></i> ${u.ESCOLA || "—"} · <span class="perfil-badge ${perfilClass}">${u.PERFIL}</span></p>
       </div>
     `;
     container.appendChild(div);
@@ -1789,22 +1790,22 @@ function renderPainel(resumo) {
   const painel = document.getElementById("painel");
   painel.innerHTML = `
     <div class="metrica-card metrica-total">
-      <div class="metrica-titulo">📋 Total de alunos</div>
+      <div class="metrica-titulo"><i class="fas fa-clipboard-list"></i> Total de alunos</div>
       <div class="metrica-valor">${resumo.total}</div>
       <div class="metrica-detalhe">matriculados</div>
     </div>
     <div class="metrica-card metrica-completos">
-      <div class="metrica-titulo">✅ Completos</div>
+      <div class="metrica-titulo"><i class="fas fa-check-circle"></i> Completos</div>
       <div class="metrica-valor">${resumo.completos}</div>
       <div class="metrica-detalhe">documentação ok</div>
     </div>
     <div class="metrica-card metrica-pendentes">
-      <div class="metrica-titulo">⚠️ Pendentes</div>
+      <div class="metrica-titulo"><i class="fas fa-exclamation-triangle"></i> Pendentes</div>
       <div class="metrica-valor">${resumo.pendentes}</div>
       <div class="metrica-detalhe">faltam documentos</div>
     </div>
     <div class="metrica-card metrica-vencidos">
-      <div class="metrica-titulo">🔴 Vencidos</div>
+      <div class="metrica-titulo"><i class="fas fa-circle" style="color:#dc2626;"></i> Vencidos</div>
       <div class="metrica-valor">${resumo.vencidos}</div>
       <div class="metrica-detalhe">prazo expirado</div>
     </div>
@@ -1911,7 +1912,8 @@ function renderListaTurmas(turmas) {
     const div = document.createElement("div");
     div.className = "usuario-card";
     div.innerHTML = `
-      <div class="usuario-avatar">📚</div>
+      <div class="usuario-avatar"><i class="fas fa-book"></i></div>
+      <p><i class="fas fa-school"></i> ${t.escola}</p>
       <div class="usuario-info">
         <strong>${t.turma}</strong>
         <p>🏫 ${t.escola}</p>
