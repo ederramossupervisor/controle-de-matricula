@@ -338,22 +338,22 @@
     <header>
       <div class="header-left">
         <h1>📋 Controle de Matrículas</h1>
-        <span class="escola-badge" id="escolaUsuarioDisplay" title="Escola / Perfil do usuário logado"></span>
+        <span class="escola-badge" id="escolaUsuarioDisplay" data-tooltip="Escola / Perfil do usuário logado"></span>
       </div>
       <div class="header-actions">
-        <button onclick="abrirNovoAluno()" class="btn-primary" id="btnNovoAluno" title="Cadastrar novo aluno">➕ Novo Aluno</button>
-        <button onclick="abrirModalImportacao()" class="btn-primary" style="background: #059669;" title="Importar alunos via arquivo CSV">📤 Importar CSV</button>
-        <button onclick="abrirModalDocumentos()" id="btnDocumentos" title="Gerenciar documentos (upload e listagem)">📂 Documentos</button>
-        <button onclick="abrirModalProcessos()" id="btnProcessos" style="display: flex; align-items: center; gap: 10px;" title="Processos e documentos oficiais (Edocs)">
+        <button onclick="abrirNovoAluno()" class="btn-primary" id="btnNovoAluno" data-tooltip="Cadastrar novo aluno">➕ Novo Aluno</button>
+        <button onclick="abrirModalImportacao()" class="btn-primary" style="background: #059669;" data-tooltip="Importar alunos via arquivo CSV">📤 Importar CSV</button>
+        <button onclick="abrirModalDocumentos()" id="btnDocumentos" data-tooltip="Gerenciar documentos (upload e listagem)">📂 Documentos</button>
+        <button onclick="abrirModalProcessos()" id="btnProcessos" style="display: flex; align-items: center; gap: 10px;" data-tooltip="Processos e documentos oficiais (Edocs)">
           <span style="display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background-color: #0288D1; border-radius: 6px; color: white; font-weight: bold; font-size: 18px;">E</span>
           Edocs
         </button>
-        <button onclick="abrirModalTurmas()" id="btnTurmas" title="Gerenciar turmas">🏫 Turmas</button>
-        <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios" title="Listar usuários cadastrados">👥 Usuários</button>
-        <button onclick="abrirModalCadastroUsuario()" id="btnCadastrarUsuario" title="Cadastrar novo usuário">➕ Usuário</button>
-        <button id="darkModeToggle" class="btn-icone" onclick="toggleDarkMode()" title="Alternar modo escuro / claro">🌙</button>
-        <button onclick="carregarAlunos()" class="btn-outline" title="Atualizar lista de alunos">🔄</button>
-        <button onclick="logout()" class="btn-outline" title="Sair do sistema">🚪 Sair</button>
+        <button onclick="abrirModalTurmas()" id="btnTurmas" data-tooltip="Gerenciar turmas">🏫 Turmas</button>
+        <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios" data-tooltip="Listar usuários cadastrados">👥 Usuários</button>
+        <button onclick="abrirModalCadastroUsuario()" id="btnCadastrarUsuario" data-tooltip="Cadastrar novo usuário">➕ Usuário</button>
+        <button id="darkModeToggle" class="btn-icone" onclick="toggleDarkMode()" data-tooltip="Alternar modo escuro / claro">🌙</button>
+        <button onclick="carregarAlunos()" class="btn-outline" data-tooltip="Atualizar lista de alunos">🔄</button>
+        <button onclick="logout()" class="btn-outline" data-tooltip="Sair do sistema">🚪 Sair</button>
       </div>
     </header>
     <!-- 👥 MODAL DE LISTA DE USUÁRIOS -->
