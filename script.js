@@ -82,6 +82,149 @@ const FUNDOS_ESCOLAS = {
   "default": "fundos/default.png"
 };
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+let alunosImportados = [];
+
+function abrirModalImportacao() {
+  document.getElementById('modalImportacao').style.display = 'flex';
+  document.getElementById('arquivoCSV').value = '';
+  document.getElementById('previewContainer').innerHTML = '<p style="padding:16px;color:#64748b;">Selecione um arquivo CSV para visualizar os dados.</p>';
+  document.getElementById('btnExecutarImportacao').disabled = true;
+  document.getElementById('statusImportacao').innerHTML = '';
+}
+
+function fecharModalImportacao() {
+  document.getElementById('modalImportacao').style.display = 'none';
+}
+
+function extrairPrimeiroTelefone(telefones) {
+  if (!telefones) return '';
+  const match = telefones.match(/\(?\d{2}\)?\s?\d{4,5}-?\d{4}/);
+  return match ? match[0] : telefones.split(/[e\s]+/)[0];
+}
+
+function processarCSV() {
+  const fileInput = document.getElementById('arquivoCSV');
+  const file = fileInput.files[0];
+  if (!file) {
+    alert('Selecione um arquivo CSV.');
+    return;
+  }
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    delimiter: ";",
+    encoding: "UTF-8",
+    complete: function(results) {
+      const dados = results.data;
+      if (dados.length === 0) {
+        alert('Nenhum dado encontrado no CSV.');
+        return;
+      }
+      
+      alunosImportados = dados.map(linha => {
+        const dataMatricula = linha['Aluno: Data de matrícula'] || '';
+        const edEspecial = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotaçăo'] || '').toLowerCase() === 'sim';
+        
+        return {
+          nome: linha['Aluno: Nome'] || '',
+          responsavel: linha['Aluno: Nome do responsável'] || '',
+          telefone: extrairPrimeiroTelefone(linha['Aluno: Telefones']),
+          escola: linha['Escola: Nome'] || '',
+          turma: linha['Turma: Nome'] || '',
+          dataMatricula: dataMatricula,
+          edEspecial: edEspecial,
+          cpfAluno: linha['Aluno: CPF'] || '',
+          sus: linha['Aluno: Cartão do SUS'] || '',
+          certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
+          rg: linha['Aluno: Identidade'] || '',
+          residencia: linha['Endereço: Código de instalação elétrica'] || '',
+          observacaoExtra: ''
+        };
+      }).filter(a => a.nome && a.escola);
+
+      renderizarPreview(alunosImportados);
+      document.getElementById('btnExecutarImportacao').disabled = (alunosImportados.length === 0);
+    },
+    error: function(err) {
+      alert('Erro ao processar CSV: ' + err);
+    }
+  });
+}
+
+function renderizarPreview(alunos) {
+  const container = document.getElementById('previewContainer');
+  if (alunos.length === 0) {
+    container.innerHTML = '<p style="padding:16px;color:#dc2626;">Nenhum aluno válido encontrado.</p>';
+    return;
+  }
+
+  let html = '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
+  html += '<thead><tr style="background:#f1f5f9;">';
+  html += '<th>Nome</th><th>Escola</th><th>Turma</th><th>Resp.</th><th>Tel.</th><th>CPF</th><th>SUS</th><th>RG</th><th>Resid.</th><th>Ed.Especial</th>';
+  html += '</tr></thead><tbody>';
+  alunos.slice(0, 50).forEach(a => {
+    html += `<tr style="border-bottom:1px solid #e2e8f0;">`;
+    html += `<td>${a.nome || '-'}</td><td>${a.escola || '-'}</td><td>${a.turma || '-'}</td><td>${a.responsavel || '-'}</td><td>${a.telefone || '-'}</td>`;
+    html += `<td>${a.cpfAluno ? '✓' : '-'}</td><td>${a.sus ? '✓' : '-'}</td><td>${a.rg ? '✓' : '-'}</td><td>${a.residencia ? '✓' : '-'}</td>`;
+    html += `<td>${a.edEspecial ? 'Sim' : 'Não'}</td>`;
+    html += `</tr>`;
+  });
+  html += '</tbody></table>';
+  if (alunos.length > 50) html += `<p style="padding:8px;">Exibindo 50 de ${alunos.length} alunos.</p>`;
+  container.innerHTML = html;
+}
+
+async function executarImportacao() {
+  if (alunosImportados.length === 0) return;
+  
+  const btn = document.getElementById('btnExecutarImportacao');
+  btn.disabled = true;
+  btn.textContent = '⏳ Importando...';
+  const statusDiv = document.getElementById('statusImportacao');
+  
+  const loteSize = 20;
+  let sucessos = 0;
+  let falhas = 0;
+  let turmasCriadasTotal = 0;
+  
+  for (let i = 0; i < alunosImportados.length; i += loteSize) {
+    const lote = alunosImportados.slice(i, i + loteSize);
+    statusDiv.innerHTML = `Importando lote ${Math.floor(i/loteSize)+1} de ${Math.ceil(alunosImportados.length/loteSize)}...`;
+    
+    try {
+      const resp = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          acao: 'importarAlunosLote',
+          email: emailUsuario,
+          alunos: lote
+        })
+      });
+      const result = await resp.json();
+      if (result.status === 'ok') {
+        sucessos += result.importados || lote.length;
+        falhas += result.falhas || 0;
+        turmasCriadasTotal += result.turmasCriadas || 0;
+      } else {
+        falhas += lote.length;
+      }
+    } catch (e) {
+      falhas += lote.length;
+    }
+  }
+  
+  let msg = `✅ Importação concluída: ${sucessos} alunos importados, ${falhas} falhas.`;
+  if (turmasCriadasTotal > 0) msg += ` ${turmasCriadasTotal} turma(s) criada(s) automaticamente.`;
+  statusDiv.innerHTML = msg;
+  btn.disabled = false;
+  btn.textContent = '⬇️ Iniciar Importação';
+  
+  await carregarAlunos();
+}
+
 function aplicarFundoPorEscola(escola) {
   const body = document.body;
   let imagemFundo = FUNDOS_ESCOLAS[escola];
