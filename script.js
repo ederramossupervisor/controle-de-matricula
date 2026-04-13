@@ -263,14 +263,15 @@ async function executarImportacao() {
   }
   
   let msg = `✅ Importação concluída!<br>`;
-  msg += `📊 Alunos importados com sucesso: ${sucessos}<br>`;
+  msg += `📊 Alunos importados: ${sucessos}<br>`;
+  if (duplicatasPuladasTotal > 0) {
+    msg += `🔄 Duplicatas ignoradas: ${duplicatasPuladasTotal}<br>`;
+  }
   if (falhas > 0) {
     msg += `❌ Falhas: ${falhas}<br>`;
-  } else {
-    msg += `✅ Nenhuma falha!<br>`;
   }
   if (turmasCriadasTotal > 0) {
-    msg += `📚 Novas turmas criadas: ${turmasCriadasTotal}`;
+    msg += `📚 Novas turmas: ${turmasCriadasTotal}`;
   }
   statusDiv.innerHTML = msg;
   
