@@ -1289,3 +1289,21 @@ textarea:focus {
   background: #f1f5f9;
   color: #0f172a;
 }
+
+
+button i, .input-icon .icon i {
+  margin-right: 8px;
+  font-size: 1.1em;
+  vertical-align: middle;
+}
+
+.btn-icone i {
+  margin-right: 0;
+  font-size: 1.2em;
+}
+
+.input-icon .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
