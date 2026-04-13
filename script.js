@@ -155,7 +155,7 @@ function processarCSV() {
     });
   };
   
-  // 🔥 Lê o arquivo com codificação ISO-8859-1 (Windows-1252)
+  // Lê o arquivo com codificação ISO-8859-1 (Windows-1252)
   reader.readAsText(file, 'ISO-8859-1');
 }
 function renderizarPreview(alunos) {
@@ -200,14 +200,14 @@ async function importarDaPlanilha() {
     esconderLoading();
     
     if (result.status === 'ok') {
-      let msg = `✅ Importação concluída!\n`;
-      msg += `📊 Alunos importados: ${result.importados || 0}\n`;
-      msg += `❌ Falhas: ${result.falhas || 0}`;
-      if (result.turmasCriadas) msg += `\n📚 Turmas criadas: ${result.turmasCriadas}`;
+      let msg = `Importação concluída!\n`;
+      msg += `Alunos importados: ${result.importados || 0}\n`;
+      msg += `Falhas: ${result.falhas || 0}`;
+      if (result.turmasCriadas) msg += `\nTurmas criadas: ${result.turmasCriadas}`;
       alert(msg);
       carregarAlunos(); // recarrega a lista
     } else {
-      alert(`❌ Erro: ${result.msg || 'Falha na importação'}`);
+      alert(`Erro: ${result.msg || 'Falha na importação'}`);
     }
   } catch (e) {
     esconderLoading();
@@ -220,13 +220,13 @@ async function executarImportacao() {
   
   const btn = document.getElementById('btnExecutarImportacao');
   btn.disabled = true;
-  btn.textContent = '⏳ Importando...';
+  btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Importando...';
   const statusDiv = document.getElementById('statusImportacao');
   
   const loteSize = 20;
   let sucessos = 0;
   let falhas = 0;
-  let duplicatasPuladasTotal = 0;
+  let duplicatasPuladasTotal = 0;   // declarada e será incrementada
   let turmasCriadasTotal = 0;
   
   for (let i = 0; i < alunosImportados.length; i += loteSize) {
@@ -249,39 +249,39 @@ async function executarImportacao() {
         const importadosLote = Number(result.importados) || 0;
         const falhasLote = Number(result.falhas) || 0;
         const turmasLote = Number(result.turmasCriadas) || 0;
+        const duplicatasLote = Number(result.duplicatas) || 0;   // captura duplicatas do backend
         
         sucessos += importadosLote;
         falhas += falhasLote;
         turmasCriadasTotal += turmasLote;
+        duplicatasPuladasTotal += duplicatasLote;               // incrementa
       } else {
-        // Se o GAS retornou erro, conta todo o lote como falha
         falhas += lote.length;
       }
     } catch (e) {
-      // Erro de rede ou CORS → todo o lote falhou
       falhas += lote.length;
     }
   }
   
-  let msg = `✅ Importação concluída!<br>`;
-  msg += `📊 Alunos importados: ${sucessos}<br>`;
+  let msg = `Importacao concluida!\n`;
+  msg += `Alunos importados: ${sucessos}\n`;
   if (duplicatasPuladasTotal > 0) {
-    msg += `🔄 Duplicatas ignoradas: ${duplicatasPuladasTotal}<br>`;
+    msg += `Duplicatas ignoradas: ${duplicatasPuladasTotal}\n`;
   }
   if (falhas > 0) {
-    msg += `❌ Falhas: ${falhas}<br>`;
+    msg += `Falhas: ${falhas}\n`;
   }
   if (turmasCriadasTotal > 0) {
-    msg += `📚 Novas turmas: ${turmasCriadasTotal}`;
+    msg += `Novas turmas: ${turmasCriadasTotal}`;
   }
-  statusDiv.innerHTML = msg;
+  statusDiv.innerHTML = msg.replace(/\n/g, '<br>');
   
   btn.disabled = false;
-  btn.textContent = '⬇️ Iniciar Importação';
+  btn.innerHTML = '<i class="fas fa-download"></i> Iniciar Importacao';
   
-  // Recarregar a lista de alunos para exibir os novos registros
   await carregarAlunos();
 }
+
 function aplicarFundoPorEscola(escola) {
   const body = document.body;
   let imagemFundo = FUNDOS_ESCOLAS[escola];
@@ -332,11 +332,11 @@ function copiarCodigo(codigo) {
   navigator.clipboard.writeText(codigo)
     .then(() => {
       // Feedback visual rápido (opcional)
-      alert(`✅ Código ${codigo} copiado!`);
+      alert(`Código ${codigo} copiado!`);
     })
     .catch(err => {
       console.error('Erro ao copiar:', err);
-      alert('❌ Não foi possível copiar o código.');
+      alert('Não foi possível copiar o código.');
     });
 }
 
@@ -399,15 +399,14 @@ function atualizarCamposProcesso() {
   if (tiposComAluno.includes(tipo)) {
     container.innerHTML = `
       <div class="input-icon">
-        <span class="icon">👤</span>
+        <span class="icon"><i class="fas fa-user"></i></span>
         <input type="text" id="cadastroProcessoAluno" placeholder="Nome do aluno">
       </div>
     `;
   } else if (tipo === "Livro de ponto") {
-    // Mantém a lógica existente para Livro de ponto
     container.innerHTML = `
       <div class="input-icon">
-        <span class="icon">📂</span>
+        <span class="icon"><i class="fas fa-folder"></i></span>
         <select id="cadastroProcessoCategoria" onchange="atualizarSubcategorias()">
           <option value="">Categoria</option>
           <option value="Técnico Administrativo">Técnico Administrativo</option>
@@ -415,7 +414,7 @@ function atualizarCamposProcesso() {
         </select>
       </div>
       <div class="input-icon" id="subcategoriaWrapper" style="display:none;">
-        <span class="icon">📑</span>
+        <span class="icon"><i class="fas fa-file-alt"></i></span>
         <select id="cadastroProcessoSubcategoria">
           <option value="">Subcategoria</option>
           <option value="Técnico Pedagógico">Técnico Pedagógico</option>
@@ -539,7 +538,6 @@ function renderizarListaProcessos(processos) {
   }
   
   processos.forEach(p => {
-    // Ignora itens sem código ou tipo (segurança extra)
     if (!p.codigo && !p.tipo) return;
     
     const div = document.createElement("div");
@@ -549,21 +547,22 @@ function renderizarListaProcessos(processos) {
     if (p.aluno) detalhes += ` | <i class="fas fa-user"></i> ${p.aluno}`;
     if (p.categoria) detalhes += ` | <i class="fas fa-folder"></i> ${p.categoria}`;
     if (p.subcategoria) detalhes += ` / ${p.subcategoria}`;
-    if (p.observacoes) detalhes += `<br>📝 ${p.observacoes}`;
+    if (p.observacoes) detalhes += `<br><i class="fas fa-pencil-alt"></i> ${p.observacoes}`;
     
     div.innerHTML = `
-    <div class="usuario-avatar"><i class="fas fa-file-alt"></i></div>
-    <div class="usuario-info">
-      <div style="display: flex; align-items: center; justify-content: space-between;">
-        <strong>${p.codigo || 'Sem código'} (${p.tipo || 'Sem tipo'})</strong>
-        <button class="btn-icone" onclick="copiarCodigo('${p.codigo}')" title="Copiar código" style="margin-left: 8px;">📋</button>
+      <div class="usuario-avatar"><i class="fas fa-file-alt"></i></div>
+      <div class="usuario-info">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <strong>${p.codigo || 'Sem código'} (${p.tipo || 'Sem tipo'})</strong>
+          <button class="btn-icone" onclick="copiarCodigo('${p.codigo}')" title="Copiar código" style="margin-left: 8px;"><i class="fas fa-copy"></i></button>
+        </div>
+        <p>${detalhes}</p>
       </div>
-      <p>${detalhes}</p>
-    </div>
-  `;
+    `;
     container.appendChild(div);
   });
 }
+
 // Máscara para telefone
 function aplicarMascaraTelefone(event) {
   let valor = event.target.value.replace(/\D/g, ''); // remove tudo que não é dígito
@@ -635,7 +634,7 @@ async function salvarDadosAluno() {
     return;
   }
 
-   // 🔥 VALIDAÇÃO DE TELEFONE (INSIRA AQUI)
+   // VALIDAÇÃO DE TELEFONE (INSIRA AQUI)
   const telefoneNumeros = telefone.replace(/\D/g, '');
   if (telefoneNumeros.length > 0 && telefoneNumeros.length < 10) {
     alert("Telefone incompleto. Informe DDD + número (mínimo 10 dígitos).");
@@ -676,9 +675,9 @@ async function salvarDadosAluno() {
       
       document.getElementById("detalhesTitulo").textContent = nome;
       
-      btnText.textContent = "✅ Salvo!";
+      btnText.textContent = "Salvo!";
       setTimeout(() => {
-        btnText.textContent = "💾 Salvar informações";
+        btnText.textContent = "Salvar informações";
       }, 2000);
     } else {
       alert("Erro: " + (resultado.msg || "Tente novamente"));
@@ -709,7 +708,7 @@ function login() {
 
   emailUsuario = email;
 
-  // 💾 salva no navegador
+  // salva no navegador
   localStorage.setItem("emailUsuario", email);
 
   carregarAlunos();
@@ -798,7 +797,7 @@ async function fazerUpload() {
       esconderLoading();
       
       if (result.status === "ok") {
-        alert("✅ Upload realizado com sucesso!");
+        alert("Upload realizado com sucesso!");
         fileInput.value = "";
         document.getElementById("uploadNomeAluno").value = "";
         document.getElementById("uploadTipoDoc").value = "";
@@ -854,15 +853,14 @@ function renderizarListaDocumentos(docs) {
         <strong>${doc.fileName}</strong>
         <p><i class="fas fa-school"></i> ${doc.escola} | <i class="fas fa-user"></i> ${doc.nomeAluno} | <i class="fas fa-calendar-alt"></i> ${new Date(doc.dataUpload).toLocaleDateString()}</p>
         <div style="margin-top:8px;">
-          <a href="${doc.viewUrl}" target="_blank" class="btn-pequeno">👁️ Visualizar</a>
-          <a href="${doc.downloadUrl}" class="btn-pequeno">⬇️ Baixar</a>
+          <a href="${doc.viewUrl}" target="_blank" class="btn-pequeno"><i class="fas fa-eye"></i> Visualizar</a>
+          <a href="${doc.downloadUrl}" class="btn-pequeno"><i class="fas fa-download"></i> Baixar</a>
         </div>
       </div>
     `;
     container.appendChild(div);
   });
 }
-
 // Preenche os selects de filtro (escola, turma, status)
 function inicializarFiltros() {
   // Preencher escolas (apenas supervisor, mas já preenchemos para usar no filtro de turmas)
@@ -935,78 +933,7 @@ function preencherDataHoje() {
   document.getElementById("dataMatricula").value = dataFormatada;
 }
 
-function abrirModalDetalhes(aluno) {
-  dadosAlunoAtual = aluno;
-  
-  document.getElementById("detalhesTitulo").textContent = aluno.ALUNO;
-  
-  let html = `
-    <p style="margin-top:0; color:#64748b; display:flex; gap:12px;">
-      <span><i class="fas fa-school"></i> ${aluno.ESCOLA}</span>
-      <span><i class="fas fa-calendar-alt"></i> Matrícula: ${new Date(aluno.DATA_MATRICULA).toLocaleDateString('pt-BR')}</span>
-    </p>
-    <h3 style="margin-bottom:8px;">Documentos</h3>
-    <div class="checkboxes-container">
-  `;
-  
-  // Lista de documentos básicos (9 itens)
-  const docsBasicos = [
-    { label: "Certidão de Nascimento", coluna: 9, valor: aluno.CERTIDAO },
-    { label: "CPF do aluno", coluna: 10, valor: aluno.CPF },
-    { label: "RG do aluno", coluna: 11, valor: aluno.RG },
-    { label: "Carteira de Vacinação", coluna: 12, valor: aluno.VACINA },
-    { label: "Cartão do SUS", coluna: 13, valor: aluno.SUS },
-    { label: "Comprovante de Residência", coluna: 14, valor: aluno.RESIDENCIA },
-    { label: "Documentos do Responsável", coluna: 15, valor: aluno.RESP_DOCS },
-    { label: "Histórico Escolar", coluna: 16, valor: aluno.HISTORICO },
-    { label: "Declaração de Transferência", coluna: 17, valor: aluno.DECL_TRANSF }
-  ];
-  
-  // Adiciona os básicos
-  docsBasicos.forEach(doc => {
-    const chave = `${aluno._row}_${doc.coluna}`;
-    const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : doc.valor;
-    html += `
-      <div class="checkbox-moderno">
-        <input type="checkbox" 
-          id="doc_${doc.coluna}" 
-          ${checked ? "checked" : ""} 
-          onchange="marcarAlteracao(${aluno._row}, ${doc.coluna}, this.checked)">
-        <label for="doc_${doc.coluna}">${doc.label}</label>
-      </div>
-    `;
-  });
-  
-  // Se o aluno for da Educação Especial, adiciona o documento extra
-  if (aluno.ED_ESPECIAL === true) {
-    const docEspecial = { label: "Laudo/Relatório Pedagógico (Ed. Especial)", coluna: 18, valor: aluno.ED_ESPECIAL };
-    const chave = `${aluno._row}_${docEspecial.coluna}`;
-    const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : docEspecial.valor;
-    html += `
-      <div class="checkbox-moderno">
-        <input type="checkbox" 
-          id="doc_${docEspecial.coluna}" 
-          ${checked ? "checked" : ""} 
-          onchange="marcarAlteracao(${aluno._row}, ${docEspecial.coluna}, this.checked)">
-        <label for="doc_${docEspecial.coluna}">${docEspecial.label}</label>
-      </div>
-    `;
-  }
-  
-  html += `</div>`;
-  
-  document.getElementById("detalhesConteudo").innerHTML = html;
-  // Preencher campos editáveis
-  document.getElementById("editNomeAluno").value = aluno.ALUNO || "";
-  document.getElementById("editResponsavel").value = aluno.RESPONSAVEL || "";
-  document.getElementById("editTelefone").value = aluno.TELEFONE || "";
-  document.getElementById("editEdEspecial").checked = aluno.ED_ESPECIAL === true;
-  
-  // Carregar turmas da escola e selecionar a atual
-  carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
-  document.getElementById("modalDetalhes").style.display = "flex";
-}
-
+abrirModalDetalhes
 function fecharModalDetalhes() {
   document.getElementById("modalDetalhes").style.display = "none";
   dadosAlunoAtual = null;
@@ -1015,7 +942,7 @@ function fecharModalDetalhes() {
 function marcarAlteracao(row, coluna, valor) {
   const chave = `${row}_${coluna}`;
   alteracoesPendentes[chave] = valor;
-  console.log(`📝 Alteração pendente: linha ${row}, coluna ${coluna} = ${valor}`);
+  console.log(`Alteração pendente: linha ${row}, coluna ${coluna} = ${valor}`);
 }
 
 async function alterarSituacaoAluno(novaSituacao) {
@@ -1064,7 +991,7 @@ async function carregarAlunos() {
       return;
     }
 
-    // 🔥 Armazenar escolas supervisionadas (para supervisores comuns)
+    // Armazenar escolas supervisionadas (para supervisores comuns)
     if (dados.escolasSupervisionadas) {
       window.escolasSupervisionadas = dados.escolasSupervisionadas;
     } else {
@@ -1076,7 +1003,7 @@ async function carregarAlunos() {
     escolaUsuario = dados.escola;
 
     document.getElementById("escolaUsuarioDisplay").textContent = 
-      perfilUsuario === "SUPERVISOR" ? "🔭 Supervisor" : `🏫 ${escolaUsuario}`;
+      perfilUsuario === "SUPERVISOR" ? "Supervisor" : `${escolaUsuario}`;
 
     // Verificação extra: se alunos não for array, algo deu errado
     if (!Array.isArray(dados.alunos)) {
@@ -1103,7 +1030,7 @@ async function carregarAlunos() {
     // Inicializar os filtros (preenche selects de escola, status etc.)
     inicializarFiltros();
 
-    // 🔥 Recarregar os selects de escola com a lista restrita
+    // Recarregar os selects de escola com a lista restrita
     preencherSelectsProcessos();
     preencherSelectEscolasDoc();
     preencherSelectEscolasTurma();
@@ -1165,11 +1092,10 @@ function renderLista(dados) {
     else if (aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
     else if (aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
 
-    // Calcular dias restantes e barra de progresso (apenas se status NÃO for "✅ Completo")
     let prazoTexto = "";
     let prazoClasse = "";
     let barraProgresso = "";
-    let corBarra = "#10b981"; // verde padrão
+    let corBarra = "#10b981";
     
     if (aluno.STATUS !== "✅ Completo") {
       if (aluno.PRAZO_FINAL) {
@@ -1179,26 +1105,24 @@ function renderLista(dados) {
         prazo.setHours(0,0,0,0);
         const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
         
-        // Definir texto e classe do prazo
         if (diff < 0) {
-          prazoTexto = `⏰ Vencido há ${Math.abs(diff)} dia(s)`;
+          prazoTexto = `Vencido há ${Math.abs(diff)} dia(s)`;
           prazoClasse = "prazo-urgente";
-          corBarra = "#ef4444"; // vermelho
+          corBarra = "#ef4444";
         } else if (diff === 0) {
-          prazoTexto = "⏳ Vence hoje";
+          prazoTexto = "Vence hoje";
           prazoClasse = "prazo-atencao";
-          corBarra = "#f59e0b"; // laranja
+          corBarra = "#f59e0b";
         } else if (diff <= 5) {
-          prazoTexto = `⚠️ ${diff} dia(s) restante(s)`;
+          prazoTexto = `${diff} dia(s) restante(s)`;
           prazoClasse = "prazo-atencao";
-          corBarra = "#f59e0b"; // laranja
+          corBarra = "#f59e0b";
         } else {
-          prazoTexto = `📅 ${diff} dias restantes`;
+          prazoTexto = `${diff} dias restantes`;
           prazoClasse = "prazo-normal";
-          corBarra = "#10b981"; // verde
+          corBarra = "#10b981";
         }
         
-        // Calcular percentual da barra (baseado em 30 dias totais)
         const totalDias = 30;
         const percentual = diff > 0 ? Math.min(100, Math.round((diff / totalDias) * 100)) : 0;
         barraProgresso = `
@@ -1207,7 +1131,7 @@ function renderLista(dados) {
           </div>
         `;
       } else {
-        prazoTexto = "📅 Sem prazo";
+        prazoTexto = "Sem prazo";
         prazoClasse = "";
       }
     }
@@ -1224,7 +1148,7 @@ function renderLista(dados) {
         ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;"><i class="fas fa-thumbtack"></i> ${aluno.SITUACAO}</div>` : ''}  
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
           <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
-          ${prazoTexto ? `<span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;">${prazoTexto}</span>` : ''}
+          ${prazoTexto ? `<span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;"><i class="fas fa-hourglass-half"></i> ${prazoTexto}</span>` : ''}
         </div>
         ${barraProgresso}
       </div>
@@ -1236,7 +1160,6 @@ function renderLista(dados) {
     lista.appendChild(div);
   });
 }
-
 function ajustarOpcoesCadastroUsuario() {
   const selectPerfil = document.getElementById('perfil');
   if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'ecramos@sedu.es.gov.br') {
@@ -1572,7 +1495,6 @@ function renderUsuarios(usuarios) {
     container.appendChild(div);
   });
 }
-
 // Salvar usuário (atualizada)
 async function salvarUsuario() {
   const email = document.getElementById("novoEmail").value.trim();
@@ -1616,7 +1538,7 @@ async function salvarUsuario() {
     const resultado = await resposta.json();
     
     if (resultado.status === "ok") {
-      btnText.textContent = "✅ Cadastrado!";
+      btnText.textContent = "Cadastrado!";
       spinner.style.display = "none";
       btnText.style.display = "inline";
       await new Promise(r => setTimeout(r, 600));
@@ -1653,7 +1575,7 @@ async function salvarAluno() {
   const nome = nomeInput ? nomeInput.value.trim() : "";
   const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
   const telefone = telefoneInput ? telefoneInput.value.trim() : "";
-  const edEspecial = edEspecialCheck ? edEspecialCheck.checked : false;   // ✅ declaração correta
+  const edEspecial = edEspecialCheck ? edEspecialCheck.checked : false;   // declaração correta
   const turma = turmaSelect ? turmaSelect.value : "";
   
   const erroDiv = document.getElementById("erroNome");
@@ -1671,7 +1593,7 @@ async function salvarAluno() {
   if (erroDiv) erroDiv.style.display = "none";
   if (nomeInput) nomeInput.style.borderColor = "#e2e8f0";
 
-  // 🔥 VALIDAÇÃO DE TELEFONE (INSIRA AQUI)
+  // VALIDAÇÃO DE TELEFONE (INSIRA AQUI)
   const telefoneNumeros = telefone.replace(/\D/g, '');
   if (telefoneNumeros.length > 0 && telefoneNumeros.length < 10) {
     alert("Telefone incompleto. Informe DDD + número (mínimo 10 dígitos).");
@@ -1693,7 +1615,7 @@ async function salvarAluno() {
         telefone: telefone,
         turma: document.getElementById("selectTurmaAluno").value,
         dataMatricula: dataMatriculaInput,
-        edEspecial: edEspecial,   // ✅ enviando o valor
+        edEspecial: edEspecial,   // enviando o valor
         email: emailUsuario
       })
     });
@@ -1701,7 +1623,7 @@ async function salvarAluno() {
     const resultado = await resposta.json();
 
     if (resultado.status === "ok") {
-      btnText.textContent = "✅ Cadastrado!";
+      btnText.textContent = "Cadastrado!";
       spinner.style.display = "none";
       btnText.style.display = "inline";
       document.getElementById("dataMatricula").value = "";
@@ -1811,7 +1733,6 @@ function renderPainel(resumo) {
     </div>
   `;
 }
-
 // =========================
 // POR ESCOLA
 // =========================
@@ -1913,16 +1834,14 @@ function renderListaTurmas(turmas) {
     div.className = "usuario-card";
     div.innerHTML = `
       <div class="usuario-avatar"><i class="fas fa-book"></i></div>
-      <p><i class="fas fa-school"></i> ${t.escola}</p>
       <div class="usuario-info">
         <strong>${t.turma}</strong>
-        <p>🏫 ${t.escola}</p>
+        <p><i class="fas fa-school"></i> ${t.escola}</p>
       </div>
     `;
     container.appendChild(div);
   });
 }
-
 function preencherSelectEscolasTurma() {
   const selectFiltro = document.getElementById("filtroEscolaTurma");
   const selectCadastro = document.getElementById("selectEscolaTurma");
