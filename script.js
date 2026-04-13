@@ -234,7 +234,14 @@ async function salvarAto() {
   let fileBase64 = null;
   let fileName = null;
   let mimeType = null;
+
   if (file) {
+    // Limite de 10 MB para evitar payload enorme
+    if (file.size > 10 * 1024 * 1024) {
+      mostrarToast("Arquivo muito grande. Máximo 10 MB.", "warning");
+      esconderLoading();
+      return;
+    }
     fileName = file.name;
     mimeType = file.type;
     fileBase64 = await new Promise(resolve => {
@@ -243,6 +250,9 @@ async function salvarAto() {
       reader.readAsDataURL(file);
     });
   }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
 
   try {
     const resp = await fetch(API_URL, {
@@ -261,8 +271,15 @@ async function salvarAto() {
         fileBase64: fileBase64,
         fileName: fileName,
         mimeType: mimeType
-      })
+      }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
+
+    if (!resp.ok) {
+      throw new Error(`HTTP ${resp.status}`);
+    }
+
     const result = await resp.json();
     if (result.status === "ok") {
       mostrarToast(result.msg, "success");
@@ -272,11 +289,21 @@ async function salvarAto() {
       mostrarToast(result.msg, "error");
     }
   } catch (e) {
-    mostrarToast("Erro de conexão: " + e.message, "error");
+    clearTimeout(timeoutId);
+    // Se o erro for de aborte (timeout) ou "Failed to fetch", mas o salvamento pode ter funcionado.
+    // Como o usuário relatou que os dados foram salvos, sugerimos que ele verifique a lista.
+    if (e.name === "AbortError") {
+      mostrarToast("A requisição demorou muito, mas os dados podem ter sido salvos. Verifique a lista.", "warning");
+    } else {
+      // "Failed to fetch" pode ser falso positivo; orientamos o usuário a recarregar a lista.
+      mostrarToast("Erro de comunicação, mas os dados podem ter sido salvos. Atualize a lista.", "warning");
+    }
+    // Opcional: recarregar a lista para confirmar
+    carregarAtos();
+  } finally {
+    esconderLoading();
   }
-  esconderLoading();
 }
-
 async function excluirAto(id) {
   if (!confirm("Deseja realmente excluir este ato autorizativo?")) return;
   mostrarLoading();
