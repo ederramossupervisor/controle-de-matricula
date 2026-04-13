@@ -1228,7 +1228,7 @@ function renderLista(dados) {
         ${barraProgresso}
       </div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
-        <button onclick="abrirAluno(${aluno._row})" title="Abrir ficha" style="background:none;border:none;font-size:20px;padding:6px;border-radius:40px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748b;transition:all 0.2s;">👁️</button>
+        <button onclick="abrirAluno(${aluno._row})" title="Abrir ficha do aluno" style="background:none;border:none;font-size:20px;padding:6px;border-radius:40px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#64748b;transition:all 0.2s;">👁️</button>
       </div>
     `;
 
