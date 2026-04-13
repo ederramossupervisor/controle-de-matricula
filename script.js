@@ -1242,6 +1242,7 @@ function ajustarInterfacePorPerfil() {
   const btnCadastroUsuario = document.querySelector("button[onclick*='abrirModalCadastroUsuario']");
   const btnListarUsuarios = document.querySelector("button[onclick*='abrirModalListaUsuarios']");
   const btnNovoAluno = document.querySelector("button[onclick*='abrirNovoAluno']");
+  const btnImportarCSV = document.querySelector("button[onclick*='abrirModalImportacao']");
   const filtrosContainer = document.querySelector(".filtros-container");
   const btnTurmas = document.getElementById("btnTurmas");
   const filtroEscolaWrapper = document.getElementById("filtroEscolaWrapper");
@@ -1249,17 +1250,23 @@ function ajustarInterfacePorPerfil() {
   const filtroStatusWrapper = document.getElementById("filtroStatusWrapper");
   const filtroSituacaoWrapper = document.getElementById("filtroSituacaoWrapper"); 
 
+  const isSupervisorMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+
   if (perfilUsuario === "SECRETARIA") {
+    // Secretaria
     if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "none";
     if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
     if (filtroStatusWrapper) filtroStatusWrapper.style.display = "block";
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
     if (btnListarUsuarios) btnListarUsuarios.style.display = "none";
     if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
+    if (btnImportarCSV) btnImportarCSV.style.display = "inline-block"; // visível
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "none";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "none";
+
   } else if (perfilUsuario === "SUPERVISOR") {
+    // Supervisor: regras gerais
     if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "block";
     if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
     if (filtroStatusWrapper) filtroStatusWrapper.style.display = "block";
@@ -1269,9 +1276,15 @@ function ajustarInterfacePorPerfil() {
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "inline-block";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "block";
+
+    // Regra específica para o botão Importar CSV:
+    if (isSupervisorMaster) {
+      if (btnImportarCSV) btnImportarCSV.style.display = "inline-block"; // Master pode importar
+    } else {
+      if (btnImportarCSV) btnImportarCSV.style.display = "none"; // Supervisores comuns NÃO
+    }
   }
 }
-
 // =========================
 // DETALHE
 // =========================
