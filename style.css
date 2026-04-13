@@ -1182,3 +1182,85 @@ textarea:focus {
   position: relative;
   z-index: 2;
 }
+
+/* =========================
+   TOOLTIP PERSONALIZADO
+   ========================= */
+[data-tooltip] {
+  position: relative;
+  cursor: pointer;
+}
+
+[data-tooltip]:before,
+[data-tooltip]:after {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  position: absolute;
+  z-index: 1000;
+}
+
+[data-tooltip]:before {
+  content: attr(data-tooltip);
+  background: #1e293b;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+}
+
+[data-tooltip]:after {
+  content: '';
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #1e293b;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 2px;
+}
+
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Ajuste para tooltips à direita (evitar corte na borda) */
+[data-tooltip].tooltip-right:before {
+  left: auto;
+  right: 0;
+  transform: translateX(0);
+}
+[data-tooltip].tooltip-right:after {
+  left: auto;
+  right: 20px;
+  transform: translateX(50%);
+}
+
+/* Ajuste para tooltips à esquerda */
+[data-tooltip].tooltip-left:before {
+  left: 0;
+  transform: translateX(0);
+}
+[data-tooltip].tooltip-left:after {
+  left: 20px;
+  transform: translateX(-50%);
+}
+
+/* Modo escuro - tooltip claro */
+[data-theme="dark"] [data-tooltip]:before {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+[data-theme="dark"] [data-tooltip]:after {
+  border-top-color: #f1f5f9;
+}
