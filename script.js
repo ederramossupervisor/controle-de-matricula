@@ -86,7 +86,221 @@ let alunosPorPagina = 20;
 let dadosFiltradosGlobais = [];
 
 let alunosImportados = [];
+// =========================
+// LEGALIZAÇÃO (ATOS AUTORIZATIVOS)
+// =========================
+let atosGlobais = [];
 
+function abrirModalLegalizacao() {
+  document.getElementById("modalLegalizacao").style.display = "flex";
+  carregarEscolasParaFiltroAto();
+  carregarAtos();
+}
+
+function fecharModalLegalizacao() {
+  document.getElementById("modalLegalizacao").style.display = "none";
+}
+
+function carregarEscolasParaFiltroAto() {
+  // Para supervisor master, carrega todas as escolas (usando LISTA_ESCOLAS)
+  // Para supervisor comum, carrega apenas as que supervisiona
+  const escolas = getEscolasPermitidas();
+  const selectFiltro = document.getElementById("filtroEscolaAto");
+  selectFiltro.innerHTML = '<option value="">Todas as escolas</option>';
+  escolas.forEach(esc => {
+    const opt = document.createElement("option");
+    opt.value = esc;
+    opt.textContent = esc;
+    selectFiltro.appendChild(opt);
+  });
+}
+
+async function carregarAtos() {
+  mostrarLoading();
+  const escola = document.getElementById("filtroEscolaAto").value;
+  const tipoAto = document.getElementById("filtroTipoAto").value;
+  const status = document.getElementById("filtroStatusAto").value;
+  let url = `${API_URL}?tipo=atos&email=${emailUsuario}`;
+  if (escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
+  if (tipoAto) url += `&filtroTipoAto=${encodeURIComponent(tipoAto)}`;
+  if (status) url += `&filtroStatus=${encodeURIComponent(status)}`;
+  try {
+    const resp = await fetch(url);
+    const atos = await resp.json();
+    atosGlobais = atos;
+    renderizarListaAtos(atos);
+  } catch (e) {
+    mostrarToast("Erro ao carregar atos autorizativos.", "error");
+  }
+  esconderLoading();
+}
+
+function renderizarListaAtos(atos) {
+  const container = document.getElementById("listaAtosContainer");
+  container.innerHTML = "";
+  if (!atos.length) {
+    container.innerHTML = "<p>Nenhum ato cadastrado.</p>";
+    return;
+  }
+  atos.forEach(ato => {
+    const card = document.createElement("div");
+    card.className = "usuario-card";
+    let statusClass = "";
+    if (ato.status === "Válido") statusClass = "status-completo";
+    else if (ato.status === "Vencendo (até 90 dias)") statusClass = "status-pendente";
+    else if (ato.status === "Vencido") statusClass = "status-vencido";
+
+    card.innerHTML = `
+      <div class="usuario-avatar"><i class="fas fa-file-contract"></i></div>
+      <div class="usuario-info">
+        <strong>${ato.numeroAto}</strong>
+        <p><i class="fas fa-school"></i> ${ato.escola} | <i class="fas fa-tag"></i> ${ato.tipoAto}</p>
+        <p><i class="fas fa-graduation-cap"></i> ${ato.cursoEtapa || "—"} | 
+        <i class="fas fa-calendar-alt"></i> Validade: ${new Date(ato.dataVencimento).toLocaleDateString('pt-BR')}</p>
+        <p><span class="status-badge ${statusClass}">${ato.status}</span></p>
+        <div style="margin-top:8px;">
+          ${ato.arquivoId ? `<a href="https://drive.google.com/file/d/${ato.arquivoId}/view" target="_blank" class="btn-pequeno"><i class="fas fa-file-pdf"></i> Ver Ato</a>` : ''}
+          <button class="btn-pequeno" onclick="editarAto('${ato.id}')"><i class="fas fa-edit"></i> Editar</button>
+          <button class="btn-pequeno" onclick="excluirAto('${ato.id}')"><i class="fas fa-trash"></i> Excluir</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function abrirFormAto() {
+  document.getElementById("formAtoTitulo").textContent = "Novo Ato Autorizativo";
+  document.getElementById("atoId").value = "";
+  document.getElementById("atoEscola").value = "";
+  document.getElementById("atoTipo").value = "";
+  document.getElementById("atoCursoEtapa").value = "";
+  document.getElementById("atoNumero").value = "";
+  document.getElementById("atoDataPublicacao").value = "";
+  document.getElementById("atoValidadeAnos").value = "5";
+  document.getElementById("atoObservacoes").value = "";
+  document.getElementById("atoArquivo").value = "";
+  // Preencher select de escolas
+  const selectEscola = document.getElementById("atoEscola");
+  const escolas = getEscolasPermitidas();
+  selectEscola.innerHTML = '<option value="">Selecione a escola</option>';
+  escolas.forEach(esc => {
+    const opt = document.createElement("option");
+    opt.value = esc;
+    opt.textContent = esc;
+    selectEscola.appendChild(opt);
+  });
+  document.getElementById("modalFormAto").style.display = "flex";
+}
+
+function fecharFormAto() {
+  document.getElementById("modalFormAto").style.display = "none";
+}
+
+function editarAto(id) {
+  const ato = atosGlobais.find(a => a.id === id);
+  if (!ato) return;
+  document.getElementById("formAtoTitulo").textContent = "Editar Ato Autorizativo";
+  document.getElementById("atoId").value = ato.id;
+  document.getElementById("atoEscola").value = ato.escola;
+  document.getElementById("atoTipo").value = ato.tipoAto;
+  document.getElementById("atoCursoEtapa").value = ato.cursoEtapa || "";
+  document.getElementById("atoNumero").value = ato.numeroAto;
+  document.getElementById("atoDataPublicacao").value = ato.dataPublicacao.split('T')[0];
+  document.getElementById("atoValidadeAnos").value = ato.validadeAnos;
+  document.getElementById("atoObservacoes").value = ato.observacoes || "";
+  document.getElementById("atoArquivo").value = ""; // não é possível pré‑carregar arquivo
+  document.getElementById("modalFormAto").style.display = "flex";
+}
+
+async function salvarAto() {
+  const id = document.getElementById("atoId").value;
+  const escola = document.getElementById("atoEscola").value;
+  const tipoAto = document.getElementById("atoTipo").value;
+  const cursoEtapa = document.getElementById("atoCursoEtapa").value;
+  const numeroAto = document.getElementById("atoNumero").value;
+  const dataPublicacao = document.getElementById("atoDataPublicacao").value;
+  const validadeAnos = document.getElementById("atoValidadeAnos").value;
+  const observacoes = document.getElementById("atoObservacoes").value;
+  const arquivoInput = document.getElementById("atoArquivo");
+  const file = arquivoInput.files[0];
+
+  if (!escola || !tipoAto || !numeroAto || !dataPublicacao) {
+    mostrarToast("Preencha todos os campos obrigatórios.", "warning");
+    return;
+  }
+
+  mostrarLoading();
+  let fileBase64 = null;
+  let fileName = null;
+  let mimeType = null;
+  if (file) {
+    fileName = file.name;
+    mimeType = file.type;
+    fileBase64 = await new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "salvarAtoAutorizativo",
+        email: emailUsuario,
+        id: id,
+        escola: escola,
+        tipoAto: tipoAto,
+        cursoEtapa: cursoEtapa,
+        numeroAto: numeroAto,
+        dataPublicacao: dataPublicacao,
+        validadeAnos: validadeAnos,
+        observacoes: observacoes,
+        fileBase64: fileBase64,
+        fileName: fileName,
+        mimeType: mimeType
+      })
+    });
+    const result = await resp.json();
+    if (result.status === "ok") {
+      mostrarToast(result.msg, "success");
+      fecharFormAto();
+      carregarAtos();
+    } else {
+      mostrarToast(result.msg, "error");
+    }
+  } catch (e) {
+    mostrarToast("Erro de conexão: " + e.message, "error");
+  }
+  esconderLoading();
+}
+
+async function excluirAto(id) {
+  if (!confirm("Deseja realmente excluir este ato autorizativo?")) return;
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "excluirAtoAutorizativo",
+        email: emailUsuario,
+        id: id
+      })
+    });
+    const result = await resp.json();
+    if (result.status === "ok") {
+      mostrarToast(result.msg, "success");
+      carregarAtos();
+    } else {
+      mostrarToast(result.msg, "error");
+    }
+  } catch (e) {
+    mostrarToast("Erro de conexão.", "error");
+  }
+  esconderLoading();
+}
 function abrirModalImportacao() {
   document.getElementById('modalImportacao').style.display = 'flex';
   document.getElementById('arquivoCSV').value = '';
