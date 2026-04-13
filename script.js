@@ -81,6 +81,9 @@ const FUNDOS_ESCOLAS = {
   "EEEM Sobreiro": "fundos/EEEM_Sobreiro.png",
   "default": "fundos/default.png"
 };
+let paginaAtual = 1;
+let alunosPorPagina = 20;
+let dadosFiltradosGlobais = [];
 
 let alunosImportados = [];
 
@@ -101,6 +104,68 @@ function debounce(func, wait) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
+}
+
+function atualizarListaPaginada() {
+  // dadosFiltradosGlobais já contém o resultado dos filtros
+  const totalAlunos = dadosFiltradosGlobais.length;
+  const totalPaginas = Math.ceil(totalAlunos / alunosPorPagina);
+  
+  // Ajusta página atual se necessário
+  if (paginaAtual > totalPaginas && totalPaginas > 0) paginaAtual = totalPaginas;
+  if (paginaAtual < 1) paginaAtual = 1;
+  
+  const inicio = (paginaAtual - 1) * alunosPorPagina;
+  const fim = inicio + alunosPorPagina;
+  const alunosPagina = dadosFiltradosGlobais.slice(inicio, fim);
+  
+  renderLista(alunosPagina);
+  renderizarPaginacao(totalPaginas);
+}
+
+function renderizarPaginacao(totalPaginas) {
+  const containerPaginacao = document.getElementById('paginacao');
+  if (!containerPaginacao) return;
+  
+  if (totalPaginas <= 1) {
+    containerPaginacao.style.display = 'none';
+    return;
+  }
+  
+  containerPaginacao.style.display = 'flex';
+  containerPaginacao.innerHTML = '';
+  
+  // Botão Anterior
+  const btnPrev = document.createElement('button');
+  btnPrev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+  btnPrev.className = 'btn-paginacao';
+  btnPrev.disabled = (paginaAtual === 1);
+  btnPrev.addEventListener('click', () => {
+    if (paginaAtual > 1) {
+      paginaAtual--;
+      atualizarListaPaginada();
+    }
+  });
+  containerPaginacao.appendChild(btnPrev);
+  
+  // Indicador de página (pode ser um select ou texto)
+  const paginaSpan = document.createElement('span');
+  paginaSpan.className = 'pagina-info';
+  paginaSpan.textContent = `Página ${paginaAtual} de ${totalPaginas}`;
+  containerPaginacao.appendChild(paginaSpan);
+  
+  // Botão Próximo
+  const btnNext = document.createElement('button');
+  btnNext.innerHTML = '<i class="fas fa-chevron-right"></i>';
+  btnNext.className = 'btn-paginacao';
+  btnNext.disabled = (paginaAtual === totalPaginas);
+  btnNext.addEventListener('click', () => {
+    if (paginaAtual < totalPaginas) {
+      paginaAtual++;
+      atualizarListaPaginada();
+    }
+  });
+  containerPaginacao.appendChild(btnNext);
 }
 
 // =========================
@@ -1151,6 +1216,9 @@ async function carregarAlunos() {
     }
 
     dadosGlobais = dados.alunos;
+    dadosFiltradosGlobais = [...dadosGlobais];
+    paginaAtual = 1;
+    atualizarListaPaginada();
 
     document.getElementById("login").style.display = "none";
     document.getElementById("app").style.display = "block";
@@ -1455,7 +1523,7 @@ function preencherFiltroEscolas() {
 }
 
 function aplicarFiltros() {
-  const termoNome = document.getElementById("pesquisaNome").value.toLowerCase();
+  const termoNome = document.getElementById("pesquisaNome")?.value.toLowerCase() || "";
   const escolaSelecionada = document.getElementById("filtroEscola")?.value || "";
   const turmaSelecionada = document.getElementById("filtroTurma")?.value || "";
   const statusSelecionado = document.getElementById("filtroStatus")?.value || "";
@@ -1489,12 +1557,13 @@ function aplicarFiltros() {
     );
   }
 
-  // Dentro de aplicarFiltros, após os outros filtros:
   if (perfilUsuario === "SECRETARIA") {
     dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === "Ativo");
   }
 
-  renderLista(dadosFiltrados);
+  dadosFiltradosGlobais = dadosFiltrados;
+  paginaAtual = 1; // reset para primeira página
+  atualizarListaPaginada();
 }
   
   
