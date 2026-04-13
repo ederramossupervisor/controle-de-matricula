@@ -1250,3 +1250,42 @@ textarea:focus {
 
 /* Correção automática via JS (opcional) - preferível usar CSS puro */
 /* Caso o media query não seja suficiente, podemos usar um pequeno script */
+/* =========================
+   TOOLTIP PERSONALIZADO
+   ========================= */
+[data-tooltip] {
+  position: relative;
+  cursor: pointer;
+}
+
+[data-tooltip]:before {
+  content: attr(data-tooltip);
+  position: absolute;
+  background: #1e293b;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+}
+
+[data-tooltip]:hover:before {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Modo escuro */
+[data-theme="dark"] [data-tooltip]:before {
+  background: #f1f5f9;
+  color: #0f172a;
+}
