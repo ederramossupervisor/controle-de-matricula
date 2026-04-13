@@ -494,7 +494,14 @@ async function cadastrarProcesso() {
   
   let aluno = "", categoria = "", subcategoria = "";
   
-  const tiposComAluno = [ /* ... */ ];
+  const tiposComAluno = [
+  "Cuidador", 
+  "Regularização AEE", 
+  "Regularização de Vida Escolar",
+  "Manifestação GENPRO",
+  "Ata Especial de RVE",
+  "Ata de Classificação/Reclassificação/Avanço Escolar"
+];
   
   if (tiposComAluno.includes(tipo)) {
     aluno = document.getElementById("cadastroProcessoAluno")?.value.trim() || "";
