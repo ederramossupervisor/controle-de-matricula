@@ -241,7 +241,9 @@ async function executarImportacao() {
           alunos: lote
         })
       });
+      
       const result = await resp.json();
+      
       if (result.status === 'ok') {
         const importadosLote = Number(result.importados) || 0;
         const falhasLote = Number(result.falhas) || 0;
@@ -251,28 +253,33 @@ async function executarImportacao() {
         falhas += falhasLote;
         turmasCriadasTotal += turmasLote;
       } else {
-        // Se a resposta não for 'ok', considera todo o lote como falha
+        // Se o GAS retornou erro, conta todo o lote como falha
         falhas += lote.length;
       }
+    } catch (e) {
+      // Erro de rede ou CORS → todo o lote falhou
+      falhas += lote.length;
+    }
   }
   
-  let msg = `✅ Importação concluída!\n`;
-  msg += `📊 Alunos importados com sucesso: ${sucessos}\n`;
+  let msg = `✅ Importação concluída!<br>`;
+  msg += `📊 Alunos importados com sucesso: ${sucessos}<br>`;
   if (falhas > 0) {
-    msg += `❌ Falhas: ${falhas}\n`;
+    msg += `❌ Falhas: ${falhas}<br>`;
   } else {
-    msg += `✅ Nenhuma falha!\n`;
+    msg += `✅ Nenhuma falha!<br>`;
   }
   if (turmasCriadasTotal > 0) {
     msg += `📚 Novas turmas criadas: ${turmasCriadasTotal}`;
   }
-  statusDiv.innerHTML = msg.replace(/\n/g, '<br>');
+  statusDiv.innerHTML = msg;
+  
   btn.disabled = false;
   btn.textContent = '⬇️ Iniciar Importação';
   
+  // Recarregar a lista de alunos para exibir os novos registros
   await carregarAlunos();
 }
-
 function aplicarFundoPorEscola(escola) {
   const body = document.body;
   let imagemFundo = FUNDOS_ESCOLAS[escola];
