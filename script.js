@@ -2070,4 +2070,27 @@ document.getElementById("filtroEscola")?.addEventListener("change", function() {
   aplicarFiltros();
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+  // Adiciona estilo para tooltip abaixo
+  const style = document.createElement('style');
+  style.textContent = `
+    [data-tooltip].tooltip-below:before {
+      bottom: auto !important;
+      top: 125% !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  document.querySelectorAll('[data-tooltip]').forEach(el => {
+    el.addEventListener('mouseenter', function() {
+      const rect = this.getBoundingClientRect();
+      if (rect.top < 60) {
+        this.classList.add('tooltip-below');
+      } else {
+        this.classList.remove('tooltip-below');
+      }
+    });
+  });
+});
+
   
