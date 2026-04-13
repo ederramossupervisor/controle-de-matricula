@@ -243,20 +243,30 @@ async function executarImportacao() {
       });
       const result = await resp.json();
       if (result.status === 'ok') {
-        sucessos += result.importados || lote.length;
-        falhas += result.falhas || 0;
-        turmasCriadasTotal += result.turmasCriadas || 0;
+        const importadosLote = Number(result.importados) || 0;
+        const falhasLote = Number(result.falhas) || 0;
+        const turmasLote = Number(result.turmasCriadas) || 0;
+        
+        sucessos += importadosLote;
+        falhas += falhasLote;
+        turmasCriadasTotal += turmasLote;
       } else {
+        // Se a resposta não for 'ok', considera todo o lote como falha
         falhas += lote.length;
       }
-    } catch (e) {
-      falhas += lote.length;
-    }
   }
   
-  let msg = `✅ Importação concluída: ${sucessos} alunos importados, ${falhas} falhas.`;
-  if (turmasCriadasTotal > 0) msg += ` ${turmasCriadasTotal} turma(s) criada(s) automaticamente.`;
-  statusDiv.innerHTML = msg;
+  let msg = `✅ Importação concluída!\n`;
+  msg += `📊 Alunos importados com sucesso: ${sucessos}\n`;
+  if (falhas > 0) {
+    msg += `❌ Falhas: ${falhas}\n`;
+  } else {
+    msg += `✅ Nenhuma falha!\n`;
+  }
+  if (turmasCriadasTotal > 0) {
+    msg += `📚 Novas turmas criadas: ${turmasCriadasTotal}`;
+  }
+  statusDiv.innerHTML = msg.replace(/\n/g, '<br>');
   btn.disabled = false;
   btn.textContent = '⬇️ Iniciar Importação';
   
