@@ -915,7 +915,6 @@ function renderizarListaDocumentos(docs) {
 }
 // Preenche os selects de filtro (escola, turma, status)
 function inicializarFiltros() {
-  // Preencher escolas
   const selectEscola = document.getElementById("filtroEscola");
   if (selectEscola) {
     const escolas = getEscolasPermitidas();
@@ -928,24 +927,15 @@ function inicializarFiltros() {
     });
   }
 
-  // Debounce na busca por nome
   const campoBusca = document.getElementById("pesquisaNome");
   if (campoBusca) {
     const buscarDebounced = debounce(aplicarFiltros, 300);
-    // Remove listener anterior se houver (evita duplicação)
     campoBusca.removeEventListener("input", buscarDebounced);
     campoBusca.addEventListener("input", buscarDebounced);
   }
 
-  // Carregar turmas para filtro
   carregarTurmasParaFiltro();
-}
-
-  // Status já está fixo no HTML, nada a fazer.
-
-  // Turmas serão carregadas dinamicamente conforme a escola selecionada
-  carregarTurmasParaFiltro();
-}
+} // <-- esta chave estava faltando, e o comentário "Status já está fixo..." deve ser removido
 
 // Carrega turmas para o select de filtro (baseado na escola selecionada ou perfil)
 async function carregarTurmas(escola = "") {
