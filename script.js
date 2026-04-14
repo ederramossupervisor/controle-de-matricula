@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbxqI9-ysUtq6kII3fj-OtpKDepy7xabXLz3kxhbhmX91lAyBbGLYFfUUCP6t__FYvVBoQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbywuDF9k450K1MjOeRQ0UAJ2_uzGq0dZ3gzEfmsVK1QkDwiiheRmhI7fGFlW-tUf3JPcw/exec";
 
 let dadosGlobais = [];
 let emailUsuario = "";
@@ -90,6 +90,24 @@ let alunosImportados = [];
 // LEGALIZAÇÃO (ATOS AUTORIZATIVOS)
 // =========================
 let atosGlobais = [];
+
+// Função para requisições GET usando JSONP (contorna CORS)
+function jsonp(url, callback) {
+  const callbackName = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+  window[callbackName] = function(data) {
+    callback(data);
+    document.body.removeChild(script);
+    delete window[callbackName];
+  };
+  const script = document.createElement('script');
+  script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + callbackName;
+  script.onerror = function() {
+    callback({ erro: 'Falha na requisição JSONP' });
+    document.body.removeChild(script);
+    delete window[callbackName];
+  };
+  document.body.appendChild(script);
+}
 
 function abrirModalLegalizacao() {
   document.getElementById("modalLegalizacao").style.display = "flex";
@@ -1275,18 +1293,15 @@ function inicializarFiltros() {
 // Carrega turmas para o select de filtro (baseado na escola selecionada ou perfil)
 async function carregarTurmas(escola = "") {
   mostrarLoading();
-  try {
-    const url = `${API_URL}?tipo=turmas&email=${emailUsuario}` + (escola ? `&escola=${encodeURIComponent(escola)}` : "");
-    const resposta = await fetch(url);
-    const turmas = await resposta.json();
+  let url = `${API_URL}?tipo=turmas&email=${emailUsuario}`;
+  if (escola) url += `&escola=${encodeURIComponent(escola)}`;
+  
+  jsonp(url, function(turmas) {
     turmasGlobais = turmas;
     renderListaTurmas(turmas);
     preencherSelectEscolasTurma();
-  } catch (erro) {
-    console.error("Erro ao carregar turmas:", erro);
-    mostrarToast("Erro ao carregar turmas.", "error");
-  }
-  esconderLoading();
+    esconderLoading();
+  });
 }
 
 async function carregarTurmasParaFiltro() {
@@ -1450,10 +1465,9 @@ async function alterarSituacaoAluno(novaSituacao) {
 // =========================
 async function carregarAlunos() {
   mostrarLoading();
-  try {
-    const resposta = await fetch(`${API_URL}?email=${emailUsuario}`);
-    const dados = await resposta.json();
-
+  const url = `${API_URL}?email=${emailUsuario}`;
+  
+  jsonp(url, function(dados) {
     if (dados.erro) {
       mostrarToast("Acesso não autorizado", "error");
       esconderLoading();
@@ -1500,7 +1514,7 @@ async function carregarAlunos() {
     preencherSelectEscolasTurma();
 
     if (perfilUsuario === "SECRETARIA") {
-      await carregarTurmasParaFiltro();
+      carregarTurmasParaFiltro();
     }
 
     const resumo = gerarResumo(dadosGlobais);
@@ -1513,11 +1527,8 @@ async function carregarAlunos() {
       if (btnProcessos) btnProcessos.style.display = "inline-block";
     }
 
-  } catch (erro) {
-    console.error("Erro:", erro);
-    mostrarToast("Erro ao carregar dados.", "error");
-  }
-  esconderLoading();
+    esconderLoading();
+  });
 }
 // =========================
 // LISTA
