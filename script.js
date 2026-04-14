@@ -1754,6 +1754,8 @@ function ajustarInterfacePorPerfil() {
   const btnListarUsuarios = document.querySelector("button[onclick*='abrirModalListaUsuarios']");
   const btnNovoAluno = document.querySelector("button[onclick*='abrirNovoAluno']");
   const btnImportarCSV = document.querySelector("button[onclick*='abrirModalImportacao']");
+  const btnModelos = document.getElementById("btnModelos");
+  const btnLegalizacao = document.getElementById("btnLegalizacao");
   const filtrosContainer = document.querySelector(".filtros-container");
   const btnTurmas = document.getElementById("btnTurmas");
   const filtroEscolaWrapper = document.getElementById("filtroEscolaWrapper");
@@ -1762,11 +1764,27 @@ function ajustarInterfacePorPerfil() {
   const filtroSituacaoWrapper = document.getElementById("filtroSituacaoWrapper"); 
 
   const isSupervisorMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
-  const btnLegalizacao = document.getElementById("btnLegalizacao");
-  if (perfilUsuario === "SUPERVISOR") {
-    if (btnLegalizacao) btnLegalizacao.style.display = "inline-block";
-  } else {
-    if (btnLegalizacao) btnLegalizacao.style.display = "none";
+
+  // =========================
+  // Controle do botão MODELOS
+  // =========================
+  if (btnModelos) {
+    if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
+      btnModelos.style.display = "inline-block";
+    } else {
+      btnModelos.style.display = "none";
+    }
+  }
+
+  // =========================
+  // Controle do botão LEGALIZAÇÃO
+  // =========================
+  if (btnLegalizacao) {
+    if (perfilUsuario === "SUPERVISOR") {
+      btnLegalizacao.style.display = "inline-block";
+    } else {
+      btnLegalizacao.style.display = "none";
+    }
   }
 
   if (perfilUsuario === "SECRETARIA") {
@@ -1777,7 +1795,7 @@ function ajustarInterfacePorPerfil() {
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
     if (btnListarUsuarios) btnListarUsuarios.style.display = "none";
     if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
-    if (btnImportarCSV) btnImportarCSV.style.display = "inline-block"; // visível
+    if (btnImportarCSV) btnImportarCSV.style.display = "inline-block";
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "none";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "none";
