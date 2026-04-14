@@ -256,11 +256,22 @@ async function fazerUploadModelo() {
     return;
   }
   
+  // Verificar tamanho do arquivo (exemplo: máximo 20MB)
+  if (file.size > 20 * 1024 * 1024) {
+    mostrarToast("Arquivo muito grande. Máximo 20 MB.", "warning");
+    return;
+  }
+  
   mostrarLoading();
   
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const base64 = e.target.result.split(',')[1];
+  try {
+    // Ler arquivo como base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
     
     const dados = {
       acao: "uploadModelo",
@@ -271,17 +282,60 @@ async function fazerUploadModelo() {
       fileBase64: base64
     };
     
-    postSemResposta(dados, "Modelo enviado com sucesso!");
+    // Usar AbortController para timeout de 60 segundos
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
     
-    fileInput.value = "";
-    select.value = "";
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(dados),
+      signal: controller.signal
+    });
     
-    // Volta para a aba de listagem e recarrega
-    mostrarAbaListarModelos();
-  };
-  reader.readAsDataURL(file);
+    clearTimeout(timeoutId);
+    
+    // Tentar ler a resposta como JSON (pode falhar se a resposta não for JSON válido)
+    let result = { status: "ok", msg: "Modelo enviado com sucesso!" };
+    try {
+      const text = await resp.text();
+      if (text) {
+        result = JSON.parse(text);
+      }
+    } catch (parseError) {
+      // Se não conseguir parsear, assumimos sucesso (upload funcionou)
+      console.warn("Resposta não é JSON, assumindo sucesso.", parseError);
+    }
+    
+    esconderLoading();
+    
+    if (result.status === "ok") {
+      mostrarToast(result.msg || "Modelo enviado com sucesso!", "success");
+      fileInput.value = "";
+      select.value = "";
+      mostrarAbaListarModelos(); // Recarrega a lista automaticamente
+    } else {
+      mostrarToast("Erro: " + (result.msg || "Falha no upload"), "error");
+    }
+  } catch (error) {
+    esconderLoading();
+    console.error("Erro no upload do modelo:", error);
+    
+    if (error.name === 'AbortError') {
+      mostrarToast("Tempo limite excedido. O arquivo pode ter sido enviado. Verifique a lista.", "warning");
+    } else {
+      // Como o upload pode ter funcionado apesar do erro de rede, damos uma mensagem otimista
+      mostrarToast("Upload pode ter sido concluído. Verifique a lista de modelos.", "warning");
+    }
+    
+    // Mesmo com erro, tenta recarregar a lista após um pequeno delay
+    setTimeout(() => {
+      if (document.getElementById("modalModelos").style.display === "flex") {
+        mostrarAbaListarModelos();
+      }
+    }, 1000);
+  }
 }
-
 async function carregarAtos() {
   mostrarLoading();
   const escola = document.getElementById("filtroEscolaAto").value;
