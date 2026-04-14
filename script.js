@@ -90,126 +90,6 @@ let alunosImportados = [];
 // LEGALIZAÇÃO (ATOS AUTORIZATIVOS)
 // =========================
 let atosGlobais = [];
-let modelosGlobais = [];
-let modelosFiltrados = [];
-
-async function abrirModalModelos() {
-  document.getElementById("modalModelos").style.display = "flex";
-  document.getElementById("pesquisaModelos").value = "";
-  await carregarModelos();
-  const isMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
-  const areaUpload = document.getElementById("areaUploadModelo");
-  if (areaUpload) areaUpload.style.display = isMaster ? "block" : "none";
-}
-
-function fecharModalModelos() {
-  document.getElementById("modalModelos").style.display = "none";
-}
-
-async function carregarModelos() {
-  mostrarLoading();
-  try {
-    const resp = await fetch(`${API_URL}?tipo=modelos&email=${emailUsuario}`);
-    modelosGlobais = await resp.json();
-    modelosFiltrados = [...modelosGlobais];
-    renderizarModelos();
-  } catch (e) {
-    mostrarToast("Erro ao carregar modelos.", "error");
-  }
-  esconderLoading();
-}
-
-function filtrarModelos() {
-  const termo = document.getElementById("pesquisaModelos").value.toLowerCase();
-  if (!termo.trim()) {
-    modelosFiltrados = [...modelosGlobais];
-  } else {
-    modelosFiltrados = modelosGlobais.filter(categoria => 
-      categoria.nome.toLowerCase().includes(termo) ||
-      categoria.arquivos.some(arquivo => arquivo.nome.toLowerCase().includes(termo))
-    );
-  }
-  renderizarModelos();
-}
-
-function renderizarModelos() {
-  const container = document.getElementById("listaModelosContainer");
-  container.innerHTML = "";
-  if (!modelosFiltrados.length) {
-    container.innerHTML = "<p>Nenhum modelo encontrado.</p>";
-    return;
-  }
-  modelosFiltrados.forEach(categoria => {
-    const card = document.createElement("div");
-    card.className = "usuario-card";
-    card.style.flexDirection = "column";
-    card.style.alignItems = "flex-start";
-    let html = `<strong><i class="fas fa-folder-open"></i> ${categoria.nome}</strong><div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">`;
-    if (categoria.arquivos.length === 0) {
-      html += `<span style="color:#64748b; font-size:13px;">Nenhum arquivo nesta pasta</span>`;
-    } else {
-      categoria.arquivos.forEach(arquivo => {
-        html += `<a href="${arquivo.downloadUrl}" target="_blank" class="btn-pequeno" style="display:inline-flex; align-items:center; gap:4px;"><i class="fas fa-download"></i> ${arquivo.nome}</a>`;
-      });
-    }
-    html += `</div>`;
-    card.innerHTML = html;
-    container.appendChild(card);
-  });
-}
-
-async function uploadNovoModelo() {
-  const categoriaSelect = document.getElementById("novaCategoriaModelo");
-  const categoria = categoriaSelect.value;
-  const fileInput = document.getElementById("arquivoModelo");
-  const file = fileInput.files[0];
-  
-  if (!categoria) {
-    mostrarToast("Selecione uma categoria.", "warning");
-    return;
-  }
-  if (!file) {
-    mostrarToast("Selecione um arquivo.", "warning");
-    return;
-  }
-  if (file.size > 10 * 1024 * 1024) {
-    mostrarToast("Arquivo muito grande. Máximo 10 MB.", "warning");
-    return;
-  }
-  
-  mostrarLoading();
-  const fileBase64 = await new Promise(resolve => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.readAsDataURL(file);
-  });
-  
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "uploadModelo",
-        email: emailUsuario,
-        categoria: categoria,
-        fileName: file.name,
-        mimeType: file.type,
-        fileBase64: fileBase64
-      })
-    });
-    const result = await resp.json();
-    if (result.status === "ok") {
-      mostrarToast(result.msg, "success");
-      categoriaSelect.value = "";
-      fileInput.value = "";
-      await carregarModelos(); // recarrega a lista
-    } else {
-      mostrarToast(result.msg, "error");
-    }
-  } catch (e) {
-    mostrarToast("Erro de conexão.", "error");
-  }
-  esconderLoading();
-}
 
 function abrirModalLegalizacao() {
   document.getElementById("modalLegalizacao").style.display = "flex";
@@ -1755,8 +1635,6 @@ function ajustarInterfacePorPerfil() {
   const btnListarUsuarios = document.querySelector("button[onclick*='abrirModalListaUsuarios']");
   const btnNovoAluno = document.querySelector("button[onclick*='abrirNovoAluno']");
   const btnImportarCSV = document.querySelector("button[onclick*='abrirModalImportacao']");
-  const btnModelos = document.getElementById("btnModelos");
-  const btnLegalizacao = document.getElementById("btnLegalizacao");
   const filtrosContainer = document.querySelector(".filtros-container");
   const btnTurmas = document.getElementById("btnTurmas");
   const filtroEscolaWrapper = document.getElementById("filtroEscolaWrapper");
@@ -1765,27 +1643,11 @@ function ajustarInterfacePorPerfil() {
   const filtroSituacaoWrapper = document.getElementById("filtroSituacaoWrapper"); 
 
   const isSupervisorMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
-
-  // =========================
-  // Controle do botão MODELOS
-  // =========================
-  if (btnModelos) {
-    if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
-      btnModelos.style.display = "inline-block";
-    } else {
-      btnModelos.style.display = "none";
-    }
-  }
-
-  // =========================
-  // Controle do botão LEGALIZAÇÃO
-  // =========================
-  if (btnLegalizacao) {
-    if (perfilUsuario === "SUPERVISOR") {
-      btnLegalizacao.style.display = "inline-block";
-    } else {
-      btnLegalizacao.style.display = "none";
-    }
+  const btnLegalizacao = document.getElementById("btnLegalizacao");
+  if (perfilUsuario === "SUPERVISOR") {
+    if (btnLegalizacao) btnLegalizacao.style.display = "inline-block";
+  } else {
+    if (btnLegalizacao) btnLegalizacao.style.display = "none";
   }
 
   if (perfilUsuario === "SECRETARIA") {
@@ -1796,7 +1658,7 @@ function ajustarInterfacePorPerfil() {
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
     if (btnListarUsuarios) btnListarUsuarios.style.display = "none";
     if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
-    if (btnImportarCSV) btnImportarCSV.style.display = "inline-block";
+    if (btnImportarCSV) btnImportarCSV.style.display = "inline-block"; // visível
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "none";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "none";
@@ -2463,90 +2325,6 @@ function preencherSelectEscolasTurma() {
       select.appendChild(opt);
     });
   });
-}
-
-async function recarregarAlunos() {
-  mostrarLoading();
-  try {
-    const resposta = await fetch(`${API_URL}?email=${emailUsuario}`);
-    const dados = await resposta.json();
-
-    if (dados.erro) {
-      mostrarToast("Acesso não autorizado", "error");
-      esconderLoading();
-      return;
-    }
-
-    // Atualizar escolas supervisionadas (caso tenha mudado)
-    if (dados.escolasSupervisionadas) {
-      window.escolasSupervisionadas = dados.escolasSupervisionadas;
-    } else {
-      window.escolasSupervisionadas = [];
-    }
-
-    // Atualizar perfil e escola (pode ter mudado? raramente, mas ok)
-    perfilUsuario = dados.perfil;
-    escolaUsuario = dados.escola;
-
-    // Atualizar os dados globais
-    dadosGlobais = dados.alunos;
-
-    // 🔥 NÃO reseta página nem dadosFiltradosGlobais
-    // Apenas reaplica os filtros atuais (que estão nos selects) sobre os novos dados
-    aplicarFiltros(); // isso já vai atualizar dadosFiltradosGlobais e resetar paginaAtual para 1? Não, porque aplicarFiltros define paginaAtual = 1.
-    // Queremos manter a página atual, então precisamos de uma versão que não resete a página.
-
-    // Vamos reaplicar os filtros mas preservando a página atual
-    const termoNome = document.getElementById("pesquisaNome")?.value.toLowerCase() || "";
-    const escolaSelecionada = document.getElementById("filtroEscola")?.value || "";
-    const turmaSelecionada = document.getElementById("filtroTurma")?.value || "";
-    const statusSelecionado = document.getElementById("filtroStatus")?.value || "";
-    const situacaoSelecionada = document.getElementById("filtroSituacao")?.value || "";
-
-    let dadosFiltrados = dadosGlobais;
-
-    if (perfilUsuario === "SUPERVISOR" && escolaSelecionada) {
-      dadosFiltrados = dadosFiltrados.filter(a => a.ESCOLA === escolaSelecionada);
-    }
-    if (turmaSelecionada) {
-      dadosFiltrados = dadosFiltrados.filter(a => a.TURMA === turmaSelecionada);
-    }
-    if (statusSelecionado) {
-      dadosFiltrados = dadosFiltrados.filter(a => a.STATUS === statusSelecionado);
-    }
-    if (perfilUsuario === "SUPERVISOR" && situacaoSelecionada) {
-      dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === situacaoSelecionada);
-    }
-    if (termoNome) {
-      dadosFiltrados = dadosFiltrados.filter(a => a.ALUNO.toLowerCase().includes(termoNome));
-    }
-    if (perfilUsuario === "SECRETARIA") {
-      dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === "Ativo");
-    }
-
-    dadosFiltradosGlobais = dadosFiltrados;
-    
-    // Ajusta página atual se ela ultrapassar o total de páginas
-    const totalPaginas = Math.ceil(dadosFiltradosGlobais.length / alunosPorPagina);
-    if (paginaAtual > totalPaginas && totalPaginas > 0) {
-      paginaAtual = totalPaginas;
-    }
-    if (paginaAtual < 1) paginaAtual = 1;
-    
-    atualizarListaPaginada(); // isso usa dadosFiltradosGlobais e paginaAtual
-
-    // Atualizar painéis (resumo e por escola) – eles usam dadosGlobais, não filtrados
-    const resumo = gerarResumo(dadosGlobais);
-    renderPainel(resumo);
-    const mapa = resumoPorEscola(dadosGlobais);
-    renderPorEscola(mapa);
-
-    mostrarToast("Dados atualizados!", "success", 2000);
-  } catch (erro) {
-    console.error("Erro ao recarregar:", erro);
-    mostrarToast("Erro ao recarregar dados.", "error");
-  }
-  esconderLoading();
 }
 
 function fecharModalTurmas() {
