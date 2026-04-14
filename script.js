@@ -1450,74 +1450,68 @@ async function alterarSituacaoAluno(novaSituacao) {
 // =========================
 async function carregarAlunos() {
   mostrarLoading();
-  try {
-    const resposta = await fetch(`${API_URL}?email=${emailUsuario}`);
-    const dados = await resposta.json();
+  google.script.run
+    .withSuccessHandler(function(dados) {
+      if (dados.erro) {
+        mostrarToast("Acesso não autorizado", "error");
+        esconderLoading();
+        return;
+      }
+      if (dados.escolasSupervisionadas) {
+        window.escolasSupervisionadas = dados.escolasSupervisionadas;
+      } else {
+        window.escolasSupervisionadas = [];
+      }
+      perfilUsuario = dados.perfil;
+      escolaUsuario = dados.escola;
+      document.getElementById("escolaUsuarioDisplay").textContent = 
+        perfilUsuario === "SUPERVISOR" ? "Supervisor" : `${escolaUsuario}`;
+      if (!Array.isArray(dados.alunos)) {
+        console.error("Resposta inválida, 'alunos' não é array:", dados);
+        mostrarToast("Erro na comunicação com o servidor.", "error");
+        esconderLoading();
+        return;
+      }
+      if (perfilUsuario === "SECRETARIA") {
+        aplicarFundoPorEscola(escolaUsuario);
+      } else {
+        aplicarFundoPorEscola("default");
+      }
+      dadosGlobais = dados.alunos;
+      dadosFiltradosGlobais = [...dadosGlobais];
+      paginaAtual = 1;
+      atualizarListaPaginada();
 
-    if (dados.erro) {
-      mostrarToast("Acesso não autorizado", "error");
+      document.getElementById("login").style.display = "none";
+      document.getElementById("app").style.display = "block";
+
+      ajustarInterfacePorPerfil();
+      inicializarFiltros();
+      preencherSelectsProcessos();
+      preencherSelectEscolasDoc();
+      preencherSelectEscolasTurma();
+
+      if (perfilUsuario === "SECRETARIA") {
+        carregarTurmasParaFiltro();
+      }
+
+      const resumo = gerarResumo(dadosGlobais);
+      renderPainel(resumo);
+      const mapa = resumoPorEscola(dadosGlobais);
+      renderPorEscola(mapa);
+
+      const btnProcessos = document.getElementById("btnProcessos");
+      if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
+        if (btnProcessos) btnProcessos.style.display = "inline-block";
+      }
       esconderLoading();
-      return;
-    }
-
-    if (dados.escolasSupervisionadas) {
-      window.escolasSupervisionadas = dados.escolasSupervisionadas;
-    } else {
-      window.escolasSupervisionadas = [];
-    }
-
-    perfilUsuario = dados.perfil;
-    escolaUsuario = dados.escola;
-
-    document.getElementById("escolaUsuarioDisplay").textContent = 
-      perfilUsuario === "SUPERVISOR" ? "Supervisor" : `${escolaUsuario}`;
-
-    if (!Array.isArray(dados.alunos)) {
-      console.error("Resposta inválida, 'alunos' não é array:", dados);
-      mostrarToast("Erro na comunicação com o servidor.", "error");
+    })
+    .withFailureHandler(function(erro) {
+      console.error("Erro ao carregar dados:", erro);
+      mostrarToast("Erro ao carregar dados. Verifique a conexão.", "error");
       esconderLoading();
-      return;
-    }
-
-    if (perfilUsuario === "SECRETARIA") {
-      aplicarFundoPorEscola(escolaUsuario);
-    } else {
-      aplicarFundoPorEscola("default");
-    }
-
-    dadosGlobais = dados.alunos;
-    dadosFiltradosGlobais = [...dadosGlobais];
-    paginaAtual = 1;
-    atualizarListaPaginada();
-
-    document.getElementById("login").style.display = "none";
-    document.getElementById("app").style.display = "block";
-
-    ajustarInterfacePorPerfil();
-    inicializarFiltros();
-    preencherSelectsProcessos();
-    preencherSelectEscolasDoc();
-    preencherSelectEscolasTurma();
-
-    if (perfilUsuario === "SECRETARIA") {
-      await carregarTurmasParaFiltro();
-    }
-
-    const resumo = gerarResumo(dadosGlobais);
-    renderPainel(resumo);
-    const mapa = resumoPorEscola(dadosGlobais);
-    renderPorEscola(mapa);
-
-    const btnProcessos = document.getElementById("btnProcessos");
-    if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
-      if (btnProcessos) btnProcessos.style.display = "inline-block";
-    }
-
-  } catch (erro) {
-    console.error("Erro:", erro);
-    mostrarToast("Erro ao carregar dados.", "error");
-  }
-  esconderLoading();
+    })
+    .carregarAlunos(emailUsuario);
 }
 // =========================
 // LISTA
@@ -1763,6 +1757,71 @@ async function salvarAlteracoesEmLote(row) {
   
   esconderLoading();
 }
+
+async function recarregarAlunos() {
+  mostrarLoading();
+  google.script.run
+    .withSuccessHandler(function(dados) {
+      if (dados.erro) {
+        mostrarToast("Acesso não autorizado", "error");
+        esconderLoading();
+        return;
+      }
+      if (dados.escolasSupervisionadas) {
+        window.escolasSupervisionadas = dados.escolasSupervisionadas;
+      } else {
+        window.escolasSupervisionadas = [];
+      }
+      perfilUsuario = dados.perfil;
+      escolaUsuario = dados.escola;
+      dadosGlobais = dados.alunos;
+
+      const termoNome = document.getElementById("pesquisaNome")?.value.toLowerCase() || "";
+      const escolaSelecionada = document.getElementById("filtroEscola")?.value || "";
+      const turmaSelecionada = document.getElementById("filtroTurma")?.value || "";
+      const statusSelecionado = document.getElementById("filtroStatus")?.value || "";
+      const situacaoSelecionada = document.getElementById("filtroSituacao")?.value || "";
+
+      let dadosFiltrados = dadosGlobais;
+      if (perfilUsuario === "SUPERVISOR" && escolaSelecionada) {
+        dadosFiltrados = dadosFiltrados.filter(a => a.ESCOLA === escolaSelecionada);
+      }
+      if (turmaSelecionada) {
+        dadosFiltrados = dadosFiltrados.filter(a => a.TURMA === turmaSelecionada);
+      }
+      if (statusSelecionado) {
+        dadosFiltrados = dadosFiltrados.filter(a => a.STATUS === statusSelecionado);
+      }
+      if (perfilUsuario === "SUPERVISOR" && situacaoSelecionada) {
+        dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === situacaoSelecionada);
+      }
+      if (termoNome) {
+        dadosFiltrados = dadosFiltrados.filter(a => a.ALUNO.toLowerCase().includes(termoNome));
+      }
+      if (perfilUsuario === "SECRETARIA") {
+        dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === "Ativo");
+      }
+      dadosFiltradosGlobais = dadosFiltrados;
+      const totalPaginas = Math.ceil(dadosFiltradosGlobais.length / alunosPorPagina);
+      if (paginaAtual > totalPaginas && totalPaginas > 0) paginaAtual = totalPaginas;
+      if (paginaAtual < 1) paginaAtual = 1;
+      atualizarListaPaginada();
+
+      const resumo = gerarResumo(dadosGlobais);
+      renderPainel(resumo);
+      const mapa = resumoPorEscola(dadosGlobais);
+      renderPorEscola(mapa);
+      mostrarToast("Dados atualizados!", "success", 2000);
+      esconderLoading();
+    })
+    .withFailureHandler(function(erro) {
+      console.error("Erro ao recarregar:", erro);
+      mostrarToast("Erro ao recarregar dados.", "error");
+      esconderLoading();
+    })
+    .carregarAlunos(emailUsuario);
+}
+
 // =========================
 // ATUALIZAR
 // =========================
