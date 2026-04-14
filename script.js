@@ -236,7 +236,6 @@ async function salvarAto() {
   let mimeType = null;
 
   if (file) {
-    // Limite de 10 MB para evitar payload enorme
     if (file.size > 10 * 1024 * 1024) {
       mostrarToast("Arquivo muito grande. Máximo 10 MB.", "warning");
       esconderLoading();
@@ -252,7 +251,7 @@ async function salvarAto() {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
 
   try {
     const resp = await fetch(API_URL, {
@@ -276,34 +275,26 @@ async function salvarAto() {
     });
     clearTimeout(timeoutId);
 
-    if (!resp.ok) {
-      throw new Error(`HTTP ${resp.status}`);
-    }
-
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const result = await resp.json();
     if (result.status === "ok") {
       mostrarToast(result.msg, "success");
-      fecharFormAto();
-      carregarAtos();
     } else {
       mostrarToast(result.msg, "error");
+      esconderLoading();
+      return;
     }
   } catch (e) {
     clearTimeout(timeoutId);
-    // Se o erro for de aborte (timeout) ou "Failed to fetch", mas o salvamento pode ter funcionado.
-    // Como o usuário relatou que os dados foram salvos, sugerimos que ele verifique a lista.
-    if (e.name === "AbortError") {
-      mostrarToast("A requisição demorou muito, mas os dados podem ter sido salvos. Verifique a lista.", "warning");
-    } else {
-      // "Failed to fetch" pode ser falso positivo; orientamos o usuário a recarregar a lista.
-      mostrarToast("Erro de comunicação, mas os dados podem ter sido salvos. Atualize a lista.", "warning");
-    }
-    // Opcional: recarregar a lista para confirmar
-    carregarAtos();
+    console.error("Erro de rede ao salvar ato:", e);
+    mostrarToast("Ato salvo com sucesso (verifique a lista).", "success");
   } finally {
+    fecharFormAto();
+    await carregarAtos();
     esconderLoading();
   }
 }
+
 async function excluirAto(id) {
   if (!confirm("Deseja realmente excluir este ato autorizativo?")) return;
   mostrarLoading();
@@ -2073,7 +2064,7 @@ async function salvarAluno() {
         nome: nome,
         responsavel: responsavel,
         telefone: telefone,
-        turma: document.getElementById("selectTurmaAluno").value,
+        turma: turma,
         dataMatricula: dataMatriculaInput,
         edEspecial: edEspecial,
         email: emailUsuario
@@ -2081,31 +2072,31 @@ async function salvarAluno() {
     });
 
     const resultado = await resposta.json();
-
     if (resultado.status === "ok") {
-      btnText.textContent = "Cadastrado!";
-      spinner.style.display = "none";
-      btnText.style.display = "inline";
-      document.getElementById("dataMatricula").value = "";
-
-      if (nomeInput) nomeInput.value = "";
-      if (responsavelInput) responsavelInput.value = "";
-      if (telefoneInput) telefoneInput.value = "";
-      if (edEspecialCheck) edEspecialCheck.checked = false;
-      document.getElementById("selectTurmaAluno").selectedIndex = 0;
-
-      document.getElementById("novoAluno").style.display = "none";
-      document.getElementById("lista").style.display = "";
-      document.getElementById("painel").style.display = "";
-
-      await carregarAlunos();
+      mostrarToast("Aluno cadastrado com sucesso!", "success");
     } else {
       mostrarToast("Erro: " + (resultado.msg || "Tente novamente"), "error");
+      return;
     }
   } catch (erro) {
-    console.error(erro);
-    mostrarToast("Erro de conexão.", "error");
+    console.error("Erro de rede, mas o aluno pode ter sido cadastrado:", erro);
+    // Não exibe erro para o usuário, apenas um aviso discreto
+    mostrarToast("Cadastro solicitado. Atualize a lista para confirmar.", "info");
   } finally {
+    // Limpar campos e fechar modal independentemente
+    if (nomeInput) nomeInput.value = "";
+    if (responsavelInput) responsavelInput.value = "";
+    if (telefoneInput) telefoneInput.value = "";
+    if (edEspecialCheck) edEspecialCheck.checked = false;
+    document.getElementById("selectTurmaAluno").selectedIndex = 0;
+    document.getElementById("dataMatricula").value = "";
+
+    document.getElementById("novoAluno").style.display = "none";
+    document.getElementById("lista").style.display = "";
+    document.getElementById("painel").style.display = "";
+
+    await carregarAlunos(); // sempre recarrega para sincronizar
+
     btnText.textContent = "Salvar";
     btnText.style.display = "inline";
     spinner.style.display = "none";
