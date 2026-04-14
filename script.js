@@ -90,6 +90,125 @@ let alunosImportados = [];
 // LEGALIZAÇÃO (ATOS AUTORIZATIVOS)
 // =========================
 let atosGlobais = [];
+let modelosGlobais = [];
+let timeoutPesquisaModelos;
+
+async function abrirModalModelos() {
+  document.getElementById("modalModelos").style.display = "flex";
+  // Limpar campo de pesquisa
+  document.getElementById("pesquisaModelo").value = "";
+  await carregarModelos();
+  const isMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+  const areaUpload = document.getElementById("areaUploadModelo");
+  if (areaUpload) areaUpload.style.display = isMaster ? "block" : "none";
+}
+
+function fecharModalModelos() {
+  document.getElementById("modalModelos").style.display = "none";
+}
+
+async function carregarModelos(pesquisa = "") {
+  mostrarLoading();
+  try {
+    let url = `${API_URL}?tipo=modelos&email=${emailUsuario}`;
+    if (pesquisa) url += `&pesquisa=${encodeURIComponent(pesquisa)}`;
+    const resp = await fetch(url);
+    modelosGlobais = await resp.json();
+    renderizarModelos();
+  } catch (e) {
+    mostrarToast("Erro ao carregar modelos.", "error");
+  }
+  esconderLoading();
+}
+
+function filtrarModelos() {
+  // Debounce para não chamar a cada tecla
+  clearTimeout(timeoutPesquisaModelos);
+  timeoutPesquisaModelos = setTimeout(() => {
+    const termo = document.getElementById("pesquisaModelo").value;
+    carregarModelos(termo);
+  }, 300);
+}
+
+function renderizarModelos() {
+  const container = document.getElementById("listaModelosContainer");
+  container.innerHTML = "";
+  if (!modelosGlobais.length) {
+    container.innerHTML = "<p>Nenhum modelo disponível para esta pesquisa.</p>";
+    return;
+  }
+  modelosGlobais.forEach(categoria => {
+    const card = document.createElement("div");
+    card.className = "usuario-card";
+    card.style.flexDirection = "column";
+    card.style.alignItems = "flex-start";
+    let html = `<strong><i class="fas fa-folder-open"></i> ${categoria.nome}</strong><div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;">`;
+    if (categoria.arquivos.length === 0) {
+      html += `<span style="color:#64748b; font-size:13px;">Nenhum arquivo nesta pasta</span>`;
+    } else {
+      categoria.arquivos.forEach(arquivo => {
+        html += `<a href="${arquivo.downloadUrl}" target="_blank" class="btn-pequeno" style="display:inline-flex; align-items:center; gap:4px;"><i class="fas fa-download"></i> ${arquivo.nome}</a>`;
+      });
+    }
+    html += `</div>`;
+    card.innerHTML = html;
+    container.appendChild(card);
+  });
+}
+
+
+
+async function uploadNovoModelo() {
+  const categoria = document.getElementById("novaCategoriaModelo").value.trim();
+  const fileInput = document.getElementById("arquivoModelo");
+  const file = fileInput.files[0];
+  
+  if (!categoria) {
+    mostrarToast("Informe a categoria (ex: HISTÓRICO ESCOLAR - EF)", "warning");
+    return;
+  }
+  if (!file) {
+    mostrarToast("Selecione um arquivo.", "warning");
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    mostrarToast("Arquivo muito grande. Máximo 10 MB.", "warning");
+    return;
+  }
+  
+  mostrarLoading();
+  const fileBase64 = await new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+  
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        acao: "uploadModelo",
+        email: emailUsuario,
+        categoria: categoria,
+        fileName: file.name,
+        mimeType: file.type,
+        fileBase64: fileBase64
+      })
+    });
+    const result = await resp.json();
+    if (result.status === "ok") {
+      mostrarToast(result.msg, "success");
+      document.getElementById("novaCategoriaModelo").value = "";
+      fileInput.value = "";
+      await carregarModelos(document.getElementById("pesquisaModelo").value);
+    } else {
+      mostrarToast(result.msg, "error");
+    }
+  } catch (e) {
+    mostrarToast("Erro de conexão.", "error");
+  }
+  esconderLoading();
+}
 
 function abrirModalLegalizacao() {
   document.getElementById("modalLegalizacao").style.display = "flex";
