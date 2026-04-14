@@ -45,6 +45,28 @@ const LISTA_ESCOLAS = [
   "EEEM Sobreiro"
 ];
 
+// Lista de modelos (a mesma do backend)
+const LISTA_MODELOS = [
+  "HISTÓRICO ESCOLAR - EF",
+  "HISTÓRICO ESCOLAR - EF - EJA",
+  "HISTÓRICO ESCOLAR - EM",
+  "HISTÓRICO ESCOLAR - EM - EJA",
+  "CERTIFICADO CONCLUSÃO - EM",
+  "CERTIFICADO CONCLUSÃO - EM - EJA",
+  "CERTIFICADO CONCLUSÃO - QUALIFICAÇÃO INTEGRADO - EJA",
+  "HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO",
+  "HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO - EJA",
+  "HISTÓRICO ESCOLAR - QUALIFICAÇÃO INTEGRADO - EJA",
+  "HISTÓRICO ESCOLAR - TÉCNICO (CONCOMITANTE E SUBSEQUENTE)",
+  "DIPLOMA - TÉCNICO INTEGRADO - EJA",
+  "DIPLOMA - TÉCNICO CONCOMITANTE",
+  "DIPLOMA - TÉCNICO INTEGRADO",
+  "DIPLOMA - TÉCNICO SUBSEQUENTE",
+  "REQUERIMENTO DOCUMENTO ESCOLAR",
+  "OBSERVAÇÃO DE AULA",
+  "PLANO INTERVENÇÃO - PFA"
+];
+
 const FUNDOS_ESCOLAS = {
   "CEEFMTI Afonso Cláudio": "fundos/CEEFMTI_Afonso_Cláudio.png",
   "CEEFMTI Elisa Paiva": "fundos/CEEFMTI_Elisa_Paiva.png",
@@ -136,16 +158,49 @@ function carregarEscolasParaFiltroAto() {
 
 function abrirModalModelos() {
   document.getElementById("modalModelos").style.display = "flex";
-  carregarModelos();
+  
+  const isMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+  const abaUploadBtn = document.getElementById("abaUploadModeloBtn");
+  
+  if (isMaster) {
+    abaUploadBtn.style.display = "inline-block";
+    preencherSelectTipoModelo();
+  } else {
+    abaUploadBtn.style.display = "none";
+  }
+  
+  mostrarAbaListarModelos();
 }
 
 function fecharModalModelos() {
   document.getElementById("modalModelos").style.display = "none";
 }
 
+function mostrarAbaListarModelos() {
+  document.getElementById("abaListarModelos").style.display = "block";
+  document.getElementById("abaUploadModelo").style.display = "none";
+  carregarModelos();
+}
+
+function mostrarAbaUploadModelo() {
+  document.getElementById("abaListarModelos").style.display = "none";
+  document.getElementById("abaUploadModelo").style.display = "block";
+}
+
+function preencherSelectTipoModelo() {
+  const select = document.getElementById("selectTipoModelo");
+  select.innerHTML = '<option value="">Selecione o tipo de modelo</option>';
+  LISTA_MODELOS.forEach(modelo => {
+    const opt = document.createElement("option");
+    opt.value = modelo;
+    opt.textContent = modelo;
+    select.appendChild(opt);
+  });
+}
+
 function carregarModelos() {
   mostrarLoading();
-  const url = `${API_URL}?tipo=modelos`;
+  const url = `${API_URL}?tipo=modelos&email=${emailUsuario}`;
   
   jsonp(url, function(modelos) {
     const container = document.getElementById("listaModelosContainer");
@@ -162,13 +217,13 @@ function carregarModelos() {
       div.className = "usuario-card";
       div.style.marginBottom = "8px";
       
-      const temArquivo = modelo.fileId !== null;
+      const temArquivo = modelo.temArquivo;
       
       div.innerHTML = `
         <div class="usuario-avatar"><i class="fas fa-file-word"></i></div>
         <div class="usuario-info">
           <strong>${modelo.nome}</strong>
-          <p>${temArquivo ? modelo.fileName : '<span style="color:#ef4444;">Nenhum arquivo na pasta</span>'}</p>
+          <p>${temArquivo ? modelo.fileName : '<span style="color:#ef4444;">Nenhum arquivo</span>'}</p>
           <div style="margin-top:8px;">
             ${temArquivo ? `
               <a href="${modelo.downloadUrl}" class="btn-pequeno" target="_blank"><i class="fas fa-download"></i> Baixar</a>
@@ -184,6 +239,47 @@ function carregarModelos() {
     
     esconderLoading();
   });
+}
+
+async function fazerUploadModelo() {
+  const select = document.getElementById("selectTipoModelo");
+  const modeloNome = select.value;
+  const fileInput = document.getElementById("arquivoModelo");
+  const file = fileInput.files[0];
+  
+  if (!modeloNome) {
+    mostrarToast("Selecione o tipo de modelo.", "warning");
+    return;
+  }
+  if (!file) {
+    mostrarToast("Selecione um arquivo.", "warning");
+    return;
+  }
+  
+  mostrarLoading();
+  
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    const base64 = e.target.result.split(',')[1];
+    
+    const dados = {
+      acao: "uploadModelo",
+      email: emailUsuario,
+      modeloNome: modeloNome,
+      fileName: file.name,
+      mimeType: file.type,
+      fileBase64: base64
+    };
+    
+    postSemResposta(dados, "Modelo enviado com sucesso!");
+    
+    fileInput.value = "";
+    select.value = "";
+    
+    // Volta para a aba de listagem e recarrega
+    mostrarAbaListarModelos();
+  };
+  reader.readAsDataURL(file);
 }
 
 async function carregarAtos() {
@@ -1559,7 +1655,8 @@ function ajustarInterfacePorPerfil() {
   const filtroEscolaWrapper = document.getElementById("filtroEscolaWrapper");
   const filtroTurmaWrapper = document.getElementById("filtroTurmaWrapper");
   const filtroStatusWrapper = document.getElementById("filtroStatusWrapper");
-  const filtroSituacaoWrapper = document.getElementById("filtroSituacaoWrapper"); 
+  const filtroSituacaoWrapper = document.getElementById("filtroSituacaoWrapper");
+  const btnModelos = document.getElementById("btnModelos"); // NOVO
 
   const isSupervisorMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
   const btnLegalizacao = document.getElementById("btnLegalizacao");
@@ -1577,10 +1674,11 @@ function ajustarInterfacePorPerfil() {
     if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
     if (btnListarUsuarios) btnListarUsuarios.style.display = "none";
     if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
-    if (btnImportarCSV) btnImportarCSV.style.display = "inline-block"; // visível
+    if (btnImportarCSV) btnImportarCSV.style.display = "inline-block";
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "none";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "none";
+    if (btnModelos) btnModelos.style.display = "inline-block"; // NOVO
 
   } else if (perfilUsuario === "SUPERVISOR") {
     // Supervisor: regras gerais
@@ -1593,12 +1691,13 @@ function ajustarInterfacePorPerfil() {
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "inline-block";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "block";
+    if (btnModelos) btnModelos.style.display = "inline-block"; // NOVO
 
     // Regra específica para o botão Importar CSV:
     if (isSupervisorMaster) {
-      if (btnImportarCSV) btnImportarCSV.style.display = "inline-block"; // Master pode importar
+      if (btnImportarCSV) btnImportarCSV.style.display = "inline-block";
     } else {
-      if (btnImportarCSV) btnImportarCSV.style.display = "none"; // Supervisores comuns NÃO
+      if (btnImportarCSV) btnImportarCSV.style.display = "none";
     }
   }
 }
