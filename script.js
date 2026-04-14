@@ -92,6 +92,7 @@ let alunosImportados = [];
 let atosGlobais = [];
 
 // Função para requisições GET usando JSONP (contorna CORS)
+// Função para requisições GET usando JSONP (contorna CORS)
 function jsonp(url, callback) {
   const callbackName = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
   window[callbackName] = function(data) {
@@ -142,15 +143,12 @@ async function carregarAtos() {
   if (escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
   if (tipoAto) url += `&filtroTipoAto=${encodeURIComponent(tipoAto)}`;
   if (status) url += `&filtroStatus=${encodeURIComponent(status)}`;
-  try {
-    const resp = await fetch(url);
-    const atos = await resp.json();
+  
+  jsonp(url, function(atos) {
     atosGlobais = atos;
     renderizarListaAtos(atos);
-  } catch (e) {
-    mostrarToast("Erro ao carregar atos autorizativos.", "error");
-  }
-  esconderLoading();
+    esconderLoading();
+  });
 }
 
 function renderizarListaAtos(atos) {
@@ -248,15 +246,11 @@ async function salvarAto() {
     return;
   }
 
-  mostrarLoading();
-  let fileBase64 = null;
-  let fileName = null;
-  let mimeType = null;
+  let fileBase64 = null, fileName = null, mimeType = null;
 
   if (file) {
     if (file.size > 10 * 1024 * 1024) {
       mostrarToast("Arquivo muito grande. Máximo 10 MB.", "warning");
-      esconderLoading();
       return;
     }
     fileName = file.name;
@@ -268,74 +262,38 @@ async function salvarAto() {
     });
   }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
+  const dados = {
+    acao: "salvarAtoAutorizativo",
+    email: emailUsuario,
+    id: id,
+    escola: escola,
+    tipoAto: tipoAto,
+    cursoEtapa: cursoEtapa,
+    numeroAto: numeroAto,
+    dataPublicacao: dataPublicacao,
+    validadeAnos: validadeAnos,
+    observacoes: observacoes,
+    fileBase64: fileBase64,
+    fileName: fileName,
+    mimeType: mimeType
+  };
 
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "salvarAtoAutorizativo",
-        email: emailUsuario,
-        id: id,
-        escola: escola,
-        tipoAto: tipoAto,
-        cursoEtapa: cursoEtapa,
-        numeroAto: numeroAto,
-        dataPublicacao: dataPublicacao,
-        validadeAnos: validadeAnos,
-        observacoes: observacoes,
-        fileBase64: fileBase64,
-        fileName: fileName,
-        mimeType: mimeType
-      }),
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
-
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const result = await resp.json();
-    if (result.status === "ok") {
-      mostrarToast(result.msg, "success");
-    } else {
-      mostrarToast(result.msg, "error");
-      esconderLoading();
-      return;
-    }
-  } catch (e) {
-    clearTimeout(timeoutId);
-    console.error("Erro de rede ao salvar ato:", e);
-    mostrarToast("Ato salvo com sucesso (verifique a lista).", "success");
-  } finally {
-    fecharFormAto();
-    await carregarAtos();
-    esconderLoading();
-  }
+  postSemResposta(dados, "Ato salvo com sucesso!");
+  fecharFormAto();
+  carregarAtos();
 }
 
 async function excluirAto(id) {
   if (!confirm("Deseja realmente excluir este ato autorizativo?")) return;
-  mostrarLoading();
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "excluirAtoAutorizativo",
-        email: emailUsuario,
-        id: id
-      })
-    });
-    const result = await resp.json();
-    if (result.status === "ok") {
-      mostrarToast(result.msg, "success");
-      carregarAtos();
-    } else {
-      mostrarToast(result.msg, "error");
-    }
-  } catch (e) {
-    mostrarToast("Erro de conexão.", "error");
-  }
-  esconderLoading();
+  
+  const dados = {
+    acao: "excluirAtoAutorizativo",
+    email: emailUsuario,
+    id: id
+  };
+  
+  postSemResposta(dados, "Ato excluído com sucesso!");
+  carregarAtos();
 }
 function abrirModalImportacao() {
   document.getElementById('modalImportacao').style.display = 'flex';
@@ -597,31 +555,13 @@ async function importarDaPlanilha() {
     return;
   }
   
-  mostrarLoading();
-  try {
-    const resp = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({
-        acao: 'importarDaAbaTemp',
-        email: emailUsuario
-      })
-    });
-    
-    const result = await resp.json();
-    esconderLoading();
-    
-    if (result.status === 'ok') {
-      let msg = `Importação concluída! Alunos importados: ${result.importados || 0}. Falhas: ${result.falhas || 0}`;
-      if (result.turmasCriadas) msg += ` Turmas criadas: ${result.turmasCriadas}`;
-      mostrarToast(msg, "success", 5000);
-      carregarAlunos();
-    } else {
-      mostrarToast(`Erro: ${result.msg || 'Falha na importação'}`, "error");
-    }
-  } catch (e) {
-    esconderLoading();
-    mostrarToast('Erro de conexão: ' + e.message, "error");
-  }
+  const dados = {
+    acao: 'importarDaAbaTemp',
+    email: emailUsuario
+  };
+  
+  postSemResposta(dados, "Importação concluída! Atualize a lista.");
+  carregarAlunos();
 }
 
 async function executarImportacao() {
@@ -634,61 +574,32 @@ async function executarImportacao() {
   
   const loteSize = 20;
   let sucessos = 0;
-  let falhas = 0;
-  let duplicatasPuladasTotal = 0;   // declarada e será incrementada
-  let turmasCriadasTotal = 0;
   
   for (let i = 0; i < alunosImportados.length; i += loteSize) {
     const lote = alunosImportados.slice(i, i + loteSize);
     statusDiv.innerHTML = `Importando lote ${Math.floor(i/loteSize)+1} de ${Math.ceil(alunosImportados.length/loteSize)}...`;
     
     try {
-      const resp = await fetch(API_URL, {
+      await fetch(API_URL, {
         method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           acao: 'importarAlunosLote',
           email: emailUsuario,
           alunos: lote
         })
       });
-      
-      const result = await resp.json();
-      
-      if (result.status === 'ok') {
-        const importadosLote = Number(result.importados) || 0;
-        const falhasLote = Number(result.falhas) || 0;
-        const turmasLote = Number(result.turmasCriadas) || 0;
-        const duplicatasLote = Number(result.duplicatas) || 0;   // captura duplicatas do backend
-        
-        sucessos += importadosLote;
-        falhas += falhasLote;
-        turmasCriadasTotal += turmasLote;
-        duplicatasPuladasTotal += duplicatasLote;               // incrementa
-      } else {
-        falhas += lote.length;
-      }
+      sucessos += lote.length;
     } catch (e) {
-      falhas += lote.length;
+      console.error('Erro no lote:', e);
     }
   }
   
-  let msg = `Importacao concluida!\n`;
-  msg += `Alunos importados: ${sucessos}\n`;
-  if (duplicatasPuladasTotal > 0) {
-    msg += `Duplicatas ignoradas: ${duplicatasPuladasTotal}\n`;
-  }
-  if (falhas > 0) {
-    msg += `Falhas: ${falhas}\n`;
-  }
-  if (turmasCriadasTotal > 0) {
-    msg += `Novas turmas: ${turmasCriadasTotal}`;
-  }
-  statusDiv.innerHTML = msg.replace(/\n/g, '<br>');
-  
+  statusDiv.innerHTML = `Importação concluída! ${sucessos} alunos enviados.`;
   btn.disabled = false;
-  btn.innerHTML = '<i class="fas fa-download"></i> Iniciar Importacao';
+  btn.innerHTML = '<i class="fas fa-download"></i> Iniciar Importação';
   
-  await carregarAlunos();
+  carregarAlunos();
 }
 
 function aplicarFundoPorEscola(escola) {
@@ -859,13 +770,13 @@ async function cadastrarProcesso() {
   let aluno = "", categoria = "", subcategoria = "";
   
   const tiposComAluno = [
-  "Cuidador", 
-  "Regularização AEE", 
-  "Regularização de Vida Escolar",
-  "Manifestação GENPRO",
-  "Ata Especial de RVE",
-  "Ata de Classificação/Reclassificação/Avanço Escolar"
-];
+    "Cuidador", 
+    "Regularização AEE", 
+    "Regularização de Vida Escolar",
+    "Manifestação GENPRO",
+    "Ata Especial de RVE",
+    "Ata de Classificação/Reclassificação/Avanço Escolar"
+  ];
   
   if (tiposComAluno.includes(tipo)) {
     aluno = document.getElementById("cadastroProcessoAluno")?.value.trim() || "";
@@ -879,39 +790,26 @@ async function cadastrarProcesso() {
     }
   }
   
-  mostrarLoading();
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "cadastrarProcesso",
-        email: emailUsuario,
-        escola: escola,
-        tipo: tipo,
-        codigo: codigo,
-        aluno: aluno,
-        categoria: categoria,
-        subcategoria: subcategoria,
-        observacoes: observacoes
-      })
-    });
-    const result = await resp.json();
-    esconderLoading();
-    if (result.status === "ok") {
-      mostrarToast("Processo cadastrado com sucesso!", "success");
-      // Limpar campos
-      document.getElementById("cadastroProcessoCodigo").value = "";
-      document.getElementById("cadastroProcessoObs").value = "";
-      document.getElementById("cadastroProcessoTipo").value = "";
-      document.getElementById("camposExtrasProcesso").innerHTML = "";
-      if (perfilUsuario === "SUPERVISOR") document.getElementById("cadastroProcessoEscola").value = "";
-    } else {
-      mostrarToast("Erro: " + (result.msg || "Falha no cadastro"), "error");
-    }
-  } catch (e) {
-    esconderLoading();
-    mostrarToast("Erro de conexão.", "error");
-  }
+  const dados = {
+    acao: "cadastrarProcesso",
+    email: emailUsuario,
+    escola: escola,
+    tipo: tipo,
+    codigo: codigo,
+    aluno: aluno,
+    categoria: categoria,
+    subcategoria: subcategoria,
+    observacoes: observacoes
+  };
+  
+  postSemResposta(dados, "Processo cadastrado com sucesso!");
+  
+  // Limpar campos
+  document.getElementById("cadastroProcessoCodigo").value = "";
+  document.getElementById("cadastroProcessoObs").value = "";
+  document.getElementById("cadastroProcessoTipo").value = "";
+  document.getElementById("camposExtrasProcesso").innerHTML = "";
+  if (perfilUsuario === "SUPERVISOR") document.getElementById("cadastroProcessoEscola").value = "";
 }
   
 async function buscarProcessos() {
@@ -920,21 +818,33 @@ async function buscarProcessos() {
   const aluno = document.getElementById("filtroProcessoAluno")?.value.trim() || "";
   
   mostrarLoading();
-  try {
-    let url = `${API_URL}?tipo=processos&email=${emailUsuario}`;
-    if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;
-    if (perfilUsuario === "SUPERVISOR" && escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
-    if (aluno) url += `&filtroAluno=${encodeURIComponent(aluno)}`;
-    
-    const resp = await fetch(url);
-    const processos = await resp.json();
-    renderizarListaProcessos(processos);
-  } catch (e) {
-    mostrarToast("Erro ao buscar processos.", "error");
-  }
-  esconderLoading();
-}
+  let url = `${API_URL}?tipo=processos&email=${emailUsuario}`;
+  if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;
+  if (perfilUsuario === "SUPERVISOR" && escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
+  if (aluno) url += `&filtroAluno=${encodeURIComponent(aluno)}`;
   
+  jsonp(url, function(processos) {
+    renderizarListaProcessos(processos);
+    esconderLoading();
+  });
+}
+
+// Função para enviar POST sem esperar resposta (evita CORS)
+function postSemResposta(dados, mensagemSucesso) {
+  mostrarLoading();
+  fetch(API_URL, {
+    method: "POST",
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(dados)
+  }).then(() => {
+    esconderLoading();
+    if (mensagemSucesso) mostrarToast(mensagemSucesso, "success");
+  }).catch(() => {
+    esconderLoading();
+    mostrarToast("Erro na operação. Tente novamente.", "error");
+  });
+}
+
 function renderizarListaProcessos(processos) {
   const container = document.getElementById("listaProcessosContainer");
   container.innerHTML = "";
@@ -1011,9 +921,9 @@ function mostrarLoading() {
 async function carregarTurmasParaEdicao(escola, turmaAtual) {
   const select = document.getElementById("editTurma");
   select.innerHTML = '<option value="">Carregando turmas...</option>';
-  try {
-    const resp = await fetch(`${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`);
-    const turmas = await resp.json();
+  const url = `${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`;
+  
+  jsonp(url, function(turmas) {
     select.innerHTML = '<option value="">Selecione a turma</option>';
     turmas.forEach(t => {
       const opt = document.createElement("option");
@@ -1022,9 +932,7 @@ async function carregarTurmasParaEdicao(escola, turmaAtual) {
       if (t.turma === turmaAtual) opt.selected = true;
       select.appendChild(opt);
     });
-  } catch (e) {
-    select.innerHTML = '<option value="">Erro ao carregar</option>';
-  }
+  });
 }
 
 async function salvarDadosAluno() {
@@ -1055,47 +963,35 @@ async function salvarDadosAluno() {
   spinner.style.display = "inline-block";
   btn.disabled = true;
   
-  try {
-    const resposta = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "atualizarDadosAluno",
-        row: dadosAlunoAtual._row,
-        nome: nome,
-        responsavel: responsavel,
-        telefone: telefone,
-        turma: turma,
-        edEspecial: edEspecial,
-        email: emailUsuario
-      })
-    });
-    
-    const resultado = await resposta.json();
-    
-    if (resultado.status === "ok") {
-      dadosAlunoAtual.ALUNO = nome;
-      dadosAlunoAtual.RESPONSAVEL = responsavel;
-      dadosAlunoAtual.TELEFONE = telefone;
-      dadosAlunoAtual.TURMA = turma;
-      dadosAlunoAtual.ED_ESPECIAL = edEspecial;
-      
-      document.getElementById("detalhesTitulo").textContent = nome;
-      
-      btnText.textContent = "Salvo!";
-      setTimeout(() => {
-        btnText.textContent = "Salvar informações";
-      }, 2000);
-    } else {
-      mostrarToast("Erro: " + (resultado.msg || "Tente novamente"), "error");
-    }
-  } catch (erro) {
-    console.error(erro);
-    mostrarToast("Erro de conexão.", "error");
-  } finally {
-    btnText.style.display = "inline";
-    spinner.style.display = "none";
-    btn.disabled = false;
-  }
+  const dados = {
+    acao: "atualizarDadosAluno",
+    row: dadosAlunoAtual._row,
+    nome: nome,
+    responsavel: responsavel,
+    telefone: telefone,
+    turma: turma,
+    edEspecial: edEspecial,
+    email: emailUsuario
+  };
+  
+  postSemResposta(dados, "Dados atualizados com sucesso!");
+  
+  dadosAlunoAtual.ALUNO = nome;
+  dadosAlunoAtual.RESPONSAVEL = responsavel;
+  dadosAlunoAtual.TELEFONE = telefone;
+  dadosAlunoAtual.TURMA = turma;
+  dadosAlunoAtual.ED_ESPECIAL = edEspecial;
+  
+  document.getElementById("detalhesTitulo").textContent = nome;
+  
+  btnText.textContent = "Salvo!";
+  setTimeout(() => {
+    btnText.textContent = "Salvar informações";
+  }, 2000);
+  
+  btnText.style.display = "inline";
+  spinner.style.display = "none";
+  btn.disabled = false;
 }
   
 function esconderLoading() {
@@ -1180,69 +1076,46 @@ async function fazerUpload() {
   reader.onload = async function(e) {
     const base64 = e.target.result.split(',')[1];
     
-    try {
-      const resp = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          acao: "uploadDocumento",
-          email: emailUsuario,
-          escola: escola,
-          tipo: tipo,
-          nomeAluno: nomeAluno,
-          fileName: file.name,
-          mimeType: file.type,
-          fileBase64: base64
-        })
-      });
-      
-      const result = await resp.json();
-      esconderLoading();
-      
-      if (result.status === "ok") {
-        mostrarToast("Upload realizado com sucesso!", "success");
-        fileInput.value = "";
-        document.getElementById("uploadNomeAluno").value = "";
-        document.getElementById("uploadTipoDoc").value = "";
-        if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
-        
-        if (document.getElementById("modalDocumentos").style.display === "flex") {
-          buscarDocumentos();
-        }
-      } else {
-        mostrarToast("Erro: " + (result.msg || "Falha no upload"), "error");
-      }
-    } catch (error) {
-      esconderLoading();
-      mostrarToast("Erro de conexão: " + error.message, "error");
+    const dados = {
+      acao: "uploadDocumento",
+      email: emailUsuario,
+      escola: escola,
+      tipo: tipo,
+      nomeAluno: nomeAluno,
+      fileName: file.name,
+      mimeType: file.type,
+      fileBase64: base64
+    };
+    
+    postSemResposta(dados, "Upload realizado com sucesso!");
+    
+    fileInput.value = "";
+    document.getElementById("uploadNomeAluno").value = "";
+    document.getElementById("uploadTipoDoc").value = "";
+    if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+    
+    if (document.getElementById("modalDocumentos").style.display === "flex") {
+      buscarDocumentos();
     }
   };
   reader.readAsDataURL(file);
 }
   
-async function buscarDocumentos() {
+function buscarDocumentos() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroEscolaDoc").value : "";
   const tipo = document.getElementById("filtroTipoDoc").value;
   const nomeAluno = document.getElementById("filtroNomeAlunoDoc").value.trim();
   
   mostrarLoading();
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "listarDocumentos",
-        email: emailUsuario,
-        escola: escola,
-        tipo: tipo,
-        nomeAluno: nomeAluno
-      })
-    });
-    const docs = await resp.json();
+  let url = `${API_URL}?tipo=documentos&email=${emailUsuario}`;
+  if (escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
+  if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;
+  if (nomeAluno) url += `&filtroNome=${encodeURIComponent(nomeAluno)}`;
+  
+  jsonp(url, function(docs) {
     renderizarListaDocumentos(docs);
-  } catch (e) { 
-    console.error(e); 
-    mostrarToast("Erro ao buscar documentos.", "error"); 
-  }
-  esconderLoading();
+    esconderLoading();
+  });
 }
   
 function renderizarListaDocumentos(docs) {
@@ -1322,11 +1195,9 @@ async function carregarTurmasParaFiltro() {
 
   selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
 
-  try {
-    const resp = await fetch(`${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escolaFiltro)}`);
-    const turmas = await resp.json();
+  const url = `${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escolaFiltro)}`;
+  jsonp(url, function(turmas) {
     turmasDisponiveis = turmas;
-
     selectTurma.innerHTML = '<option value="">Todas as turmas</option>';
     turmas.forEach(t => {
       const opt = document.createElement("option");
@@ -1334,9 +1205,7 @@ async function carregarTurmasParaFiltro() {
       opt.textContent = t.turma;
       selectTurma.appendChild(opt);
     });
-  } catch (e) {
-    selectTurma.innerHTML = '<option value="">Erro ao carregar</option>';
-  }
+  });
 }
 
 function abrirModalTurmas() {
@@ -1435,29 +1304,16 @@ async function alterarSituacaoAluno(novaSituacao) {
   const confirmacao = confirm(`Deseja marcar este aluno como "${novaSituacao}"?`);
   if (!confirmacao) return;
   
-  mostrarLoading();
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "alterarSituacao",
-        row: dadosAlunoAtual._row,
-        situacao: novaSituacao,
-        email: emailUsuario
-      })
-    });
-    const result = await resp.json();
-    if (result.status === "ok") {
-      fecharModalDetalhes();
-      await carregarAlunos();
-    } else {
-      mostrarToast("Erro: " + (result.msg || "Tente novamente"), "error");
-    }
-  } catch (e) {
-    console.error(e);
-    mostrarToast("Erro de conexão.", "error");
-  }
-  esconderLoading();
+  const dados = {
+    acao: "alterarSituacao",
+    row: dadosAlunoAtual._row,
+    situacao: novaSituacao,
+    email: emailUsuario
+  };
+  
+  postSemResposta(dados, `Aluno marcado como ${novaSituacao}.`);
+  fecharModalDetalhes();
+  carregarAlunos();
 }
 
 // =========================
@@ -1742,57 +1598,33 @@ async function salvarAlteracoesEmLote(row) {
     return;
   }
   
-  mostrarLoading();
+  const dados = {
+    acao: "atualizarDocumentosEmLote",
+    alteracoes: alteracoes,
+    email: emailUsuario
+  };
   
-  try {
-    const resposta = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "atualizarDocumentosEmLote",
-        alteracoes: alteracoes,
-        email: emailUsuario
-      })
-    });
-    
-    const resultado = await resposta.json();
-    
-    if (resultado.status === "ok") {
-      for (let chave in alteracoesPendentes) {
-        const [linha] = chave.split('_').map(Number);
-        if (linha === row) delete alteracoesPendentes[chave];
-      }
-      
-      fecharModalDetalhes();
-      await carregarAlunos();
-    } else {
-      mostrarToast("Erro ao salvar: " + (resultado.msg || "Tente novamente"), "error");
-    }
-  } catch (erro) {
-    console.error(erro);
-    mostrarToast("Erro de conexão.", "error");
+  postSemResposta(dados, "Documentos atualizados com sucesso!");
+  
+  for (let chave in alteracoesPendentes) {
+    const [linha] = chave.split('_').map(Number);
+    if (linha === row) delete alteracoesPendentes[chave];
   }
   
-  esconderLoading();
+  fecharModalDetalhes();
+  carregarAlunos();
 }
 // =========================
 // ATUALIZAR
 // =========================
 async function atualizar(row, coluna, valor) {
-  mostrarLoading();
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        row: row,
-        coluna: coluna,
-        valor: valor,
-        email: emailUsuario
-      })
-    });
-  } catch (erro) {
-    mostrarToast("Erro ao salvar", "error");
-  }
-  esconderLoading();
+  const dados = {
+    row: row,
+    coluna: coluna,
+    valor: valor,
+    email: emailUsuario
+  };
+  postSemResposta(dados, "Atualizado com sucesso.");
 }
 // =========================
 // FILTRO
@@ -1844,9 +1676,9 @@ function aplicarFiltros() {
 async function carregarTurmasParaCadastro(escola) {
   const select = document.getElementById("selectTurmaAluno");
   select.innerHTML = '<option value="">Carregando turmas...</option>';
-  try {
-    const resp = await fetch(`${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`);
-    const turmas = await resp.json();
+  const url = `${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`;
+  
+  jsonp(url, function(turmas) {
     select.innerHTML = '<option value="">Selecione a turma</option>';
     turmas.forEach(t => {
       const opt = document.createElement("option");
@@ -1854,9 +1686,7 @@ async function carregarTurmasParaCadastro(escola) {
       opt.textContent = t.turma;
       select.appendChild(opt);
     });
-  } catch (e) {
-    select.innerHTML = '<option value="">Erro ao carregar</option>';
-  }
+  });
 }
 
 function abrirNovoAluno() {
@@ -1912,22 +1742,17 @@ function fecharModalCadastroUsuario() {
 // Atualiza a lista de usuários no modal
 async function carregarUsuarios() {
   mostrarLoading();
-  try {
-    const resposta = await fetch(`${API_URL}?tipo=usuarios&email=${emailUsuario}`);
-    const dados = await resposta.json();
-
+  const url = `${API_URL}?tipo=usuarios&email=${emailUsuario}`;
+  
+  jsonp(url, function(dados) {
     if (dados.erro) {
       mostrarToast("Acesso não autorizado", "error");
       esconderLoading();
       return;
     }
-
     renderUsuarios(dados);
-  } catch (erro) {
-    console.error("Erro:", erro);
-    mostrarToast("Erro ao carregar usuários", "error");
-  }
-  esconderLoading();
+    esconderLoading();
+  });
 }
 function renderUsuarios(usuarios) {
   const container = document.getElementById("listaUsuariosContainer");
@@ -1967,7 +1792,6 @@ async function salvarUsuario() {
   const escola = document.getElementById("escola").value.trim();
   const erroDiv = document.getElementById("erroUsuario");
   
-  // Validação
   if (!email) {
     erroDiv.textContent = "E-mail obrigatório";
     erroDiv.style.display = "block";
@@ -1988,47 +1812,29 @@ async function salvarUsuario() {
   spinner.style.display = "inline-block";
   btnSalvar.disabled = true;
   
-  try {
-    const resposta = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "cadastrarUsuario",
-        email: email,
-        perfil: perfil,
-        escola: escola,
-        emailLogado: emailUsuario
-      })
-    });
-    
-    const resultado = await resposta.json();
-    
-    if (resultado.status === "ok") {
-      btnText.textContent = "Cadastrado!";
-      spinner.style.display = "none";
-      btnText.style.display = "inline";
-      await new Promise(r => setTimeout(r, 600));
-      
-      fecharModalCadastroUsuario();
-      // Se o modal de lista estiver aberto, recarregar a lista
-      if (document.getElementById("modalListaUsuarios").style.display === "flex") {
-        carregarUsuarios();
-      }
-    } else {
-      erroDiv.textContent = resultado.msg || "Erro ao cadastrar";
-      erroDiv.style.display = "block";
-    }
-  } catch (erro) {
-    console.error(erro);
-    erroDiv.textContent = "Erro de conexão";
-    erroDiv.style.display = "block";
-  } finally {
-    btnText.textContent = "Salvar";
-    btnText.style.display = "inline";
-    spinner.style.display = "none";
-    btnSalvar.disabled = false;
+  const dados = {
+    acao: "cadastrarUsuario",
+    email: email,
+    perfil: perfil,
+    escola: escola,
+    emailLogado: emailUsuario
+  };
+  
+  postSemResposta(dados, "Usuário cadastrado com sucesso!");
+  
+  btnText.textContent = "Cadastrado!";
+  spinner.style.display = "none";
+  btnText.style.display = "inline";
+  await new Promise(r => setTimeout(r, 600));
+  
+  fecharModalCadastroUsuario();
+  if (document.getElementById("modalListaUsuarios").style.display === "flex") {
+    carregarUsuarios();
   }
+  
+  btnText.textContent = "Salvar";
+  btnSalvar.disabled = false;
 }
-
 async function salvarAluno() {
   const nomeInput = document.getElementById("nomeAluno");
   const responsavelInput = document.getElementById("nomeResponsavel");
@@ -2067,52 +1873,37 @@ async function salvarAluno() {
   spinner.style.display = "inline-block";
   btnSalvar.disabled = true;
 
-  try {
-    const resposta = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        acao: "cadastrarAluno",
-        nome: nome,
-        responsavel: responsavel,
-        telefone: telefone,
-        turma: turma,
-        dataMatricula: dataMatriculaInput,
-        edEspecial: edEspecial,
-        email: emailUsuario
-      })
-    });
+  const dados = {
+    acao: "cadastrarAluno",
+    nome: nome,
+    responsavel: responsavel,
+    telefone: telefone,
+    turma: turma,
+    dataMatricula: dataMatriculaInput,
+    edEspecial: edEspecial,
+    email: emailUsuario
+  };
 
-    const resultado = await resposta.json();
-    if (resultado.status === "ok") {
-      mostrarToast("Aluno cadastrado com sucesso!", "success");
-    } else {
-      mostrarToast("Erro: " + (resultado.msg || "Tente novamente"), "error");
-      return;
-    }
-  } catch (erro) {
-    console.error("Erro de rede, mas o aluno pode ter sido cadastrado:", erro);
-    // Não exibe erro para o usuário, apenas um aviso discreto
-    mostrarToast("Cadastro solicitado. Atualize a lista para confirmar.", "info");
-  } finally {
-    // Limpar campos e fechar modal independentemente
-    if (nomeInput) nomeInput.value = "";
-    if (responsavelInput) responsavelInput.value = "";
-    if (telefoneInput) telefoneInput.value = "";
-    if (edEspecialCheck) edEspecialCheck.checked = false;
-    document.getElementById("selectTurmaAluno").selectedIndex = 0;
-    document.getElementById("dataMatricula").value = "";
+  postSemResposta(dados, "Aluno cadastrado com sucesso!");
+  
+  // Limpar campos e fechar modal
+  if (nomeInput) nomeInput.value = "";
+  if (responsavelInput) responsavelInput.value = "";
+  if (telefoneInput) telefoneInput.value = "";
+  if (edEspecialCheck) edEspecialCheck.checked = false;
+  document.getElementById("selectTurmaAluno").selectedIndex = 0;
+  document.getElementById("dataMatricula").value = "";
 
-    document.getElementById("novoAluno").style.display = "none";
-    document.getElementById("lista").style.display = "";
-    document.getElementById("painel").style.display = "";
+  document.getElementById("novoAluno").style.display = "none";
+  document.getElementById("lista").style.display = "";
+  document.getElementById("painel").style.display = "";
 
-    await carregarAlunos(); // sempre recarrega para sincronizar
+  carregarAlunos();
 
-    btnText.textContent = "Salvar";
-    btnText.style.display = "inline";
-    spinner.style.display = "none";
-    btnSalvar.disabled = false;
-  }
+  btnText.textContent = "Salvar";
+  btnText.style.display = "inline";
+  spinner.style.display = "none";
+  btnSalvar.disabled = false;
 }
   
 function voltarApp() {
@@ -2370,9 +2161,7 @@ async function salvarTurma() {
     return;
   }
   
-  const turmas = turmasTexto.split('\n')
-    .map(t => t.trim())
-    .filter(t => t !== "");
+  const turmas = turmasTexto.split('\n').map(t => t.trim()).filter(t => t !== "");
   
   if (turmas.length === 0) {
     erroDiv.textContent = "Nenhuma turma válida informada.";
@@ -2388,8 +2177,9 @@ async function salvarTurma() {
   
   for (let turma of turmas) {
     try {
-      const resp = await fetch(API_URL, {
+      await fetch(API_URL, {
         method: "POST",
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           acao: "cadastrarTurma",
           email: emailUsuario,
@@ -2397,12 +2187,7 @@ async function salvarTurma() {
           turma: turma
         })
       });
-      const result = await resp.json();
-      if (result.status === "ok") {
-        sucessos++;
-      } else {
-        erros.push(`${turma}: ${result.msg || "Erro desconhecido"}`);
-      }
+      sucessos++;
     } catch (e) {
       erros.push(`${turma}: Erro de conexão`);
     }
@@ -2414,7 +2199,6 @@ async function salvarTurma() {
   if (sucessos > 0) mensagem += `${sucessos} turma(s) cadastrada(s) com sucesso.`;
   if (erros.length > 0) mensagem += `\nErros:\n${erros.join('\n')}`;
   
-  // Converte o alert para toast (mas como pode ser longo, mantém alert? Melhor toast com scroll)
   if (erros.length === 0) {
     mostrarToast(mensagem, "success");
   } else {
