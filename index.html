@@ -429,65 +429,6 @@
         </div>
       </div>
     </div>
-
-    <!-- MODAL MODELOS DE DOCUMENTOS -->
-    <div id="modalModelos" class="modal-overlay" style="display:none;">
-      <div class="modal-card modal-card--grande" style="max-width: 800px;">
-        <div class="modal-header">
-          <h2><i class="fas fa-file-alt"></i> Modelos de Documentos</h2>
-          <button class="close-btn" onclick="fecharModalModelos()"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-          <!-- Caixa de pesquisa -->
-          <div class="input-icon" style="margin-bottom: 16px;">
-            <span class="icon"><i class="fas fa-search"></i></span>
-            <input type="text" id="pesquisaModelos" placeholder="Pesquisar por categoria ou arquivo..." oninput="filtrarModelos()">
-          </div>
-          
-          <!-- Lista de modelos -->
-          <div id="listaModelosContainer" style="max-height: 400px; overflow-y: auto; margin-bottom: 16px;"></div>
-          
-          <!-- Área de upload (apenas supervisor master) -->
-          <div id="areaUploadModelo" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0; display:none;">
-            <h4><i class="fas fa-upload"></i> Adicionar novo modelo</h4>
-            <div class="input-icon">
-              <span class="icon"><i class="fas fa-tag"></i></span>
-              <select id="novaCategoriaModelo" style="padding-left: 50px;">
-                <option value="">Selecione a categoria</option>
-                <option value="HISTÓRICO ESCOLAR - EF">HISTÓRICO ESCOLAR - EF</option>
-                <option value="HISTÓRICO ESCOLAR - EF - EJA">HISTÓRICO ESCOLAR - EF - EJA</option>
-                <option value="HISTÓRICO ESCOLAR - EM">HISTÓRICO ESCOLAR - EM</option>
-                <option value="HISTÓRICO ESCOLAR - EM - EJA">HISTÓRICO ESCOLAR - EM - EJA</option>
-                <option value="CERTIFICADO CONCLUSÃO - EM">CERTIFICADO CONCLUSÃO - EM</option>
-                <option value="CERTIFICADO CONCLUSÃO - EM - EJA">CERTIFICADO CONCLUSÃO - EM - EJA</option>
-                <option value="CERTIFICADO CONCLUSÃO - QUALIFICAÇÃO INTEGRADO - EJA">CERTIFICADO CONCLUSÃO - QUALIFICAÇÃO INTEGRADO - EJA</option>
-                <option value="HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO">HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO</option>
-                <option value="HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO - EJA">HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO - EJA</option>
-                <option value="HISTÓRICO ESCOLAR - QUALIFICAÇÃO INTEGRADO - EJA">HISTÓRICO ESCOLAR - QUALIFICAÇÃO INTEGRADO - EJA</option>
-                <option value="HISTÓRICO ESCOLAR - TÉCNICO (CONCOMITANTE E SUBSEQUENTE)">HISTÓRICO ESCOLAR - TÉCNICO (CONCOMITANTE E SUBSEQUENTE)</option>
-                <option value="DIPLOMA - TÉCNICO INTEGRADO - EJA">DIPLOMA - TÉCNICO INTEGRADO - EJA</option>
-                <option value="DIPLOMA - TÉCNICO CONCOMITANTE">DIPLOMA - TÉCNICO CONCOMITANTE</option>
-                <option value="DIPLOMA - TÉCNICO INTEGRADO">DIPLOMA - TÉCNICO INTEGRADO</option>
-                <option value="DIPLOMA - TÉCNICO SUBSEQUENTE">DIPLOMA - TÉCNICO SUBSEQUENTE</option>
-                <option value="REQUERIMENTO DOCUMENTO ESCOLAR">REQUERIMENTO DOCUMENTO ESCOLAR</option>
-                <option value="OBSERVAÇÃO DE AULA">OBSERVAÇÃO DE AULA</option>
-                <option value="PLANO INTERVENÇÃO - PFA">PLANO INTERVENÇÃO - PFA</option>
-              </select>
-            </div>
-            <div class="input-icon">
-              <span class="icon"><i class="fas fa-paperclip"></i></span>
-              <input type="file" id="arquivoModelo" accept=".pdf,.doc,.docx,.odt,.txt">
-            </div>
-            <button class="btn-salvar" onclick="uploadNovoModelo()" style="width: auto; padding: 10px 20px;">
-              <i class="fas fa-cloud-upload-alt"></i> Enviar modelo
-            </button>
-          </div>
-        </div>
-        <div class="modal-actions">
-          <button class="btn-cancelar" onclick="fecharModalModelos()">Fechar</button>
-        </div>
-      </div>
-    </div>
     
     <!-- HEADER PRINCIPAL -->
     <header>
@@ -505,9 +446,6 @@
         </button>
         <button onclick="abrirModalLegalizacao()" id="btnLegalizacao" style="display:none;">
           <i class="fas fa-gavel"></i> Legalização
-        </button>
-        <button onclick="abrirModalModelos()" id="btnModelos" style="display:none;">
-          <i class="fas fa-file-alt"></i> Modelos
         </button>
         <button onclick="abrirModalTurmas()" id="btnTurmas"><i class="fas fa-school"></i> Turmas</button>
         <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios"><i class="fas fa-users"></i> Usuários</button>
