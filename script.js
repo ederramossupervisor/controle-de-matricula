@@ -91,12 +91,11 @@ let alunosImportados = [];
 // =========================
 let atosGlobais = [];
 let modelosGlobais = [];
-let timeoutPesquisaModelos;
+let modelosFiltrados = [];
 
 async function abrirModalModelos() {
   document.getElementById("modalModelos").style.display = "flex";
-  // Limpar campo de pesquisa
-  document.getElementById("pesquisaModelo").value = "";
+  document.getElementById("pesquisaModelos").value = "";
   await carregarModelos();
   const isMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
   const areaUpload = document.getElementById("areaUploadModelo");
@@ -107,13 +106,12 @@ function fecharModalModelos() {
   document.getElementById("modalModelos").style.display = "none";
 }
 
-async function carregarModelos(pesquisa = "") {
+async function carregarModelos() {
   mostrarLoading();
   try {
-    let url = `${API_URL}?tipo=modelos&email=${emailUsuario}`;
-    if (pesquisa) url += `&pesquisa=${encodeURIComponent(pesquisa)}`;
-    const resp = await fetch(url);
+    const resp = await fetch(`${API_URL}?tipo=modelos&email=${emailUsuario}`);
     modelosGlobais = await resp.json();
+    modelosFiltrados = [...modelosGlobais];
     renderizarModelos();
   } catch (e) {
     mostrarToast("Erro ao carregar modelos.", "error");
@@ -122,22 +120,26 @@ async function carregarModelos(pesquisa = "") {
 }
 
 function filtrarModelos() {
-  // Debounce para não chamar a cada tecla
-  clearTimeout(timeoutPesquisaModelos);
-  timeoutPesquisaModelos = setTimeout(() => {
-    const termo = document.getElementById("pesquisaModelo").value;
-    carregarModelos(termo);
-  }, 300);
+  const termo = document.getElementById("pesquisaModelos").value.toLowerCase();
+  if (!termo.trim()) {
+    modelosFiltrados = [...modelosGlobais];
+  } else {
+    modelosFiltrados = modelosGlobais.filter(categoria => 
+      categoria.nome.toLowerCase().includes(termo) ||
+      categoria.arquivos.some(arquivo => arquivo.nome.toLowerCase().includes(termo))
+    );
+  }
+  renderizarModelos();
 }
 
 function renderizarModelos() {
   const container = document.getElementById("listaModelosContainer");
   container.innerHTML = "";
-  if (!modelosGlobais.length) {
-    container.innerHTML = "<p>Nenhum modelo disponível para esta pesquisa.</p>";
+  if (!modelosFiltrados.length) {
+    container.innerHTML = "<p>Nenhum modelo encontrado.</p>";
     return;
   }
-  modelosGlobais.forEach(categoria => {
+  modelosFiltrados.forEach(categoria => {
     const card = document.createElement("div");
     card.className = "usuario-card";
     card.style.flexDirection = "column";
@@ -156,15 +158,14 @@ function renderizarModelos() {
   });
 }
 
-
-
 async function uploadNovoModelo() {
-  const categoria = document.getElementById("novaCategoriaModelo").value.trim();
+  const categoriaSelect = document.getElementById("novaCategoriaModelo");
+  const categoria = categoriaSelect.value;
   const fileInput = document.getElementById("arquivoModelo");
   const file = fileInput.files[0];
   
   if (!categoria) {
-    mostrarToast("Informe a categoria (ex: HISTÓRICO ESCOLAR - EF)", "warning");
+    mostrarToast("Selecione uma categoria.", "warning");
     return;
   }
   if (!file) {
@@ -198,9 +199,9 @@ async function uploadNovoModelo() {
     const result = await resp.json();
     if (result.status === "ok") {
       mostrarToast(result.msg, "success");
-      document.getElementById("novaCategoriaModelo").value = "";
+      categoriaSelect.value = "";
       fileInput.value = "";
-      await carregarModelos(document.getElementById("pesquisaModelo").value);
+      await carregarModelos(); // recarrega a lista
     } else {
       mostrarToast(result.msg, "error");
     }
