@@ -134,6 +134,58 @@ function carregarEscolasParaFiltroAto() {
   });
 }
 
+function abrirModalModelos() {
+  document.getElementById("modalModelos").style.display = "flex";
+  carregarModelos();
+}
+
+function fecharModalModelos() {
+  document.getElementById("modalModelos").style.display = "none";
+}
+
+function carregarModelos() {
+  mostrarLoading();
+  const url = `${API_URL}?tipo=modelos`;
+  
+  jsonp(url, function(modelos) {
+    const container = document.getElementById("listaModelosContainer");
+    container.innerHTML = "";
+    
+    if (!modelos || modelos.length === 0) {
+      container.innerHTML = "<p>Nenhum modelo disponível no momento.</p>";
+      esconderLoading();
+      return;
+    }
+    
+    modelos.forEach(modelo => {
+      const div = document.createElement("div");
+      div.className = "usuario-card";
+      div.style.marginBottom = "8px";
+      
+      const temArquivo = modelo.fileId !== null;
+      
+      div.innerHTML = `
+        <div class="usuario-avatar"><i class="fas fa-file-word"></i></div>
+        <div class="usuario-info">
+          <strong>${modelo.nome}</strong>
+          <p>${temArquivo ? modelo.fileName : '<span style="color:#ef4444;">Nenhum arquivo na pasta</span>'}</p>
+          <div style="margin-top:8px;">
+            ${temArquivo ? `
+              <a href="${modelo.downloadUrl}" class="btn-pequeno" target="_blank"><i class="fas fa-download"></i> Baixar</a>
+              <a href="${modelo.viewUrl}" class="btn-pequeno" target="_blank"><i class="fas fa-eye"></i> Visualizar</a>
+            ` : `
+              <button class="btn-pequeno" disabled style="opacity:0.5;"><i class="fas fa-exclamation-triangle"></i> Sem arquivo</button>
+            `}
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+    
+    esconderLoading();
+  });
+}
+
 async function carregarAtos() {
   mostrarLoading();
   const escola = document.getElementById("filtroEscolaAto").value;
