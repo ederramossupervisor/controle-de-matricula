@@ -715,12 +715,39 @@
           <button class="close-btn" onclick="fecharModalModelos()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-          <p style="margin-bottom:16px; color:#64748b;">
-            <i class="fas fa-info-circle"></i> Selecione um modelo para baixar.
-          </p>
-          <div id="listaModelosContainer" style="max-height: 500px; overflow-y: auto;">
-            <!-- Será preenchido via JS -->
+          <!-- Abas: apenas para master aparece Upload -->
+          <div id="abasModelos" style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn-pequeno" id="abaListarModelosBtn" onclick="mostrarAbaListarModelos()"><i class="fas fa-list"></i> Modelos Disponíveis</button>
+            <button class="btn-pequeno" id="abaUploadModeloBtn" onclick="mostrarAbaUploadModelo()" style="display:none;"><i class="fas fa-upload"></i> Enviar Modelo</button>
           </div>
+          
+          <!-- Aba Listar -->
+          <div id="abaListarModelos">
+            <p style="margin-bottom:16px; color:#64748b;">
+              <i class="fas fa-info-circle"></i> Selecione um modelo para baixar.
+            </p>
+            <div id="listaModelosContainer" style="max-height: 500px; overflow-y: auto;"></div>
+          </div>
+          
+          <!-- Aba Upload (visível apenas para master) -->
+          <div id="abaUploadModelo" style="display:none;">
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-tag"></i></span>
+              <select id="selectTipoModelo">
+                <option value="">Selecione o tipo de modelo</option>
+                <!-- Será preenchido via JS com LISTA_MODELOS -->
+              </select>
+            </div>
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-paperclip"></i></span>
+              <input type="file" id="arquivoModelo" accept=".doc,.docx,.pdf,.odt,.xlsx,.pptx">
+            </div>
+            <div class="modal-actions">
+              <button class="btn-salvar" onclick="fazerUploadModelo()"><i class="fas fa-cloud-upload-alt"></i> Enviar</button>
+              <button class="btn-cancelar" onclick="fecharModalModelos()">Cancelar</button>
+            </div>
+          </div>
+          
           <div class="modal-actions" style="margin-top:20px;">
             <button class="btn-cancelar" onclick="fecharModalModelos()">Fechar</button>
           </div>
