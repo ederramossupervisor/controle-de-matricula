@@ -978,21 +978,26 @@ async function buscarProcessos() {
 }
 
 // Função para enviar POST sem esperar resposta (evita CORS)
-function postSemResposta(dados, mensagemSucesso) {
+function postSemResposta(dados, mensagemSucesso, callbackAposSucesso) {
   mostrarLoading();
   fetch(API_URL, {
     method: "POST",
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(dados)
-  }).then(() => {
+  })
+  .then(response => {
+    // Considera qualquer resposta como sucesso (não lemos o corpo)
     esconderLoading();
     if (mensagemSucesso) mostrarToast(mensagemSucesso, "success");
-  }).catch(() => {
+    if (callbackAposSucesso) callbackAposSucesso();
+  })
+  .catch(error => {
+    // Erro de rede real (ex: sem internet)
     esconderLoading();
-    mostrarToast("Erro na operação. Tente novamente.", "error");
+    console.error("Erro de rede:", error);
+    mostrarToast("Erro de conexão. Verifique sua internet.", "error");
   });
 }
-
 function renderizarListaProcessos(processos) {
   const container = document.getElementById("listaProcessosContainer");
   container.innerHTML = "";
