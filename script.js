@@ -2327,6 +2327,90 @@ function preencherSelectEscolasTurma() {
   });
 }
 
+async function recarregarAlunos() {
+  mostrarLoading();
+  try {
+    const resposta = await fetch(`${API_URL}?email=${emailUsuario}`);
+    const dados = await resposta.json();
+
+    if (dados.erro) {
+      mostrarToast("Acesso não autorizado", "error");
+      esconderLoading();
+      return;
+    }
+
+    // Atualizar escolas supervisionadas (caso tenha mudado)
+    if (dados.escolasSupervisionadas) {
+      window.escolasSupervisionadas = dados.escolasSupervisionadas;
+    } else {
+      window.escolasSupervisionadas = [];
+    }
+
+    // Atualizar perfil e escola (pode ter mudado? raramente, mas ok)
+    perfilUsuario = dados.perfil;
+    escolaUsuario = dados.escola;
+
+    // Atualizar os dados globais
+    dadosGlobais = dados.alunos;
+
+    // 🔥 NÃO reseta página nem dadosFiltradosGlobais
+    // Apenas reaplica os filtros atuais (que estão nos selects) sobre os novos dados
+    aplicarFiltros(); // isso já vai atualizar dadosFiltradosGlobais e resetar paginaAtual para 1? Não, porque aplicarFiltros define paginaAtual = 1.
+    // Queremos manter a página atual, então precisamos de uma versão que não resete a página.
+
+    // Vamos reaplicar os filtros mas preservando a página atual
+    const termoNome = document.getElementById("pesquisaNome")?.value.toLowerCase() || "";
+    const escolaSelecionada = document.getElementById("filtroEscola")?.value || "";
+    const turmaSelecionada = document.getElementById("filtroTurma")?.value || "";
+    const statusSelecionado = document.getElementById("filtroStatus")?.value || "";
+    const situacaoSelecionada = document.getElementById("filtroSituacao")?.value || "";
+
+    let dadosFiltrados = dadosGlobais;
+
+    if (perfilUsuario === "SUPERVISOR" && escolaSelecionada) {
+      dadosFiltrados = dadosFiltrados.filter(a => a.ESCOLA === escolaSelecionada);
+    }
+    if (turmaSelecionada) {
+      dadosFiltrados = dadosFiltrados.filter(a => a.TURMA === turmaSelecionada);
+    }
+    if (statusSelecionado) {
+      dadosFiltrados = dadosFiltrados.filter(a => a.STATUS === statusSelecionado);
+    }
+    if (perfilUsuario === "SUPERVISOR" && situacaoSelecionada) {
+      dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === situacaoSelecionada);
+    }
+    if (termoNome) {
+      dadosFiltrados = dadosFiltrados.filter(a => a.ALUNO.toLowerCase().includes(termoNome));
+    }
+    if (perfilUsuario === "SECRETARIA") {
+      dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === "Ativo");
+    }
+
+    dadosFiltradosGlobais = dadosFiltrados;
+    
+    // Ajusta página atual se ela ultrapassar o total de páginas
+    const totalPaginas = Math.ceil(dadosFiltradosGlobais.length / alunosPorPagina);
+    if (paginaAtual > totalPaginas && totalPaginas > 0) {
+      paginaAtual = totalPaginas;
+    }
+    if (paginaAtual < 1) paginaAtual = 1;
+    
+    atualizarListaPaginada(); // isso usa dadosFiltradosGlobais e paginaAtual
+
+    // Atualizar painéis (resumo e por escola) – eles usam dadosGlobais, não filtrados
+    const resumo = gerarResumo(dadosGlobais);
+    renderPainel(resumo);
+    const mapa = resumoPorEscola(dadosGlobais);
+    renderPorEscola(mapa);
+
+    mostrarToast("Dados atualizados!", "success", 2000);
+  } catch (erro) {
+    console.error("Erro ao recarregar:", erro);
+    mostrarToast("Erro ao recarregar dados.", "error");
+  }
+  esconderLoading();
+}
+
 function fecharModalTurmas() {
   document.getElementById("modalTurmas").style.display = "none";
 }
