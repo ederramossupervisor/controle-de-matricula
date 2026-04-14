@@ -1517,3 +1517,66 @@ select.btn-paginacao {
   background: var(--text-muted);
   color: white;
 }
+
+
+/* Botões do cabeçalho - todos com fundo branco */
+.header-actions button,
+.btn-header {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  cursor: pointer;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.header-actions button:hover,
+.btn-header:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Ícones dentro dos botões do cabeçalho */
+.header-actions button i,
+.btn-header i {
+  color: #2563eb;
+  font-size: 16px;
+}
+
+/* Botão de destaque (ex: Novo Aluno) - apenas com borda colorida, fundo branco */
+.header-actions .btn-primary {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #2563eb !important;
+}
+
+.header-actions .btn-primary i {
+  color: #2563eb;
+}
+
+.header-actions .btn-primary:hover {
+  background-color: #eff6ff !important;
+  border-color: #1d4ed8 !important;
+}
+
+/* Ajuste para o botão Sair (se tiver classe btn-outline) */
+.header-actions .btn-outline {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.header-actions .btn-outline:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
