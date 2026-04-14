@@ -438,21 +438,41 @@
           <button class="close-btn" onclick="fecharModalModelos()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
-          <!-- Campo de pesquisa -->
+          <!-- Caixa de pesquisa -->
           <div class="input-icon" style="margin-bottom: 16px;">
             <span class="icon"><i class="fas fa-search"></i></span>
-            <input type="text" id="pesquisaModelo" placeholder="Filtrar por categoria..." oninput="filtrarModelos()">
+            <input type="text" id="pesquisaModelos" placeholder="Pesquisar por categoria ou arquivo..." oninput="filtrarModelos()">
           </div>
           
           <!-- Lista de modelos -->
           <div id="listaModelosContainer" style="max-height: 400px; overflow-y: auto; margin-bottom: 16px;"></div>
           
-          <!-- Área de upload (apenas supervisor master, controlado via JS) -->
+          <!-- Área de upload (apenas supervisor master) -->
           <div id="areaUploadModelo" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #e2e8f0; display:none;">
             <h4><i class="fas fa-upload"></i> Adicionar novo modelo</h4>
             <div class="input-icon">
               <span class="icon"><i class="fas fa-tag"></i></span>
-              <input type="text" id="novaCategoriaModelo" placeholder="Categoria (ex: HISTÓRICO ESCOLAR - EF)">
+              <select id="novaCategoriaModelo" style="padding-left: 50px;">
+                <option value="">Selecione a categoria</option>
+                <option value="HISTÓRICO ESCOLAR - EF">HISTÓRICO ESCOLAR - EF</option>
+                <option value="HISTÓRICO ESCOLAR - EF - EJA">HISTÓRICO ESCOLAR - EF - EJA</option>
+                <option value="HISTÓRICO ESCOLAR - EM">HISTÓRICO ESCOLAR - EM</option>
+                <option value="HISTÓRICO ESCOLAR - EM - EJA">HISTÓRICO ESCOLAR - EM - EJA</option>
+                <option value="CERTIFICADO CONCLUSÃO - EM">CERTIFICADO CONCLUSÃO - EM</option>
+                <option value="CERTIFICADO CONCLUSÃO - EM - EJA">CERTIFICADO CONCLUSÃO - EM - EJA</option>
+                <option value="CERTIFICADO CONCLUSÃO - QUALIFICAÇÃO INTEGRADO - EJA">CERTIFICADO CONCLUSÃO - QUALIFICAÇÃO INTEGRADO - EJA</option>
+                <option value="HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO">HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO</option>
+                <option value="HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO - EJA">HISTÓRICO ESCOLAR - TÉCNICO INTEGRADO - EJA</option>
+                <option value="HISTÓRICO ESCOLAR - QUALIFICAÇÃO INTEGRADO - EJA">HISTÓRICO ESCOLAR - QUALIFICAÇÃO INTEGRADO - EJA</option>
+                <option value="HISTÓRICO ESCOLAR - TÉCNICO (CONCOMITANTE E SUBSEQUENTE)">HISTÓRICO ESCOLAR - TÉCNICO (CONCOMITANTE E SUBSEQUENTE)</option>
+                <option value="DIPLOMA - TÉCNICO INTEGRADO - EJA">DIPLOMA - TÉCNICO INTEGRADO - EJA</option>
+                <option value="DIPLOMA - TÉCNICO CONCOMITANTE">DIPLOMA - TÉCNICO CONCOMITANTE</option>
+                <option value="DIPLOMA - TÉCNICO INTEGRADO">DIPLOMA - TÉCNICO INTEGRADO</option>
+                <option value="DIPLOMA - TÉCNICO SUBSEQUENTE">DIPLOMA - TÉCNICO SUBSEQUENTE</option>
+                <option value="REQUERIMENTO DOCUMENTO ESCOLAR">REQUERIMENTO DOCUMENTO ESCOLAR</option>
+                <option value="OBSERVAÇÃO DE AULA">OBSERVAÇÃO DE AULA</option>
+                <option value="PLANO INTERVENÇÃO - PFA">PLANO INTERVENÇÃO - PFA</option>
+              </select>
             </div>
             <div class="input-icon">
               <span class="icon"><i class="fas fa-paperclip"></i></span>
