@@ -1741,6 +1741,8 @@ function renderLista(dados) {
     else if (aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
     else if (aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
 
+    div.className = "fade " + statusClass;
+
     let prazoTexto = "";
     let prazoClasse = "";
     let barraProgresso = "";
