@@ -84,10 +84,15 @@
             <span class="icon"><i class="fas fa-user-friends"></i></span>
             <input type="text" id="nomeResponsavel" placeholder="Nome do responsável">
           </div>
-          <div class="input-icon">
+          <div id="telefonesContainerCadastro">
+          <div class="input-icon" style="margin-bottom: 8px;">
             <span class="icon"><i class="fas fa-phone-alt"></i></span>
-            <input type="tel" id="telefoneContato" placeholder="Telefone de contato" oninput="aplicarMascaraTelefone(event)">
+            <input type="tel" class="telefone-cadastro" placeholder="Telefone principal" oninput="aplicarMascaraTelefone(event)">
           </div>
+        </div>
+        <button type="button" class="btn-pequeno" onclick="adicionarCampoTelefoneCadastro()" style="margin-bottom: 16px;">
+          <i class="fas fa-plus"></i> Adicionar outro telefone
+        </button>
   
           <!-- CAMPO DATA DE MATRÍCULA -->
           <div class="input-icon" style="margin-bottom: 8px;">
@@ -146,10 +151,12 @@
               <input type="text" id="editResponsavel" placeholder="Nome do responsável">
             </div>
             
-            <div class="input-icon">
-              <span class="icon"><i class="fas fa-phone-alt"></i></span>
-              <input type="tel" id="editTelefone" placeholder="Telefone de contato">
+            <div id="telefonesContainerEdicao">
+              <!-- Os campos serão preenchidos dinamicamente via JS -->
             </div>
+            <button type="button" class="btn-pequeno" onclick="adicionarCampoTelefoneEdicao()" style="margin-bottom: 16px;">
+              <i class="fas fa-plus"></i> Adicionar outro telefone
+            </button>
             
             <div class="input-icon">
               <span class="icon"><i class="fas fa-book"></i></span>
