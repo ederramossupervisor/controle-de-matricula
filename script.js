@@ -1052,22 +1052,23 @@ function postSemResposta(dados, mensagemSucesso, callbackAposSucesso) {
   mostrarLoading();
   fetch(API_URL, {
     method: "POST",
+    mode: 'no-cors',           // 🔥 impede que o navegador exija CORS na resposta
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(dados)
   })
-  .then(response => {
-    // Considera qualquer resposta como sucesso (não lemos o corpo)
+  .then(() => {
+    // Resposta opaca – não podemos ler o corpo, então assumimos sucesso
     esconderLoading();
     if (mensagemSucesso) mostrarToast(mensagemSucesso, "success");
     if (callbackAposSucesso) callbackAposSucesso();
   })
   .catch(error => {
-    // Erro de rede real (ex: sem internet)
     esconderLoading();
     console.error("Erro de rede:", error);
     mostrarToast("Erro de conexão. Verifique sua internet.", "error");
   });
 }
+
 function renderizarListaProcessos(processos) {
   const container = document.getElementById("listaProcessosContainer");
   container.innerHTML = "";
