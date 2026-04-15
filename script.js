@@ -916,9 +916,6 @@ function atualizarCamposProcesso() {
     "Ata de Classificação/Reclassificação/Avanço Escolar"
   ];
   
-  // Tipos que exigem apenas a escola (já preenchida automaticamente pela secretaria, mas para supervisor pode ser selecionável)
-  // A maioria já tem o campo escola disponível para supervisor.
-  
   if (tiposComAluno.includes(tipo)) {
     container.innerHTML = `
       <div class="input-icon">
@@ -944,6 +941,18 @@ function atualizarCamposProcesso() {
           <option value="Matutino ou Integral">Matutino ou Integral</option>
           <option value="Vespertino">Vespertino</option>
           <option value="Noturno">Noturno</option>
+        </select>
+      </div>
+    `;
+  } else if (tipo === "Plano de Intervenção PFA") {
+    // 🔥 NOVO: campo para selecionar o subtópico
+    container.innerHTML = `
+      <div class="input-icon">
+        <span class="icon"><i class="fas fa-book-open"></i></span>
+        <select id="cadastroProcessoSubtopicoPFA">
+          <option value="">Selecione o componente</option>
+          <option value="PFA Língua Portuguesa">PFA Língua Portuguesa</option>
+          <option value="PFA Matemática">PFA Matemática</option>
         </select>
       </div>
     `;
@@ -993,6 +1002,9 @@ async function cadastrarProcesso() {
       subcategoria = document.getElementById("cadastroProcessoSubcategoria")?.value || "";
       if (!subcategoria) { mostrarToast("Selecione a subcategoria.", "warning"); return; }
     }
+  } else if (tipo === "Plano de Intervenção PFA") {
+    subcategoria = document.getElementById("cadastroProcessoSubtopicoPFA")?.value || "";
+    if (!subcategoria) { mostrarToast("Selecione o componente do PFA.", "warning"); return; }
   }
   
   const dados = {
