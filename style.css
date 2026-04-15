@@ -321,56 +321,112 @@ input:focus, select:focus {
   padding: 20px;
 }
 
-/* Cards de métricas com cores personalizadas */
+/* ========================= */
+/* CARDS DE MÉTRICAS - GLASSMORPHISM */
+/* ========================= */
+
+.painel-metricas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 20px;
+  padding: 0;
+}
+
 .metrica-card {
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 4px 12px var(--shadow-sm);
-  border: 1px solid var(--card-border);
-  transition: transform 0.2s;
-  color: var(--text-primary);
+  flex: 1 1 180px;
+  min-width: 160px;
+  padding: 20px 18px;
+  border-radius: 24px;
+  
+  /* Efeito vidro fosco */
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  
+  /* Borda suave */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  
+  /* Sombra leve */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.03);
+  
+  /* Transição suave */
+  transition: all 0.25s ease;
+  
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 120px; /* garante altura uniforme */
 }
 
-/* Cores de fundo específicas (com gradiente leve) */
-.metrica-card.metrica-total,
-.metrica-card.metrica-escola {
-  background: linear-gradient(145deg, #f8fafc, #eef2f6); /* cinza muito claro */
+/* Efeito hover sutil */
+.metrica-card:hover {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
-.metrica-card.metrica-completos {
-  background: linear-gradient(145deg, #dcfce7, #bbf7d0); /* verde claro */
+/* Título do card */
+.metrica-titulo {
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #334155;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.metrica-card.metrica-pendentes {
-  background: linear-gradient(145deg, #fef9c3, #fef08a); /* amarelo claro */
+/* Ícone dentro do título */
+.metrica-titulo i {
+  font-size: 18px;
+  width: 24px;
+  color: #2563eb;
 }
 
-.metrica-card.metrica-vencidos {
-  background: linear-gradient(145deg, #fee2e2, #fecaca); /* vermelho claro */
+/* Número principal */
+.metrica-valor {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+  margin-bottom: 6px;
 }
 
-/* Ajustes para modo escuro (opcional, mas recomendado) */
-[data-theme="dark"] .metrica-card.metrica-total,
-[data-theme="dark"] .metrica-card.metrica-escola {
-  background: linear-gradient(145deg, #1e293b, #334155);
+/* Texto secundário */
+.metrica-detalhe {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 400;
 }
 
-[data-theme="dark"] .metrica-card.metrica-completos {
-  background: linear-gradient(145deg, #14532d, #166534);
+
+[data-theme="dark"] .metrica-card {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
-[data-theme="dark"] .metrica-card.metrica-pendentes {
-  background: linear-gradient(145deg, #713f12, #854d0e);
+[data-theme="dark"] .metrica-titulo {
+  color: #e2e8f0;
 }
 
-[data-theme="dark"] .metrica-card.metrica-vencidos {
-  background: linear-gradient(145deg, #7f1d1d, #991b1b);
+[data-theme="dark"] .metrica-valor {
+  color: #f8fafc;
 }
 
+[data-theme="dark"] .metrica-detalhe {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .metrica-card:hover {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+}
 .metrica-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 20px var(--shadow-md);
@@ -984,7 +1040,7 @@ input:focus, select:focus {
     flex: 1;
     text-align: center;
   }
-  
+    
   .painel-metricas {
     grid-template-columns: 1fr 1fr;
   }
@@ -1586,4 +1642,29 @@ select.btn-paginacao {
   border: none;
   padding: 4px 8px;
   cursor: pointer;
+}
+/* Card Por Escola – ajuste de espaçamento interno */
+.metrica-escola {
+  padding: 16px;
+}
+
+.metrica-escola .metrica-detalhe {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 rgba(255,255,255,0.3);
+}
+
+/* Estilizar scroll para navegadores WebKit */
+.metrica-escola .metrica-detalhe::-webkit-scrollbar {
+  width: 4px;
+}
+.metrica-escola .metrica-detalhe::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+}
+.metrica-escola .metrica-detalhe::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 10px;
 }
