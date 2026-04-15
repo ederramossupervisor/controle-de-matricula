@@ -1984,7 +1984,12 @@ function aplicarFiltros() {
     dadosFiltrados = dadosFiltrados.filter(a => a.TURMA === turmaSelecionada);
   }
   if (statusSelecionado) {
-    dadosFiltrados = dadosFiltrados.filter(a => a.STATUS === statusSelecionado);
+    if (statusSelecionado === "✅ Completo") {
+      dadosFiltrados = dadosFiltrados.filter(a => a.STATUS === "✅ Completo");
+    } else if (statusSelecionado === "⚠️ Pendente / Vencido") {
+      // Inclui todos que NÃO estão completos (pendentes, vencidos, atenção, etc.)
+      dadosFiltrados = dadosFiltrados.filter(a => a.STATUS !== "✅ Completo");
+    }
   }
   if (perfilUsuario === "SUPERVISOR" && situacaoSelecionada) {
     dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === situacaoSelecionada);
