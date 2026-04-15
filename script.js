@@ -477,6 +477,7 @@ function abrirFormAto() {
   document.getElementById("atoValidadeAnos").value = "5";
   document.getElementById("atoObservacoes").value = "";
   document.getElementById("atoArquivo").value = "";
+  document.getElementById("atoDataHomologacao").value = "";
   // Preencher select de escolas
   const selectEscola = document.getElementById("atoEscola");
   const escolas = getEscolasPermitidas();
@@ -508,6 +509,7 @@ function editarAto(id) {
   document.getElementById("atoObservacoes").value = ato.observacoes || "";
   document.getElementById("atoArquivo").value = ""; // não é possível pré‑carregar arquivo
   document.getElementById("modalFormAto").style.display = "flex";
+  document.getElementById("atoDataHomologacao").value = ato.dataHomologacao ? ato.dataHomologacao.split('T')[0] : "";
 }
 
 async function salvarAto() {
@@ -552,6 +554,7 @@ async function salvarAto() {
     cursoEtapa: cursoEtapa,
     numeroAto: numeroAto,
     dataPublicacao: dataPublicacao,
+    dataHomologacao: dataHomologacao, 
     validadeAnos: validadeAnos,
     observacoes: observacoes,
     fileBase64: fileBase64,
