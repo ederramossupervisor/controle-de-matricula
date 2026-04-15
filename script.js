@@ -1521,6 +1521,49 @@ function marcarAlteracao(row, coluna, valor) {
   alteracoesPendentes[chave] = valor;
 }
 
+async function excluirAlunoPermanentemente() {
+  if (!dadosAlunoAtual) return;
+  
+  const nomeAluno = dadosAlunoAtual.ALUNO || "este aluno";
+  const confirmacao = confirm(`ATENÇÃO! Você está prestes a EXCLUIR PERMANENTEMENTE o aluno:\n\n${nomeAluno}\n\nEsta ação NÃO PODE SER DESFEITA. Deseja continuar?`);
+  if (!confirmacao) return;
+  
+  // Segunda confirmação por segurança
+  const confirmacao2 = confirm(`Tem certeza absoluta? O registro será removido da planilha para sempre.`);
+  if (!confirmacao2) return;
+  
+  mostrarLoading();
+  
+  const dados = {
+    acao: "excluirAluno",
+    email: emailUsuario,
+    row: dadosAlunoAtual._row
+  };
+  
+  try {
+    // Usar fetch diretamente para obter resposta (já que CORS está resolvido)
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(dados)
+    });
+    
+    const result = await resp.json();
+    esconderLoading();
+    
+    if (result.status === "ok") {
+      mostrarToast(result.msg, "success");
+      fecharModalDetalhes();
+      carregarAlunos();
+    } else {
+      mostrarToast("Erro: " + (result.msg || "Não foi possível excluir."), "error");
+    }
+  } catch (e) {
+    esconderLoading();
+    mostrarToast("Erro de conexão. Tente novamente.", "error");
+  }
+}
+
 async function alterarSituacaoAluno(novaSituacao) {
   if (!dadosAlunoAtual) return;
   
