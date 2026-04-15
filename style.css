@@ -1668,3 +1668,9 @@ select.btn-paginacao {
   background: #94a3b8;
   border-radius: 10px;
 }
+
+.metrica-total .metrica-titulo i { color: #2563eb; }
+.metrica-completos .metrica-titulo i { color: #10b981; }
+.metrica-pendentes .metrica-titulo i { color: #f59e0b; }
+.metrica-vencidos .metrica-titulo i { color: #dc2626; }
+.metrica-escola .metrica-titulo i { color: #8b5cf6; }
