@@ -453,7 +453,8 @@ function renderizarListaAtos(atos) {
         <strong>${ato.numeroAto}</strong>
         <p><i class="fas fa-school"></i> ${ato.escola} | <i class="fas fa-tag"></i> ${ato.tipoAto}</p>
         <p><i class="fas fa-graduation-cap"></i> ${ato.cursoEtapa || "—"} | 
-        <i class="fas fa-calendar-alt"></i> Validade: ${new Date(ato.dataVencimento).toLocaleDateString('pt-BR')}</p>
+        <i class="fas fa-calendar-alt"></i> Homologação: ${new Date(ato.dataHomologacao).toLocaleDateString('pt-BR')} | 
+        <i class="fas fa-calendar-check"></i> Publicação: ${new Date(ato.dataPublicacao).toLocaleDateString('pt-BR')}</p>
         <p><span class="status-badge ${statusClass}">${ato.status}</span></p>
         <div style="margin-top:8px;">
           ${ato.arquivoId ? `<a href="https://drive.google.com/file/d/${ato.arquivoId}/view" target="_blank" class="btn-pequeno"><i class="fas fa-file-pdf"></i> Ver Ato</a>` : ''}
