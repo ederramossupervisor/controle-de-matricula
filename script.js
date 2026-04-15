@@ -1052,15 +1052,14 @@ function postSemResposta(dados, mensagemSucesso, callbackAposSucesso) {
   mostrarLoading();
   fetch(API_URL, {
     method: "POST",
-    mode: 'no-cors',           // 🔥 impede que o navegador exija CORS na resposta
+    mode: 'no-cors',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify(dados)
   })
   .then(() => {
-    // Resposta opaca – não podemos ler o corpo, então assumimos sucesso
     esconderLoading();
     if (mensagemSucesso) mostrarToast(mensagemSucesso, "success");
-    if (callbackAposSucesso) callbackAposSucesso();
+    if (callbackAposSucesso) callbackAposSucesso(); // ← Executa o callback
   })
   .catch(error => {
     esconderLoading();
@@ -1529,11 +1528,8 @@ async function excluirAlunoPermanentemente() {
   const confirmacao = confirm(`ATENÇÃO! Você está prestes a EXCLUIR PERMANENTEMENTE o aluno:\n\n${nomeAluno}\n\nEsta ação NÃO PODE SER DESFEITA. Deseja continuar?`);
   if (!confirmacao) return;
   
-  // Segunda confirmação por segurança
   const confirmacao2 = confirm(`Tem certeza absoluta? O registro será removido da planilha para sempre.`);
   if (!confirmacao2) return;
-  
-  mostrarLoading();
   
   const dados = {
     acao: "excluirAluno",
@@ -1541,30 +1537,12 @@ async function excluirAlunoPermanentemente() {
     row: dadosAlunoAtual._row
   };
   
-  try {
-    // Usar fetch diretamente para obter resposta (já que CORS está resolvido)
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(dados)
-    });
-    
-    const result = await resp.json();
-    esconderLoading();
-    
-    if (result.status === "ok") {
-      mostrarToast(result.msg, "success");
-      fecharModalDetalhes();
-      carregarAlunos();
-    } else {
-      mostrarToast("Erro: " + (result.msg || "Não foi possível excluir."), "error");
-    }
-  } catch (e) {
-    esconderLoading();
-    mostrarToast("Erro de conexão. Tente novamente.", "error");
-  }
+  // Usa postSemResposta (não lê resposta, assume sucesso)
+  postSemResposta(dados, "Aluno excluído com sucesso!", () => {
+    fecharModalDetalhes();
+    carregarAlunos(); // 🔥 Recarrega a lista automaticamente
+  });
 }
-
 async function alterarSituacaoAluno(novaSituacao) {
   if (!dadosAlunoAtual) return;
   
@@ -2154,26 +2132,27 @@ async function salvarAluno() {
     email: emailUsuario
   };
 
-  postSemResposta(dados, "Aluno cadastrado com sucesso!");
-  
-  // Limpar campos e fechar modal
-  if (nomeInput) nomeInput.value = "";
-  if (responsavelInput) responsavelInput.value = "";
-  if (telefoneInput) telefoneInput.value = "";
-  if (edEspecialCheck) edEspecialCheck.checked = false;
-  document.getElementById("selectTurmaAluno").selectedIndex = 0;
-  document.getElementById("dataMatricula").value = "";
+  // Passamos uma função de callback que será executada após o envio
+  postSemResposta(dados, "Aluno cadastrado com sucesso!", () => {
+    // Limpar campos e fechar modal (dentro do callback)
+    if (nomeInput) nomeInput.value = "";
+    if (responsavelInput) responsavelInput.value = "";
+    if (telefoneInput) telefoneInput.value = "";
+    if (edEspecialCheck) edEspecialCheck.checked = false;
+    document.getElementById("selectTurmaAluno").selectedIndex = 0;
+    document.getElementById("dataMatricula").value = "";
 
-  document.getElementById("novoAluno").style.display = "none";
-  document.getElementById("lista").style.display = "";
-  document.getElementById("painel").style.display = "";
+    document.getElementById("novoAluno").style.display = "none";
+    document.getElementById("lista").style.display = "";
+    document.getElementById("painel").style.display = "";
 
-  carregarAlunos();
+    carregarAlunos(); // 🔥 Agora recarregamos APÓS o servidor confirmar
 
-  btnText.textContent = "Salvar";
-  btnText.style.display = "inline";
-  spinner.style.display = "none";
-  btnSalvar.disabled = false;
+    btnText.textContent = "Salvar";
+    btnText.style.display = "inline";
+    spinner.style.display = "none";
+    btnSalvar.disabled = false;
+  });
 }
   
 function voltarApp() {
