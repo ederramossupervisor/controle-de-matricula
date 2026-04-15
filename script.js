@@ -941,6 +941,7 @@ function atualizarCamposProcesso() {
           <option value="Matutino ou Integral">Matutino ou Integral</option>
           <option value="Vespertino">Vespertino</option>
           <option value="Noturno">Noturno</option>
+          <option value="Educação Profissional">Educação Profissional</option>
         </select>
       </div>
     `;
