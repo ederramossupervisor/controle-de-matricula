@@ -159,6 +159,82 @@ function carregarEscolasParaFiltroAto() {
   });
 }
 
+// Adiciona um novo campo de telefone no modal de cadastro
+function adicionarCampoTelefoneCadastro() {
+  const container = document.getElementById("telefonesContainerCadastro");
+  const novoCampo = document.createElement("div");
+  novoCampo.className = "input-icon";
+  novoCampo.style.marginBottom = "8px";
+  novoCampo.innerHTML = `
+    <span class="icon"><i class="fas fa-phone-alt"></i></span>
+    <input type="tel" class="telefone-cadastro" placeholder="Telefone adicional" oninput="aplicarMascaraTelefone(event)">
+    <button type="button" class="btn-icone" onclick="removerCampoTelefone(this)" style="margin-left: 8px; color: #dc2626;">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
+  container.appendChild(novoCampo);
+}
+
+// Remove um campo de telefone (o botão "x" chama essa função)
+function removerCampoTelefone(botao) {
+  botao.closest('.input-icon').remove();
+}
+
+// Coleta todos os telefones preenchidos no cadastro e retorna uma string concatenada
+function coletarTelefonesCadastro() {
+  const inputs = document.querySelectorAll("#telefonesContainerCadastro .telefone-cadastro");
+  const telefones = [];
+  inputs.forEach(input => {
+    const valor = input.value.trim();
+    if (valor) telefones.push(valor);
+  });
+  return telefones.join("; ");
+}
+
+// Preenche os campos de telefone no modal de detalhes com base na string salva
+function preencherCamposTelefoneEdicao(telefonesStr) {
+  const container = document.getElementById("telefonesContainerEdicao");
+  container.innerHTML = ""; // Limpa
+  
+  const telefones = telefonesStr ? telefonesStr.split(";").map(t => t.trim()).filter(t => t) : [];
+  
+  if (telefones.length === 0) {
+    // Pelo menos um campo vazio
+    adicionarCampoTelefoneEdicao();
+  } else {
+    telefones.forEach((tel, index) => {
+      adicionarCampoTelefoneEdicao(tel);
+    });
+  }
+}
+
+// Adiciona um campo de telefone no modal de edição. Se 'valor' for fornecido, preenche.
+function adicionarCampoTelefoneEdicao(valor = "") {
+  const container = document.getElementById("telefonesContainerEdicao");
+  const novoCampo = document.createElement("div");
+  novoCampo.className = "input-icon";
+  novoCampo.style.marginBottom = "8px";
+  novoCampo.innerHTML = `
+    <span class="icon"><i class="fas fa-phone-alt"></i></span>
+    <input type="tel" class="telefone-edicao" placeholder="Telefone" value="${valor}" oninput="aplicarMascaraTelefone(event)">
+    <button type="button" class="btn-icone" onclick="removerCampoTelefone(this)" style="margin-left: 8px; color: #dc2626;">
+      <i class="fas fa-times"></i>
+    </button>
+  `;
+  container.appendChild(novoCampo);
+}
+
+// Coleta os telefones da edição
+function coletarTelefonesEdicao() {
+  const inputs = document.querySelectorAll("#telefonesContainerEdicao .telefone-edicao");
+  const telefones = [];
+  inputs.forEach(input => {
+    const valor = input.value.trim();
+    if (valor) telefones.push(valor);
+  });
+  return telefones.join("; ");
+}
+
 function abrirModalModelos() {
   document.getElementById("modalModelos").style.display = "flex";
   
@@ -1163,7 +1239,7 @@ async function salvarDadosAluno() {
   
   const nome = document.getElementById("editNomeAluno").value.trim();
   const responsavel = document.getElementById("editResponsavel").value.trim();
-  const telefone = document.getElementById("editTelefone").value.trim();
+  const telefone = coletarTelefonesEdicao();
   const turma = document.getElementById("editTurma").value;
   const edEspecial = document.getElementById("editEdEspecial").checked;
   
@@ -1505,7 +1581,7 @@ function abrirModalDetalhes(aluno) {
   document.getElementById("detalhesConteudo").innerHTML = html;
   document.getElementById("editNomeAluno").value = aluno.ALUNO || "";
   document.getElementById("editResponsavel").value = aluno.RESPONSAVEL || "";
-  document.getElementById("editTelefone").value = aluno.TELEFONE || "";
+  preencherCamposTelefoneEdicao(aluno.TELEFONE || "");
   document.getElementById("editEdEspecial").checked = aluno.ED_ESPECIAL === true;
   
   carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
@@ -2093,7 +2169,7 @@ async function salvarAluno() {
 
   const nome = nomeInput ? nomeInput.value.trim() : "";
   const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
-  const telefone = telefoneInput ? telefoneInput.value.trim() : "";
+  const telefone = coletarTelefonesCadastro();
   const edEspecial = edEspecialCheck ? edEspecialCheck.checked : false;
   const turma = turmaSelect ? turmaSelect.value : "";
   
