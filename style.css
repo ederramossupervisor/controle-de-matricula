@@ -1662,7 +1662,7 @@ select.btn-paginacao {
   transition: all 0.2s;
   
   /* Faixa colorida à esquerda */
-  border-left-width: 6px;
+  border-left-width: 12px;
   border-left-style: solid;
 }
 
