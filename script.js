@@ -598,7 +598,7 @@ function debounce(func, wait) {
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
 }
-
+/*
 function atualizarListaPaginada() {
   const totalAlunos = dadosFiltradosGlobais.length;
   const totalPaginas = Math.ceil(totalAlunos / alunosPorPagina);
@@ -611,14 +611,17 @@ function atualizarListaPaginada() {
   renderLista(alunosPagina);
   renderizarPaginacao(totalPaginas);
 }
+*/
 
-function renderizarPaginacao(totalPaginas) {
+function renderizarPaginacao(totalPaginas, totalRegistros = dadosFiltradosGlobais.length) {
   const container = document.getElementById('paginacao');
   if (!container) return;
-  if (totalPaginas <= 1 && alunosPorPagina >= dadosFiltradosGlobais.length) {
+  
+  if (totalPaginas <= 1 && alunosPorPagina >= totalRegistros) {
     container.style.display = 'none';
     return;
   }
+  
   container.style.display = 'flex';
   container.innerHTML = '';
 
@@ -629,8 +632,7 @@ function renderizarPaginacao(totalPaginas) {
   btnFirst.disabled = (paginaAtual === 1);
   btnFirst.addEventListener('click', () => {
     if (paginaAtual !== 1) {
-      paginaAtual = 1;
-      atualizarListaPaginada();
+      aplicarFiltros(1); // recarrega com página 1
     }
   });
   container.appendChild(btnFirst);
@@ -642,8 +644,7 @@ function renderizarPaginacao(totalPaginas) {
   btnPrev.disabled = (paginaAtual === 1);
   btnPrev.addEventListener('click', () => {
     if (paginaAtual > 1) {
-      paginaAtual--;
-      atualizarListaPaginada();
+      aplicarFiltros(paginaAtual - 1);
     }
   });
   container.appendChild(btnPrev);
@@ -651,7 +652,6 @@ function renderizarPaginacao(totalPaginas) {
   // Informação de página + total de registros
   const paginaSpan = document.createElement('span');
   paginaSpan.className = 'pagina-info';
-  const totalRegistros = dadosFiltradosGlobais.length;
   paginaSpan.textContent = `Página ${paginaAtual} de ${totalPaginas} (${totalRegistros} registros)`;
   container.appendChild(paginaSpan);
 
@@ -662,8 +662,7 @@ function renderizarPaginacao(totalPaginas) {
   btnNext.disabled = (paginaAtual === totalPaginas);
   btnNext.addEventListener('click', () => {
     if (paginaAtual < totalPaginas) {
-      paginaAtual++;
-      atualizarListaPaginada();
+      aplicarFiltros(paginaAtual + 1);
     }
   });
   container.appendChild(btnNext);
@@ -675,8 +674,7 @@ function renderizarPaginacao(totalPaginas) {
   btnLast.disabled = (paginaAtual === totalPaginas);
   btnLast.addEventListener('click', () => {
     if (paginaAtual !== totalPaginas) {
-      paginaAtual = totalPaginas;
-      atualizarListaPaginada();
+      aplicarFiltros(totalPaginas);
     }
   });
   container.appendChild(btnLast);
@@ -695,7 +693,7 @@ function renderizarPaginacao(totalPaginas) {
   selectItens.addEventListener('change', (e) => {
     alunosPorPagina = parseInt(e.target.value);
     paginaAtual = 1;
-    atualizarListaPaginada();
+    aplicarFiltros(1);
   });
   container.appendChild(selectItens);
 }
@@ -1647,9 +1645,15 @@ async function alterarSituacaoAluno(novaSituacao) {
 // =========================
 // CARREGAR DADOS
 // =========================
-async function carregarAlunos() {
+async function carregarAlunos(pagina = 1, filtros = {}) {
   mostrarLoading();
-  const url = `${API_URL}?email=${emailUsuario}`;
+  
+  let url = `${API_URL}?email=${emailUsuario}&pagina=${pagina}&limite=${alunosPorPagina}`;
+  if (filtros.escola) url += `&escola=${encodeURIComponent(filtros.escola)}`;
+  if (filtros.turma) url += `&turma=${encodeURIComponent(filtros.turma)}`;
+  if (filtros.nome) url += `&nome=${encodeURIComponent(filtros.nome)}`;
+  if (filtros.status) url += `&status=${encodeURIComponent(filtros.status)}`;
+  if (filtros.situacao) url += `&situacao=${encodeURIComponent(filtros.situacao)}`;
   
   jsonp(url, function(dados) {
     if (dados.erro) {
@@ -1658,24 +1662,15 @@ async function carregarAlunos() {
       return;
     }
 
-    if (dados.escolasSupervisionadas) {
-      window.escolasSupervisionadas = dados.escolasSupervisionadas;
-    } else {
-      window.escolasSupervisionadas = [];
-    }
-
+    window.escolasSupervisionadas = dados.escolasSupervisionadas || [];
     perfilUsuario = dados.perfil;
     escolaUsuario = dados.escola;
 
     document.getElementById("escolaUsuarioDisplay").textContent = 
       perfilUsuario === "SUPERVISOR" ? "Supervisor" : `${escolaUsuario}`;
 
-    // Exibir e-mail do usuário logado
-    const emailSpan = document.getElementById("emailUsuarioTexto");
-    if (emailSpan) emailSpan.textContent = emailUsuario;
-
     if (!Array.isArray(dados.alunos)) {
-      console.error("Resposta inválida, 'alunos' não é array:", dados);
+      console.error("Resposta inválida:", dados);
       mostrarToast("Erro na comunicação com o servidor.", "error");
       esconderLoading();
       return;
@@ -1687,10 +1682,20 @@ async function carregarAlunos() {
       aplicarFundoPorEscola("default");
     }
 
+    // 🔥 Agora dados.alunos contém apenas a página atual
     dadosGlobais = dados.alunos;
     dadosFiltradosGlobais = [...dadosGlobais];
-    paginaAtual = 1;
-    atualizarListaPaginada();
+    
+    // 🔥 Atualiza informações de paginação vindas do backend
+    paginaAtual = dados.paginaAtual;
+    const totalPaginas = dados.totalPaginas;
+    const totalRegistros = dados.totalRegistros;
+    
+    // Renderiza a lista com os 20 alunos
+    renderLista(dadosGlobais);
+    
+    // Renderiza a paginação com os totais reais
+    renderizarPaginacao(totalPaginas, totalRegistros);
 
     document.getElementById("login").style.display = "none";
     document.getElementById("app").style.display = "block";
@@ -1705,8 +1710,15 @@ async function carregarAlunos() {
       carregarTurmasParaFiltro();
     }
 
-    const resumo = gerarResumo(dadosGlobais);
-    renderPainel(resumo);
+    // 🔥 Usa as métricas vindas do backend (já calculadas)
+    if (dados.metricas) {
+      renderPainel(dados.metricas);
+    } else {
+      // fallback
+      const resumo = gerarResumo(dadosGlobais);
+      renderPainel(resumo);
+    }
+    
     const mapa = resumoPorEscola(dadosGlobais);
     renderPorEscola(mapa);
 
@@ -1977,42 +1989,16 @@ function preencherFiltroEscolas() {
   });
 }
 
-function aplicarFiltros() {
-  const termoNome = document.getElementById("pesquisaNome")?.value.toLowerCase() || "";
-  const escolaSelecionada = document.getElementById("filtroEscola")?.value || "";
-  const turmaSelecionada = document.getElementById("filtroTurma")?.value || "";
-  const statusSelecionado = document.getElementById("filtroStatus")?.value || "";
-  const situacaoSelecionada = document.getElementById("filtroSituacao")?.value || "";
-
-  let dadosFiltrados = dadosGlobais;
-
-  if (perfilUsuario === "SUPERVISOR" && escolaSelecionada) {
-    dadosFiltrados = dadosFiltrados.filter(a => a.ESCOLA === escolaSelecionada);
-  }
-  if (turmaSelecionada) {
-    dadosFiltrados = dadosFiltrados.filter(a => a.TURMA === turmaSelecionada);
-  }
-  if (statusSelecionado) {
-    if (statusSelecionado === "✅ Completo") {
-      dadosFiltrados = dadosFiltrados.filter(a => a.STATUS === "✅ Completo");
-    } else if (statusSelecionado === "⚠️ Pendente / Vencido") {
-      // Inclui todos que NÃO estão completos (pendentes, vencidos, atenção, etc.)
-      dadosFiltrados = dadosFiltrados.filter(a => a.STATUS !== "✅ Completo");
-    }
-  }
-  if (perfilUsuario === "SUPERVISOR" && situacaoSelecionada) {
-    dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === situacaoSelecionada);
-  }
-  if (termoNome) {
-    dadosFiltrados = dadosFiltrados.filter(a => a.ALUNO.toLowerCase().includes(termoNome));
-  }
-  if (perfilUsuario === "SECRETARIA") {
-    dadosFiltrados = dadosFiltrados.filter(a => a.SITUACAO === "Ativo");
-  }
-
-  dadosFiltradosGlobais = dadosFiltrados;
-  paginaAtual = 1;
-  atualizarListaPaginada();
+function aplicarFiltros(pagina = 1) {
+  const filtros = {
+    escola: document.getElementById("filtroEscola")?.value || "",
+    turma: document.getElementById("filtroTurma")?.value || "",
+    status: document.getElementById("filtroStatus")?.value || "",
+    situacao: document.getElementById("filtroSituacao")?.value || "",
+    nome: document.getElementById("pesquisaNome")?.value.toLowerCase() || ""
+  };
+  
+  carregarAlunos(pagina, filtros);
 }
    
 async function carregarTurmasParaCadastro(escola) {
