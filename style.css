@@ -1691,11 +1691,11 @@ select.btn-paginacao {
 [data-theme="dark"] .status-pendente { border-left-color: #fbbf24 !important; }
 [data-theme="dark"] .status-vencido  { border-left-color: #f87171 !important; }
 
-.header-left {
+/*.header-left {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
+}*/
 
 .header-info {
   display: flex;
