@@ -45,58 +45,6 @@ const LISTA_ESCOLAS = [
   "EEEM Sobreiro"
 ];
 
-const LOGOS_ESCOLAS = {
-  "CEEFMTI Afonso Cláudio": "logos/CEEFMTI_Afonso_Claudio.png",
-  "CEEFMTI Elisa Paiva": "logos/CEEFMTI_Elisa_Paiva.png",
-  "EEEF Ivana Casagrande Scabelo": "logos/EEEF_Ivana_Casagrande_Scabelo.png",
-  "EEEF Severino Paste": "logos/EEEF_Severino_Paste.png",
-  "EEEFM Alto Rio Possmoser": "logos/EEEFM_Alto_Rio_Possmoser.png",
-  "EEEFM Álvaro Castelo": "logos/EEEFM_Alvaro_Castelo.png",
-  "EEEFM Domingos Perim": "logos/EEEFM_Domingos_Perim.png",
-  "EEEFM Elvira Barros": "logos/EEEFM_Elvira_Barros.png",
-  "EEEFM Fazenda Camporês": "logos/EEEFM_Fazenda_Campores.png",
-  "EEEFM Fazenda Emílio Schroeder": "logos/EEEFM_Fazenda_Emilio_Schroeder.png",
-  "EEEFM Fioravante Caliman": "logos/EEEFM_Fioravante_Caliman.png",
-  "EEEFM Frederico Boldt": "logos/EEEFM_Frederico_Boldt.png",
-  "EEEFM Gisela Salloker Fayet": "logos/EEEFM_Gisela_Salloker_Fayet.png",
-  "EEEFM Graça Aranha": "logos/EEEFM_Graca_Aranha.png",
-  "EEEFM Joaquim Caetano de Paiva": "logos/EEEFM_Joaquim_Caetano_de_Paiva.png",
-  "EEEFM José Cupertino": "logos/EEEFM_Jose_Cupertino.png",
-  "EEEFM José Giestas": "logos/EEEFM_Jose_Giestas.png",
-  "EEEFM José Roberto Christo": "logos/EEEFM_Jose_Roberto_Christo.png",
-  "EEEFM Leogildo Severiano de Souza": "logos/EEEFM_Leogildo_Severiano_de_Souza.png",
-  "EEEFM Luiz Jouffroy": "logos/EEEFM_Luiz_Jouffroy.png",
-  "EEEFM Maria de Abreu Alvim": "logos/EEEFM_Maria_de_Abreu_Alvim.png",
-  "EEEFM Mário Bergamin": "logos/EEEFM_Mario_Bergamin.png",
-  "EEEFM Marlene Brandão": "logos/EEEFM_Marlene_Brandao.png",
-  "EEEFM Pedra Azul": "logos/EEEFM_Pedra_Azul.png",
-  "EEEFM Ponto do Alto": "logos/EEEFM_Ponto_do_Alto.png",
-  "EEEFM Profª Aldy Soares Merçon Vargas": "logos/EEEFM_Prof_Aldy_Soares_Mercon_Vargas.png",
-  "EEEFM Prof Hermman Berger": "logos/EEEFM_Prof_Hermman_Berger.png",
-  "EEEFM São Jorge": "logos/EEEFM_Sao_Jorge.png",
-  "EEEFM São Luís": "logos/EEEFM_Sao_Luis.png",
-  "EEEFM Teófilo Paulino": "logos/EEEFM_Teofilo_Paulino.png",
-  "EEEM Francisco Guilherme": "logos/EEEM_Francisco_Guilherme.png",
-  "EEEM Mata fria": "logos/EEEM_Mata_Fria.png",
-  "EEEM Sobreiro": "logos/EEEM_Sobreiro.png",
-  "default": "logos/default.png"
-};
-
-const LOGOS_SUPERVISORES = {
-  "ecramos@sedu.es.gov.br": "logos/supervisores/ecramos.png",
-  "jvpagotto@sedu.es.gov.br": "logos/supervisores/jvpagotto.png",
-  "ceuaraujo@sedu.es.gov.br": "logos/supervisores/ceuaraujo.png",
-  "rcspautz@sedu.es.gov.br": "logos/supervisores/rcspautz.png",
-  "zanascimento@sedu.es.gov.br": "logos/supervisores/zanascimento.png",
-  "jclsouza@sedu.es.gov.br": "logos/supervisores/jclsouza.png",
-  "iosilva@sedu.es.gov.br": "logos/supervisores/iosilva.png",
-  "mglpires@sedu.es.gov.br": "logos/supervisores/mglpires.png",
-  "rfdelarmelina@sedu.es.gov.br": "logos/supervisores/rfdelarmelina.png",
-  "slarmelina@sedu.es.gov.br": "logos/supervisores/slarmelina.png",
-  "kalopes@sedu.es.gov.br": "logos/supervisores/kalopes.png",
-  "eder.ramos@educador.edu.es.gov.br": "logos/supervisores/eder_ramos.png",
-  "default": "logos/supervisores/default.png"
-};
 
 // Lista de modelos (a mesma do backend)
 const LISTA_MODELOS = [
