@@ -1267,6 +1267,7 @@ async function salvarDadosAluno() {
   const dados = {
     acao: "atualizarDadosAluno",
     row: dadosAlunoAtual._row,
+    escola: dadosAlunoAtual.ESCOLA,
     nome: nome,
     responsavel: responsavel,
     telefone: telefone,
@@ -1615,7 +1616,8 @@ async function excluirAlunoPermanentemente() {
   const dados = {
     acao: "excluirAluno",
     email: emailUsuario,
-    row: dadosAlunoAtual._row
+    row: dadosAlunoAtual._row,
+    escola: dadosAlunoAtual.ESCOLA
   };
   
   // Usa postSemResposta (não lê resposta, assume sucesso)
@@ -1633,6 +1635,7 @@ async function alterarSituacaoAluno(novaSituacao) {
   const dados = {
     acao: "alterarSituacao",
     row: dadosAlunoAtual._row,
+    escola: dadosAlunoAtual.ESCOLA,
     situacao: novaSituacao,
     email: emailUsuario
   };
@@ -1950,6 +1953,7 @@ async function salvarAlteracoesEmLote(row) {
   const dados = {
     acao: "atualizarDocumentosEmLote",
     alteracoes: alteracoes,
+    escola: dadosAlunoAtual.ESCOLA, 
     email: emailUsuario
   };
   
