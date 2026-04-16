@@ -1765,7 +1765,7 @@ select.btn-paginacao {
 }
 
 #logoEscola {
-  height: 50px;             /* altura desejada */
+  height: 75px;             /* altura desejada */
   width: auto;
   object-fit: contain;
   flex-shrink: 0;           /* impede que a imagem encolha */
