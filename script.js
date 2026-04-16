@@ -666,6 +666,31 @@ function atualizarListaPaginada() {
 }
 */
 
+function atualizarLogoEscola(escolaOuEmail) {
+  const img = document.getElementById("logoEscola");
+  if (!img) return;
+  
+  let logoUrl = "";
+  
+  if (perfilUsuario === "SUPERVISOR") {
+    // Busca o logo pelo e-mail do supervisor
+    logoUrl = LOGOS_SUPERVISORES[emailUsuario] || LOGOS_SUPERVISORES["default"] || "";
+  } else {
+    // Secretaria: busca o logo da escola
+    logoUrl = LOGOS_ESCOLAS[escolaOuEmail] || LOGOS_ESCOLAS["default"] || "";
+  }
+  
+  if (logoUrl) {
+    img.src = logoUrl;
+    img.style.display = "inline-block";
+    img.onerror = function() {
+      img.style.display = "none";
+    };
+  } else {
+    img.style.display = "none";
+  }
+}
+
 function renderizarPaginacao(totalPaginas, totalRegistros = dadosFiltradosGlobais.length) {
   const container = document.getElementById('paginacao');
   if (!container) return;
