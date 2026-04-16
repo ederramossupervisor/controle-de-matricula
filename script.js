@@ -673,17 +673,18 @@ function atualizarLogoEscola(escolaOuEmail) {
   let logoUrl = "";
   
   if (perfilUsuario === "SUPERVISOR") {
-    // Busca o logo pelo e-mail do supervisor
     logoUrl = LOGOS_SUPERVISORES[emailUsuario] || LOGOS_SUPERVISORES["default"] || "";
   } else {
-    // Secretaria: busca o logo da escola
     logoUrl = LOGOS_ESCOLAS[escolaOuEmail] || LOGOS_ESCOLAS["default"] || "";
   }
+  
+  console.log("🖼️ Logo URL:", logoUrl);  // 🔥 Adicione esta linha
   
   if (logoUrl) {
     img.src = logoUrl;
     img.style.display = "inline-block";
     img.onerror = function() {
+      console.warn("❌ Falha ao carregar imagem:", logoUrl);
       img.style.display = "none";
     };
   } else {
