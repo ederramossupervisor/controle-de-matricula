@@ -1690,3 +1690,41 @@ select.btn-paginacao {
 [data-theme="dark"] .status-completo { border-left-color: #34d399 !important; }
 [data-theme="dark"] .status-pendente { border-left-color: #fbbf24 !important; }
 [data-theme="dark"] .status-vencido  { border-left-color: #f87171 !important; }
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.email-badge {
+  font-size: 13px;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.email-badge i {
+  color: #2563eb;
+  font-size: 12px;
+}
+
+/* Modo escuro */
+[data-theme="dark"] .email-badge {
+  background: #334155;
+  color: #cbd5e1;
+}
+[data-theme="dark"] .email-badge i {
+  color: #60a5fa;
+}
