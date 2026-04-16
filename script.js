@@ -1305,14 +1305,17 @@ function esconderLoading() {
 // =========================
 function login() {
   const email = document.getElementById("email").value;
-
   if (!email) {
     mostrarToast("Digite um e-mail", "warning");
     return;
   }
-
   emailUsuario = email;
   localStorage.setItem("emailUsuario", email);
+  
+  // Atualiza exibição imediata (caso o app ainda não esteja visível, será sobrescrito depois)
+  const emailSpan = document.getElementById("emailUsuarioTexto");
+  if (emailSpan) emailSpan.textContent = email;
+  
   carregarAlunos();
 }
 // =========================
@@ -1666,6 +1669,10 @@ async function carregarAlunos() {
 
     document.getElementById("escolaUsuarioDisplay").textContent = 
       perfilUsuario === "SUPERVISOR" ? "Supervisor" : `${escolaUsuario}`;
+
+    // Exibir e-mail do usuário logado
+    const emailSpan = document.getElementById("emailUsuarioTexto");
+    if (emailSpan) emailSpan.textContent = emailUsuario;
 
     if (!Array.isArray(dados.alunos)) {
       console.error("Resposta inválida, 'alunos' não é array:", dados);
