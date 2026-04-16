@@ -1729,6 +1729,7 @@ async function alterarSituacaoAluno(novaSituacao) {
 async function carregarAlunos(pagina = 1, filtros = {}) {
   mostrarLoading();
   
+  // Monta a URL com parâmetros de paginação e filtros
   let url = `${API_URL}?email=${emailUsuario}&pagina=${pagina}&limite=${alunosPorPagina}`;
   if (filtros.escola) url += `&escola=${encodeURIComponent(filtros.escola)}`;
   if (filtros.turma) url += `&turma=${encodeURIComponent(filtros.turma)}`;
@@ -1743,15 +1744,27 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
       return;
     }
 
-    window.escolasSupervisionadas = dados.escolasSupervisionadas || [];
+    if (dados.escolasSupervisionadas) {
+      window.escolasSupervisionadas = dados.escolasSupervisionadas;
+    } else {
+      window.escolasSupervisionadas = [];
+    }
+
     perfilUsuario = dados.perfil;
     escolaUsuario = dados.escola;
 
     document.getElementById("escolaUsuarioDisplay").textContent = 
       perfilUsuario === "SUPERVISOR" ? "Supervisor" : `${escolaUsuario}`;
 
+    // Exibir e-mail do usuário logado
+    const emailSpan = document.getElementById("emailUsuarioTexto");
+    if (emailSpan) emailSpan.textContent = emailUsuario;
+
+    // 🔥 Atualizar logo da escola / avatar do supervisor
+    atualizarLogoEscola(escolaUsuario);
+
     if (!Array.isArray(dados.alunos)) {
-      console.error("Resposta inválida:", dados);
+      console.error("Resposta inválida, 'alunos' não é array:", dados);
       mostrarToast("Erro na comunicação com o servidor.", "error");
       esconderLoading();
       return;
@@ -1767,12 +1780,12 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
     dadosGlobais = dados.alunos;
     dadosFiltradosGlobais = [...dadosGlobais];
     
-    // 🔥 Atualiza informações de paginação vindas do backend
+    // 🔥 Informações de paginação vindas do backend
     paginaAtual = dados.paginaAtual;
     const totalPaginas = dados.totalPaginas;
     const totalRegistros = dados.totalRegistros;
     
-    // Renderiza a lista com os 20 alunos
+    // Renderiza a lista com os alunos da página
     renderLista(dadosGlobais);
     
     // Renderiza a paginação com os totais reais
@@ -1795,7 +1808,7 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
     if (dados.metricas) {
       renderPainel(dados.metricas);
     } else {
-      // fallback
+      // fallback (não deve acontecer, mas mantém compatibilidade)
       const resumo = gerarResumo(dadosGlobais);
       renderPainel(resumo);
     }
