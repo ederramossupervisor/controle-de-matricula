@@ -670,26 +670,43 @@ function atualizarLogoEscola(escolaOuEmail) {
   const img = document.getElementById("logoEscola");
   if (!img) return;
   
-  let logoUrl = "";
+  let primaryUrl = "", fallbackUrl = "";
   
   if (perfilUsuario === "SUPERVISOR") {
-    logoUrl = LOGOS_SUPERVISORES[emailUsuario] || LOGOS_SUPERVISORES["default"] || "";
+    primaryUrl = LOGOS_SUPERVISORES[emailUsuario] || "";
+    fallbackUrl = LOGOS_SUPERVISORES["default"] || "";
   } else {
-    logoUrl = LOGOS_ESCOLAS[escolaOuEmail] || LOGOS_ESCOLAS["default"] || "";
+    primaryUrl = LOGOS_ESCOLAS[escolaOuEmail] || "";
+    fallbackUrl = LOGOS_ESCOLAS["default"] || "";
   }
   
-  console.log("🖼️ Logo URL:", logoUrl);  // 🔥 Adicione esta linha
-  
-  if (logoUrl) {
-    img.src = logoUrl;
+  // Função recursiva para tentar carregar URLs em sequência
+  function tryLoad(url, nextUrl) {
+    if (!url) {
+      if (nextUrl) tryLoad(nextUrl, null);
+      else img.style.display = "none";
+      return;
+    }
+    
+    img.src = url + "?v=" + Date.now();
     img.style.display = "inline-block";
+    
     img.onerror = function() {
-      console.warn("❌ Falha ao carregar imagem:", logoUrl);
-      img.style.display = "none";
+      console.warn("❌ Falha ao carregar:", url);
+      if (nextUrl) {
+        console.log("↪️ Tentando fallback:", nextUrl);
+        tryLoad(nextUrl, null);
+      } else {
+        img.style.display = "none";
+      }
     };
-  } else {
-    img.style.display = "none";
+    
+    img.onload = function() {
+      console.log("✅ Imagem carregada:", url);
+    };
   }
+  
+  tryLoad(primaryUrl, fallbackUrl);
 }
 
 function renderizarPaginacao(totalPaginas, totalRegistros = dadosFiltradosGlobais.length) {
