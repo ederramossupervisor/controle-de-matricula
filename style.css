@@ -1748,4 +1748,21 @@ select.btn-paginacao {
     margin-right: 8px !important;
   }
 }
+/* Ícone de olho nos campos de senha */
+.input-icon {
+  position: relative;
+}
+.toggle-password {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: var(--text-muted);
+  z-index: 2;
+  transition: color 0.2s;
+}
+.toggle-password:hover {
+  color: var(--btn-primary-bg) !important;
+}
 
