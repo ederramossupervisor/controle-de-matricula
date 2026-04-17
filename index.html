@@ -36,12 +36,19 @@
         <h2>Secretaria Escolar</h2>
         <p class="login-subtitle">Acesse com seu e-mail institucional</p>
   
-        <div class="input-icon">
-          <span class="icon"><i class="fas fa-envelope"></i></span>
-          <input type="email" id="email" placeholder="escola@sedu.es.gov.br" autofocus>
-        </div>
-  
-        <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Entrar no sistema</button>
+       <div class="input-icon">
+        <span class="icon"><i class="fas fa-envelope"></i></span>
+        <input type="email" id="email" placeholder="escola@sedu.es.gov.br" autofocus>
+      </div>
+      <div class="input-icon">
+        <span class="icon"><i class="fas fa-lock"></i></span>
+        <input type="password" id="senha" placeholder="Senha">
+      </div>
+      <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Entrar no sistema</button>
+      <!-- Opcional: pequeno texto orientando a contatar o supervisor -->
+      <p style="font-size:12px; color: var(--text-muted); margin-top:8px;">
+        Esqueceu a senha? Solicite ao seu supervisor.
+      </p>
   
         <!-- Seção de Ajuda -->
         <div class="login-ajuda">
