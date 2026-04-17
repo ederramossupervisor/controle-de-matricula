@@ -466,6 +466,9 @@
     <button onclick="abrirModalImportacao()" class="btn-header"><i class="fas fa-upload"></i> Importar CSV</button>
     <button onclick="abrirModalDocumentos()" id="btnDocumentos" class="btn-header"><i class="fas fa-folder-open"></i> Documentos</button>
     <button onclick="abrirModalModelos()" id="btnModelos" class="btn-header"><i class="fas fa-file-alt"></i> Modelos</button>
+    <button onclick="abrirModalInativos()" id="btnInativos" class="btn-header">
+      <i class="fas fa-archive"></i> Histórico
+    </button>
     <button onclick="abrirModalProcessos()" id="btnProcessos" class="btn-header"><i class="fas fa-folder-open"></i> Edocs</button>
     <button onclick="abrirModalLegalizacao()" id="btnLegalizacao" class="btn-header" style="display:none;"><i class="fas fa-gavel"></i> Legalização</button>
     <button onclick="abrirModalTurmas()" id="btnTurmas" class="btn-header"><i class="fas fa-school"></i> Turmas</button>
@@ -769,6 +772,41 @@
           
           <div class="modal-actions" style="margin-top:20px;">
             <button class="btn-cancelar" onclick="fecharModalModelos()">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- MODAL DE ALUNOS INATIVOS (TRANSFERIDOS/CONCLUÍDOS) -->
+    <div id="modalInativos" class="modal-overlay" style="display:none;">
+      <div class="modal-card modal-card--grande">
+        <div class="modal-header">
+          <h2><i class="fas fa-archive"></i> Alunos Transferidos / Concluídos</h2>
+          <button class="close-btn" onclick="fecharModalInativos()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <!-- Filtros -->
+          <div class="filtros-container" style="padding:0; margin-bottom:16px;">
+            <div class="input-icon" style="flex:2;">
+              <span class="icon"><i class="fas fa-search"></i></span>
+              <input type="text" id="filtroNomeInativo" placeholder="Buscar por nome...">
+            </div>
+            <div class="input-icon" style="flex:1;">
+              <span class="icon"><i class="fas fa-book"></i></span>
+              <select id="filtroTurmaInativo">
+                <option value="">Todas as turmas</option>
+              </select>
+            </div>
+            <button class="btn-primary" onclick="buscarInativos(1)"><i class="fas fa-search"></i> Buscar</button>
+          </div>
+          
+          <!-- Lista de inativos -->
+          <div id="listaInativosContainer" style="max-height: 400px; overflow-y: auto;"></div>
+          
+          <!-- Paginação -->
+          <div id="paginacaoInativos" class="paginacao-container" style="margin-top:16px;"></div>
+          
+          <div class="modal-actions">
+            <button class="btn-cancelar" onclick="fecharModalInativos()">Fechar</button>
           </div>
         </div>
       </div>
