@@ -2396,6 +2396,30 @@ function renderUsuarios(usuarios) {
     container.appendChild(div);
   });
 }
+
+async function resetarSenhaUsuario(emailAlvo) {
+  if (!confirm(`Deseja redefinir a senha do usuário ${emailAlvo}? Uma nova senha será enviada por e-mail.`)) return;
+  
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        acao: "resetarSenhaAdmin",
+        emailLogado: emailUsuario,
+        email: emailAlvo
+      })
+    });
+    const result = await resp.json();
+    esconderLoading();
+    mostrarToast(result.msg, result.status === "ok" ? "success" : "error");
+  } catch (e) {
+    esconderLoading();
+    mostrarToast("Erro de conexão.", "error");
+  }
+}
+
 // Salvar usuário (atualizada)
 async function salvarUsuario() {
   const email = document.getElementById("novoEmail").value.trim();
