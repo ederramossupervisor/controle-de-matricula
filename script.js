@@ -312,6 +312,60 @@ function renderizarPaginacaoInativos() {
   container.appendChild(btnNext);
 }
 
+function abrirModalAlterarSenha() {
+  document.getElementById("modalAlterarSenha").style.display = "flex";
+  document.getElementById("senhaAtual").value = "";
+  document.getElementById("novaSenha").value = "";
+  document.getElementById("confirmarNovaSenha").value = "";
+}
+
+function fecharModalAlterarSenha() {
+  document.getElementById("modalAlterarSenha").style.display = "none";
+}
+
+async function alterarMinhaSenha() {
+  const senhaAtual = document.getElementById("senhaAtual").value;
+  const novaSenha = document.getElementById("novaSenha").value;
+  const confirmar = document.getElementById("confirmarNovaSenha").value;
+
+  if (!senhaAtual || !novaSenha || !confirmar) {
+    mostrarToast("Preencha todos os campos.", "warning");
+    return;
+  }
+  if (novaSenha.length < 6) {
+    mostrarToast("A nova senha deve ter pelo menos 6 caracteres.", "warning");
+    return;
+  }
+  if (novaSenha !== confirmar) {
+    mostrarToast("As senhas não coincidem.", "warning");
+    return;
+  }
+
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        acao: "alterarMinhaSenha",
+        email: emailUsuario,
+        senhaAtual: senhaAtual,
+        novaSenha: novaSenha
+      })
+    });
+    const result = await resp.json();
+    esconderLoading();
+
+    mostrarToast(result.msg, result.status === "ok" ? "success" : "error");
+    if (result.status === "ok") {
+      fecharModalAlterarSenha();
+    }
+  } catch (e) {
+    esconderLoading();
+    mostrarToast("Erro de conexão.", "error");
+  }
+}
+
 // Reativar aluno
 function reativarAlunoInativo(id, nome, row, escola) {
   if (!confirm(`Deseja reativar o aluno "${nome}"? Ele voltará a aparecer na lista principal como "Ativo".`)) return;
@@ -2140,7 +2194,9 @@ function ajustarInterfacePorPerfil() {
   const filtroTurmaWrapper = document.getElementById("filtroTurmaWrapper");
   const filtroStatusWrapper = document.getElementById("filtroStatusWrapper");
   const filtroSituacaoWrapper = document.getElementById("filtroSituacaoWrapper");
-  const btnModelos = document.getElementById("btnModelos"); // NOVO
+  const btnModelos = document.getElementById("btnModelos");
+  const btnAlterarSenha = document.getElementById("btnAlterarSenha");
+  if (btnAlterarSenha) btnAlterarSenha.style.display = "inline-block";
 
   const btnInativos = document.getElementById("btnInativos");
   if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
