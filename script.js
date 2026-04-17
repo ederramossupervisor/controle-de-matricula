@@ -1561,20 +1561,36 @@ function esconderLoading() {
 // =========================
 // LOGIN
 // =========================
-function login() {
-  const email = document.getElementById("email").value;
-  if (!email) {
-    mostrarToast("Digite um e-mail", "warning");
+async function login() {
+  const email = document.getElementById("email").value.trim();
+  const senha = document.getElementById("senha").value;
+
+  if (!email || !senha) {
+    mostrarToast("E-mail e senha são obrigatórios.", "warning");
     return;
   }
-  emailUsuario = email;
-  localStorage.setItem("emailUsuario", email);
-  
-  // Atualiza exibição imediata (caso o app ainda não esteja visível, será sobrescrito depois)
-  const emailSpan = document.getElementById("emailUsuarioTexto");
-  if (emailSpan) emailSpan.textContent = email;
-  
-  carregarAlunos();
+
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ acao: "autenticar", email, senha })
+    });
+    const resultado = await resp.json();
+    esconderLoading();
+
+    if (resultado.autorizado) {
+      emailUsuario = email;
+      localStorage.setItem("emailUsuario", email);
+      carregarAlunos();
+    } else {
+      mostrarToast(resultado.msg || "Credenciais inválidas.", "error");
+    }
+  } catch (e) {
+    esconderLoading();
+    mostrarToast("Erro de conexão.", "error");
+  }
 }
 // =========================
 // GESTÃO DE DOCUMENTOS
@@ -2391,12 +2407,14 @@ function renderUsuarios(usuarios) {
       <div class="usuario-info">
         <strong>${u.EMAIL}</strong>
         <p><i class="fas fa-school"></i> ${u.ESCOLA || "—"} · <span class="perfil-badge ${perfilClass}">${u.PERFIL}</span></p>
+        <button class="btn-pequeno" onclick="resetarSenhaUsuario('${u.EMAIL}')" style="margin-top:8px;">
+          <i class="fas fa-key"></i> Resetar senha
+        </button>
       </div>
     `;
     container.appendChild(div);
   });
 }
-
 async function resetarSenhaUsuario(emailAlvo) {
   if (!confirm(`Deseja redefinir a senha do usuário ${emailAlvo}? Uma nova senha será enviada por e-mail.`)) return;
   
