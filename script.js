@@ -169,6 +169,169 @@ let alunosImportados = [];
 // =========================
 let atosGlobais = [];
 
+// Variáveis de controle da paginação de inativos
+let paginaAtualInativos = 1;
+let totalPaginasInativos = 1;
+let alunosPorPaginaInativos = 20;
+let filtrosInativosAtuais = {};
+
+// Abre o modal e carrega turmas para o filtro
+function abrirModalInativos() {
+  document.getElementById("modalInativos").style.display = "flex";
+  carregarTurmasParaFiltroInativos();
+  buscarInativos(1);
+}
+
+function fecharModalInativos() {
+  document.getElementById("modalInativos").style.display = "none";
+}
+
+// Carrega as turmas disponíveis no select de filtro (baseado na escola)
+function carregarTurmasParaFiltroInativos() {
+  const select = document.getElementById("filtroTurmaInativo");
+  select.innerHTML = '<option value="">Todas as turmas</option>';
+  
+  // Usa as turmasDisponiveis se já estiverem carregadas, ou busca
+  if (turmasDisponiveis.length > 0) {
+    turmasDisponiveis.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.turma;
+      opt.textContent = t.turma;
+      select.appendChild(opt);
+    });
+  } else {
+    const url = `${API_URL}?tipo=turmas&email=${emailUsuario}`;
+    jsonp(url, function(turmas) {
+      turmasDisponiveis = turmas;
+      turmas.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.turma;
+        opt.textContent = t.turma;
+        select.appendChild(opt);
+      });
+    });
+  }
+}
+
+// Busca alunos inativos com filtros e paginação
+function buscarInativos(pagina = 1) {
+  mostrarLoading();
+  
+  const nome = document.getElementById("filtroNomeInativo").value.trim();
+  const turma = document.getElementById("filtroTurmaInativo").value;
+  
+  filtrosInativosAtuais = { nome, turma };
+  
+  let url = `${API_URL}?tipo=inativos&email=${emailUsuario}&pagina=${pagina}&limite=${alunosPorPaginaInativos}`;
+  if (nome) url += `&nome=${encodeURIComponent(nome)}`;
+  if (turma) url += `&turma=${encodeURIComponent(turma)}`;
+  
+  jsonp(url, function(dados) {
+    paginaAtualInativos = dados.paginaAtual;
+    totalPaginasInativos = dados.totalPaginas;
+    
+    renderizarListaInativos(dados.alunos);
+    renderizarPaginacaoInativos();
+    esconderLoading();
+  });
+}
+
+// Renderiza os cards dos alunos inativos
+function renderizarListaInativos(alunos) {
+  const container = document.getElementById("listaInativosContainer");
+  container.innerHTML = "";
+  
+  if (!alunos || alunos.length === 0) {
+    container.innerHTML = "<p style='padding:16px; text-align:center;'>Nenhum aluno inativo encontrado.</p>";
+    return;
+  }
+  
+  alunos.forEach(aluno => {
+    const div = document.createElement("div");
+    div.className = "usuario-card";
+    div.style.marginBottom = "8px";
+    
+    const situacaoBadge = aluno.SITUACAO === "Transferido" 
+      ? '<span class="status-badge" style="background:#fef3c7;color:#92400e;"><i class="fas fa-exchange-alt"></i> Transferido</span>'
+      : '<span class="status-badge" style="background:#e0e7ff;color:#3730a3;"><i class="fas fa-graduation-cap"></i> Concluído</span>';
+    
+    div.innerHTML = `
+      <div class="usuario-avatar"><i class="fas fa-user-graduate"></i></div>
+      <div class="usuario-info">
+        <strong>${aluno.ALUNO}</strong>
+        <p><i class="fas fa-school"></i> ${aluno.ESCOLA} | <i class="fas fa-book"></i> ${aluno.TURMA || "—"}</p>
+        <p>${situacaoBadge} <span style="margin-left:8px;"><i class="fas fa-calendar"></i> Matrícula: ${new Date(aluno.DATA_MATRICULA).toLocaleDateString('pt-BR')}</span></p>
+        <div style="margin-top:8px;">
+          <button class="btn-pequeno" onclick="reativarAlunoInativo('${aluno.ID}', '${aluno.ALUNO}', ${aluno._row}, '${aluno.ESCOLA}')">
+            <i class="fas fa-undo-alt"></i> Reativar
+          </button>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// Renderiza controles de paginação
+function renderizarPaginacaoInativos() {
+  const container = document.getElementById("paginacaoInativos");
+  if (!container) return;
+  
+  if (totalPaginasInativos <= 1) {
+    container.style.display = "none";
+    return;
+  }
+  
+  container.style.display = "flex";
+  container.innerHTML = "";
+  
+  // Botão Anterior
+  const btnPrev = document.createElement("button");
+  btnPrev.innerHTML = '<i class="fas fa-chevron-left"></i>';
+  btnPrev.className = "btn-paginacao";
+  btnPrev.disabled = (paginaAtualInativos === 1);
+  btnPrev.addEventListener("click", () => {
+    if (paginaAtualInativos > 1) buscarInativos(paginaAtualInativos - 1);
+  });
+  container.appendChild(btnPrev);
+  
+  // Info
+  const span = document.createElement("span");
+  span.className = "pagina-info";
+  span.textContent = `Página ${paginaAtualInativos} de ${totalPaginasInativos}`;
+  container.appendChild(span);
+  
+  // Botão Próximo
+  const btnNext = document.createElement("button");
+  btnNext.innerHTML = '<i class="fas fa-chevron-right"></i>';
+  btnNext.className = "btn-paginacao";
+  btnNext.disabled = (paginaAtualInativos === totalPaginasInativos);
+  btnNext.addEventListener("click", () => {
+    if (paginaAtualInativos < totalPaginasInativos) buscarInativos(paginaAtualInativos + 1);
+  });
+  container.appendChild(btnNext);
+}
+
+// Reativar aluno
+function reativarAlunoInativo(id, nome, row, escola) {
+  if (!confirm(`Deseja reativar o aluno "${nome}"? Ele voltará a aparecer na lista principal como "Ativo".`)) return;
+  
+  const dados = {
+    acao: "alterarSituacao",
+    email: emailUsuario,
+    row: row,
+    escola: escola,
+    situacao: "Ativo"
+  };
+  
+  postSemResposta(dados, "Aluno reativado com sucesso!", () => {
+    buscarInativos(paginaAtualInativos); // Recarrega a lista de inativos
+    if (escola === escolaUsuario || perfilUsuario === "SUPERVISOR") {
+      carregarAlunos(); // Atualiza a lista principal se a escola for a mesma
+    }
+  });
+}
+
 // Função para requisições GET usando JSONP (contorna CORS)
 // Função para requisições GET usando JSONP (contorna CORS)
 function jsonp(url, callback) {
@@ -1967,6 +2130,13 @@ function ajustarInterfacePorPerfil() {
   const filtroStatusWrapper = document.getElementById("filtroStatusWrapper");
   const filtroSituacaoWrapper = document.getElementById("filtroSituacaoWrapper");
   const btnModelos = document.getElementById("btnModelos"); // NOVO
+
+  const btnInativos = document.getElementById("btnInativos");
+  if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
+    if (btnInativos) btnInativos.style.display = "inline-block";
+  } else {
+    if (btnInativos) btnInativos.style.display = "none";
+  }
 
   const isSupervisorMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
   const btnLegalizacao = document.getElementById("btnLegalizacao");
