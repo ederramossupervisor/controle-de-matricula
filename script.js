@@ -213,6 +213,21 @@ function carregarTurmasParaFiltroInativos() {
   }
 }
 
+function toggleSenha(iconElement) {
+  const input = iconElement.parentElement.querySelector('input');
+  if (!input) return;
+  
+  const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+  input.setAttribute('type', type);
+  
+  // Alternar ícone entre olho aberto e olho riscado
+  const icon = iconElement.querySelector('i');
+  if (icon) {
+    icon.classList.toggle('fa-eye');
+    icon.classList.toggle('fa-eye-slash');
+  }
+}
+
 // Busca alunos inativos com filtros e paginação
 function buscarInativos(pagina = 1) {
   mostrarLoading();
