@@ -323,7 +323,7 @@ function fecharModalAlterarSenha() {
   document.getElementById("modalAlterarSenha").style.display = "none";
 }
 
-async function alterarMinhaSenha() {
+function alterarMinhaSenha() {
   const senhaAtual = document.getElementById("senhaAtual").value;
   const novaSenha = document.getElementById("novaSenha").value;
   const confirmar = document.getElementById("confirmarNovaSenha").value;
@@ -342,25 +342,20 @@ async function alterarMinhaSenha() {
   }
 
   mostrarLoading();
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      mode: 'no-cors',  // 🔥 ignora a resposta e evita erro de CORS
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        acao: "alterarMinhaSenha",
-        email: emailUsuario,
-        senhaAtual: senhaAtual,
-        novaSenha: novaSenha
-      })
-    });
+  
+  // Monta URL com callback para JSONP
+  const url = `${API_URL}?tipo=alterarSenha&email=${encodeURIComponent(emailUsuario)}&senhaAtual=${encodeURIComponent(senhaAtual)}&novaSenha=${encodeURIComponent(novaSenha)}`;
+  
+  jsonp(url, function(resultado) {
     esconderLoading();
-    mostrarToast("Senha alterada com sucesso!", "success");
-    fecharModalAlterarSenha();
-  } catch (e) {
-    esconderLoading();
-    mostrarToast("Erro de conexão.", "error");
-  }
+    
+    if (resultado.status === "ok") {
+      mostrarToast(resultado.msg, "success");
+      fecharModalAlterarSenha();
+    } else {
+      mostrarToast(resultado.msg || "Erro ao alterar senha.", "error");
+    }
+  });
 }
 // Reativar aluno
 function reativarAlunoInativo(id, nome, row, escola) {
