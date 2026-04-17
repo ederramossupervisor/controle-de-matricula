@@ -2591,7 +2591,7 @@ function renderPainel(resumo) {
       <div class="metrica-detalhe">faltam documentos</div>
     </div>
     <div class="metrica-card metrica-vencidos">
-      <div class="metrica-titulo"><i class="fas fa-circle" style="color:#dc2626;"></i> Vencidos</div>
+      <div class="metrica-titulo"><i class="fas fa-hourglass-end" style="color:#dc2626;"></i> Vencidos</div>
       <div class="metrica-valor">${resumo.vencidos}</div>
       <div class="metrica-detalhe">prazo expirado</div>
     </div>
