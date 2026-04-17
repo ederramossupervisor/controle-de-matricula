@@ -454,7 +454,6 @@
     </div>
     
     <!-- HEADER PRINCIPAL -->
-    <!-- HEADER PRINCIPAL -->
 <header>
   <div class="header-left">
     <img id="logoEscola" src="" alt="Logo" style="height: 45px; width: auto; margin-right: 16px; display: none;">
@@ -481,6 +480,9 @@
     <button onclick="abrirModalTurmas()" id="btnTurmas" class="btn-header"><i class="fas fa-school"></i> Turmas</button>
     <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios" class="btn-header"><i class="fas fa-users"></i> Usuários</button>
     <button onclick="abrirModalCadastroUsuario()" id="btnCadastrarUsuario" class="btn-header"><i class="fas fa-user-plus"></i> Usuário</button>
+    <button onclick="abrirModalAlterarSenha()" class="btn-header" id="btnAlterarSenha">
+      <i class="fas fa-key"></i> Alterar Senha
+    </button>
     <button onclick="logout()" class="btn-outline"><i class="fas fa-sign-out-alt"></i> Sair</button>
     <button id="darkModeToggle" class="btn-icone" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
   </div>
@@ -814,6 +816,34 @@
           
           <div class="modal-actions">
             <button class="btn-cancelar" onclick="fecharModalInativos()">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL ALTERAR SENHA (PRÓPRIO USUÁRIO) -->
+    <div id="modalAlterarSenha" class="modal-overlay" style="display:none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2><i class="fas fa-key"></i> Alterar Senha</h2>
+          <button class="close-btn" onclick="fecharModalAlterarSenha()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-lock"></i></span>
+            <input type="password" id="senhaAtual" placeholder="Senha atual">
+          </div>
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-key"></i></span>
+            <input type="password" id="novaSenha" placeholder="Nova senha (mín. 6 caracteres)">
+          </div>
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-check"></i></span>
+            <input type="password" id="confirmarNovaSenha" placeholder="Confirmar nova senha">
+          </div>
+          <div class="modal-actions">
+            <button class="btn-salvar" onclick="alterarMinhaSenha()">Salvar</button>
+            <button class="btn-cancelar" onclick="fecharModalAlterarSenha()">Cancelar</button>
           </div>
         </div>
       </div>
