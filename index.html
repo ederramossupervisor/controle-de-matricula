@@ -43,6 +43,9 @@
       <div class="input-icon">
         <span class="icon"><i class="fas fa-lock"></i></span>
         <input type="password" id="senha" placeholder="Senha">
+        <span class="toggle-password" onclick="toggleSenha(this)">
+          <i class="far fa-eye"></i>
+        </span>
       </div>
       <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Entrar no sistema</button>
       <!-- Opcional: pequeno texto orientando a contatar o supervisor -->
@@ -830,8 +833,11 @@
         </div>
         <div class="modal-body">
           <div class="input-icon">
-            <span class="icon"><i class="fas fa-lock"></i></span>
-            <input type="password" id="senhaAtual" placeholder="Senha atual">
+            <span class="icon"><i class="fas fa-key"></i></span>
+            <input type="password" id="novaSenha" placeholder="Nova senha (mín. 6 caracteres)">
+            <span class="toggle-password" onclick="toggleSenha(this)">
+              <i class="far fa-eye"></i>
+            </span>
           </div>
           <div class="input-icon">
             <span class="icon"><i class="fas fa-key"></i></span>
@@ -840,6 +846,9 @@
           <div class="input-icon">
             <span class="icon"><i class="fas fa-check"></i></span>
             <input type="password" id="confirmarNovaSenha" placeholder="Confirmar nova senha">
+            <span class="toggle-password" onclick="toggleSenha(this)">
+              <i class="far fa-eye"></i>
+            </span>
           </div>
           <div class="modal-actions">
             <button class="btn-salvar" onclick="alterarMinhaSenha()">Salvar</button>
