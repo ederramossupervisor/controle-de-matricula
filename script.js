@@ -7,7 +7,7 @@ let escolaUsuario = "";
 let alteracoesPendentes = {};
 let dadosAlunoAtual = null; // guarda o aluno que está aberto no modal
 let turmasDisponiveis = []; // armazenará as turmas para os filtros
-
+let resumoPorEscolaGlobal = {};
 // Lista oficial de escolas (disponível para o supervisor)
 const LISTA_ESCOLAS = [
   "CEEFMTI Afonso Cláudio",
@@ -2064,10 +2064,17 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
       const resumo = gerarResumo(dadosGlobais);
       renderPainel(resumo);
     }
-    
-    const mapa = resumoPorEscola(dadosGlobais);
-    renderPorEscola(mapa);
 
+    if (dados.resumoPorEscola) {
+      resumoPorEscolaGlobal = dados.resumoPorEscola;
+    }
+    
+    // Para o master, passamos null como mapa, pois usaremos metricas diretamente
+    // Para os demais, passamos resumoPorEscolaGlobal
+    const mapaParaRender = (perfilUsuario === 'SUPERVISOR' && emailUsuario === 'eder.ramos@educador.edu.es.gov.br') 
+      ? null 
+      : resumoPorEscolaGlobal;
+    renderPorEscola(mapaParaRender, dados.metricas);
     const btnProcessos = document.getElementById("btnProcessos");
     if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
       if (btnProcessos) btnProcessos.style.display = "inline-block";
@@ -2699,40 +2706,20 @@ function renderPainel(resumo) {
 // =========================
 // POR ESCOLA
 // =========================
-function resumoPorEscola(dados) {
-  const mapa = {};
 
-  dados.forEach(aluno => {
-    const escola = aluno.ESCOLA;
-
-    if (!mapa[escola]) {
-      mapa[escola] = { total: 0, pendentes: 0 };
-    }
-
-    mapa[escola].total++;
-
-    if (aluno.STATUS === "⚠️ Pendente") {
-      mapa[escola].pendentes++;
-    }
-  });
-
-  return mapa;
-}
-
-function renderPorEscola(mapa) {
+function renderPorEscola(mapa, metricas) {
   const painel = document.getElementById("painel");
-  
   const isMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
   
   const card = document.createElement('div');
   card.className = 'metrica-card metrica-escola';
   
   if (isMaster) {
-    // Supervisor master: resumo agregado da SRE
-    const totalAlunos = dadosGlobais.length;
-    const pendentes = dadosGlobais.filter(a => a.STATUS === "⚠️ Pendente").length;
-    const completos = dadosGlobais.filter(a => a.STATUS === "✅ Completo").length;
-    const vencidos = dadosGlobais.filter(a => a.STATUS !== "✅ Completo" && a.ALERTA === "🔴 Vencido").length;
+    // Supervisor master: usa as métricas gerais recebidas do backend
+    const totalAlunos = metricas ? metricas.total : 0;
+    const completos = metricas ? metricas.completos : 0;
+    const pendentes = metricas ? metricas.pendentes : 0;
+    const vencidos = metricas ? metricas.vencidos : 0;
     
     card.innerHTML = `
       <div class="metrica-titulo"><i class="fas fa-building"></i> Por SRE</div>
@@ -2754,12 +2741,14 @@ function renderPorEscola(mapa) {
       </div>
     `;
   } else {
-    // Demais perfis: lista de escolas (com scroll se necessário)
+    // Demais perfis: lista de escolas a partir do resumoPorEscola recebido
     let listaEscolas = '';
-    for (let escola in mapa) {
-      listaEscolas += `<p style="margin:2px 0; font-size:13px;">
-        <strong>${escola}:</strong> ${mapa[escola].pendentes} pendentes / ${mapa[escola].total}
-      </p>`;
+    if (mapa) {
+      for (let escola in mapa) {
+        listaEscolas += `<p style="margin:2px 0; font-size:13px;">
+          <strong>${escola}:</strong> ${mapa[escola].pendentes} pendentes / ${mapa[escola].total}
+        </p>`;
+      }
     }
     card.innerHTML = `
       <div class="metrica-titulo"><i class="fas fa-school"></i> Por Escola</div>
@@ -2772,7 +2761,6 @@ function renderPorEscola(mapa) {
   
   painel.appendChild(card);
 }
-
 // =========================
 // LOGOUT
 // =========================
