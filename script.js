@@ -1561,7 +1561,7 @@ function esconderLoading() {
 // =========================
 // LOGIN
 // =========================
-async function login() {
+function login() {
   const email = document.getElementById("email").value.trim();
   const senha = document.getElementById("senha").value;
 
@@ -1571,15 +1571,13 @@ async function login() {
   }
 
   mostrarLoading();
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ acao: "autenticar", email, senha })
-    });
-    const resultado = await resp.json();
+  
+  // Monta URL com callback para JSONP
+  const url = `${API_URL}?tipo=auth&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`;
+  
+  jsonp(url, function(resultado) {
     esconderLoading();
-
+    
     if (resultado.autorizado) {
       emailUsuario = email;
       localStorage.setItem("emailUsuario", email);
@@ -1587,10 +1585,7 @@ async function login() {
     } else {
       mostrarToast(resultado.msg || "Credenciais inválidas.", "error");
     }
-  } catch (e) {
-    esconderLoading();
-    mostrarToast("Erro de conexão.", "error");
-  }
+  });
 }
 // =========================
 // GESTÃO DE DOCUMENTOS
