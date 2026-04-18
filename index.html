@@ -471,7 +471,7 @@
     <!-- Grupo da esquerda: Menu -->
     <div class="header-actions-left">
       <div class="dropdown">
-        <button class="btn-header" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+        <button class="btn-header" onclick="toggleMenu()" data-tooltip="Menu"><i class="fas fa-bars"></i></button>
         <div id="menuDropdown" class="dropdown-content" style="display: none;">
           <button onclick="abrirModalImportacao()" class="btn-header"><i class="fas fa-upload"></i> Importar CSV</button>
           <button onclick="abrirModalDocumentos()" id="btnDocumentos" class="btn-header"><i class="fas fa-folder-open"></i> Documentos</button>
@@ -489,9 +489,9 @@
 
     <!-- Grupo da direita: Novo Aluno, Sair, Dark Mode -->
     <div class="header-actions-right">
-      <button onclick="abrirNovoAluno()" class="btn-primary"><i class="fas fa-plus"></i></button>
-      <button onclick="logout()" class="btn-outline"><i class="fas fa-sign-out-alt"></i></button>
-      <button id="darkModeToggle" class="btn-icone" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
+      <button onclick="abrirNovoAluno()" class="btn-primary" data-tooltip="Novo Aluno"><i class="fas fa-plus"></i> Novo Aluno</button>
+      <button onclick="logout()" class="btn-outline" data-tooltip="Sair"><i class="fas fa-sign-out-alt"></i></button>
+      <button id="darkModeToggle" class="btn-icone" onclick="toggleDarkMode()" data-tooltip="Modo escuro"><i class="fas fa-moon"></i></button>
     </div>
   </div>
 </header>    
