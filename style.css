@@ -1812,20 +1812,7 @@ select.btn-paginacao {
   max-height: 70vh;
   overflow-y: auto;
   
-  /* Alinhamento padrão (direita) */
-  right: 0;
-  left: auto;
-}
-
-/* Em telas pequenas, se não couber, alinhe pela esquerda */
-@media (max-width: 480px) {
-  .dropdown-content {
-    right: auto;
-    left: 0;
-    max-width: calc(100vw - 20px);
-  }
-}
-
-.dropdown-content {
-  transform: translateX(0);
+  /* 🔥 Alinhar pela esquerda para expandir para a direita */
+  left: 0;
+  right: auto;
 }
