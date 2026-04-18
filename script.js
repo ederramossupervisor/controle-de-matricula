@@ -2775,27 +2775,41 @@ function renderPorEscola(mapa, metricas) {
       </div>
     `;
   } else {
-    // Demais perfis: lista de escolas a partir do resumoPorEscola recebido
-    let listaEscolas = '';
-    if (mapa) {
+    // Supervisor comum ou secretaria: ícones coloridos para escolas
+    let iconesHtml = '';
+    if (mapa && Object.keys(mapa).length > 0) {
+      const cores = gerarCoresPorEscola(Object.keys(mapa));
       for (let escola in mapa) {
-        listaEscolas += `<p style="margin:2px 0; font-size:13px;">
-          <strong>${escola}:</strong> ${mapa[escola].pendentes} pendentes / ${mapa[escola].total}
-        </p>`;
+        const dados = mapa[escola];
+        const cor = cores[escola];
+        const tooltipText = `${escola}\nTotal: ${dados.total}\nPendentes: ${dados.pendentes}`;
+        iconesHtml += `
+          <div class="escola-icone" 
+               style="background-color: ${cor};" 
+               data-tooltip="${tooltipText.replace(/\n/g, '&#10;')}">
+            <i class="fas fa-school"></i>
+          </div>
+        `;
       }
+    } else {
+      iconesHtml = '<p style="font-size:13px; color: var(--text-muted);">Nenhuma escola encontrada.</p>';
     }
+    
     card.innerHTML = `
       <div class="metrica-titulo"><i class="fas fa-school"></i> Por Escola</div>
-      <div class="metrica-valor" style="font-size: 24px; line-height: 1.2;"><i class="fas fa-chart-bar"></i></div>
-      <div class="metrica-detalhe" style="margin-top: 8px; max-height: 200px; overflow-y: auto;">
-        ${listaEscolas}
+      <div class="metrica-valor" style="font-size: 24px; line-height: 1.2;">
+        <div class="escola-icones-container">
+          ${iconesHtml}
+        </div>
+      </div>
+      <div class="metrica-detalhe" style="margin-top: 8px;">
+        <!-- espaço reservado para futuras infos -->
       </div>
     `;
   }
   
   painel.appendChild(card);
 }
-
 function gerarCoresPorEscola(escolas) {
   const cores = {};
   escolas.forEach((escola, index) => {
