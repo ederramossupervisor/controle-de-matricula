@@ -166,14 +166,23 @@ header > * {
   font-size: 11px;
   opacity: 0.7;
 }
+
 .header-actions {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
-  justify-content: flex-end;
   margin-top: 8px;
 }
+
+/* Grupo de botões da direita */
+.header-actions .acoes-direita {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;   /* empurra para a direita */
+}
+
 .header-actions button {
   background: var(--card-bg);
   color: var(--text-primary);
