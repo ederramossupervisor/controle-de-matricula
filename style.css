@@ -1841,3 +1841,9 @@ select.btn-paginacao {
 .header-right {
   background-color: transparent !important;
 }
+
+header {
+  height: 200px;                /* altura exata da imagem */
+  box-sizing: border-box;       /* inclui padding na altura total */
+  /* ... outras propriedades já existentes ... */
+}
