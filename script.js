@@ -1562,6 +1562,7 @@ function updateDarkModeIcon(theme) {
   const btn = document.getElementById('darkModeToggle');
   if (btn) {
     btn.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    btn.setAttribute('data-tooltip', theme === 'dark' ? 'Modo claro' : 'Modo escuro');
   }
 }
 
