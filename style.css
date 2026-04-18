@@ -1822,6 +1822,7 @@ select.btn-paginacao {
 .dropdown {
   position: relative;
   display: inline-block;
+   z-index: 100;
 }
 
 .dropdown-content {
@@ -1834,7 +1835,7 @@ select.btn-paginacao {
   box-shadow: 0 8px 16px rgba(0,0,0,0.1);
   border-radius: 12px;
   padding: 8px;
-  z-index: 1000;
+  z-index: 9999;
   border: 1px solid var(--card-border);
   display: flex;
   flex-direction: column;
