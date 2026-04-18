@@ -1900,7 +1900,7 @@ select.btn-paginacao {
 /* NOVOS ESTILOS PARA CARDS DE ALUNOS */
 /* CARDS DE ALUNOS - GRADIENTE CLARO (AZUL ACINZENTADO SUAVE) */
 #lista > div {
-  background: linear-gradient(145deg, #f8fafc 0%, #e0f2fe 60%, #f1f5f9 100%);
+  background: linear-gradient(145deg, #ffffff 0%, #eef2f6 100%);
   box-shadow: 
     0 4px 8px rgba(0, 0, 0, 0.04),
     0 2px 2px rgba(0, 0, 0, 0.03),
