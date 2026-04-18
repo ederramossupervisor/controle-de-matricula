@@ -1793,6 +1793,7 @@ select.btn-paginacao {
   margin-right: 16px;
   border-radius: 8px;
   object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 @media (max-width: 600px) {
   #logoEscola {
