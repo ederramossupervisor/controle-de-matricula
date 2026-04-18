@@ -130,7 +130,7 @@ const FUNDOS_HEADER_ESCOLAS = {
   "EEEF Severino Paste": "fundos-header/escolas/EEEF_Severino_Paste.png",
   "EEEFM Alto Rio Possmoser": "fundos-header/escolas/EEEFM_Alto_Rio_Possmoser.png",
   "EEEFM Álvaro Castelo": "fundos-header/escolas/EEEFM_Álvaro_Castelo.png",
-  "EEEFM Domingos Perim": "fundos-header/escolass/EEEFM_Domingos_Perim.png",
+  "EEEFM Domingos Perim": "fundos-header/escolas/EEEFM_Domingos_Perim.png",
   "EEEFM Elvira Barros": "fundos-header/escolas/EEEFM_Elvira_Barros.png",
   "EEEFM Fazenda Camporês": "fundos-header/escolas/EEEFM_Fazenda_Camporês.png",
   "EEEFM Fazenda Emílio Schroeder": "fundos-header/escolas/EEEFM_Fazenda_Emílio_Schroeder.png",
