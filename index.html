@@ -467,13 +467,11 @@
   </div>
 
   <div class="header-actions">
-    <!-- Botões principais visíveis -->
-    <button onclick="abrirNovoAluno()" class="btn-primary"><i class="fas fa-plus"></i> Novo Aluno</button>
-
-  <!-- Menu Hamburguer -->
-  <div class="dropdown">
-    <button class="btn-header" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
-    <div id="menuDropdown" class="dropdown-content" style="display: none;">
+    <!-- Grupo da esquerda -->
+    <div class="header-actions-left">
+      <div class="dropdown">
+        <button class="btn-header" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+        <div id="menuDropdown" class="dropdown-content" style="display: none;">
       <!-- Todos os outros botões -->
       <button onclick="abrirModalImportacao()" class="btn-header"><i class="fas fa-upload"></i> Importar CSV</button>
       <button onclick="abrirModalDocumentos()" id="btnDocumentos" class="btn-header"><i class="fas fa-folder-open"></i> Documentos</button>
@@ -489,10 +487,15 @@
       <button onclick="abrirModalAlterarSenha()" class="btn-header" id="btnAlterarSenha">
         <i class="fas fa-key"></i> Alterar Senha
       </button>
+      </div>
     </div>
   </div>
-    <button onclick="logout()" class="btn-outline"><i class="fas fa-sign-out-alt"></i> </button>
-    <button id="darkModeToggle" class="btn-icone" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
+    <!-- Grupo da direita -->
+    <div class="header-actions-right">
+      <button onclick="abrirNovoAluno()" class="btn-primary"><i class="fas fa-plus"></i> Novo Aluno</button>
+      <button onclick="logout()" class="btn-outline"><i class="fas fa-sign-out-alt"></i></button>
+      <button id="darkModeToggle" class="btn-icone" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
+    </div>
   </div>
 </header>
     
