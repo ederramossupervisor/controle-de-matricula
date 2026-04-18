@@ -1998,3 +1998,23 @@ background: linear-gradient(145deg, #fafbff 0%, #edf2fa 100%);
 [data-tooltip] {
   position: relative;
 }
+
+/* Botões apenas com ícone (sem texto) – centralização perfeita */
+.header-actions button:has(i:only-child),
+.btn-header:has(i:only-child),
+.btn-outline:has(i:only-child) {
+  padding: 0;                  /* remove padding extra */
+  width: 40px;                 /* largura fixa para ser quadrado */
+  height: 40px;                /* altura igual à largura */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ajuste fino para ícones dentro desses botões */
+.header-actions button:has(i:only-child) i,
+.btn-header:has(i:only-child) i,
+.btn-outline:has(i:only-child) i {
+  margin: 0 !important;        /* remove qualquer margem residual */
+  font-size: 1.2rem;
+}
