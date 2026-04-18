@@ -96,7 +96,7 @@ header {
 }
 
 .header-center h1 {
-  margin: 0;
+  margin: 10px;
   font-size: 36px;
   font-weight: 600;
   color: var(--text-primary);
