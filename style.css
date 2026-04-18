@@ -1867,11 +1867,30 @@ select.btn-paginacao {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  
-  /* Borda sutil */
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-align: center; 
 }
+
+/* Bordas coloridas completas para os cards de métricas */
+.metrica-total {
+  border: 4px solid #3b82f6 !important;
+}
+.metrica-completos {
+  border: 4px solid #10b981 !important;
+}
+.metrica-pendentes {
+  border: 4px solid #f59e0b !important;
+}
+.metrica-vencidos {
+  border: 4px solid #ef4444 !important;
+}
+.metrica-escola {
+  border: 4px solid #8b5cf6 !important;
+}
+[data-theme="dark"] .metrica-total { border-color: #60a5fa !important; }
+[data-theme="dark"] .metrica-completos { border-color: #34d399 !important; }
+[data-theme="dark"] .metrica-pendentes { border-color: #fbbf24 !important; }
+[data-theme="dark"] .metrica-vencidos { border-color: #f87171 !important; }
+[data-theme="dark"] .metrica-escola { border-color: #a78bfa !important; }
 
 /* Efeito 3D ao passar o mouse: elevação e rotação sutil */
 .metrica-card:hover {
