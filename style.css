@@ -1847,3 +1847,8 @@ header {
   box-sizing: border-box;       /* inclui padding na altura total */
   /* ... outras propriedades já existentes ... */
 }
+header {
+  background-size: 100% 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
