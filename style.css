@@ -1788,7 +1788,7 @@ select.btn-paginacao {
 }
 
 #logoEscola {
-  height: 65px;
+  height: 100px;
   width: auto;
   margin-right: 16px;
   border-radius: 8px;
@@ -1796,7 +1796,7 @@ select.btn-paginacao {
 }
 @media (max-width: 600px) {
   #logoEscola {
-    height: 35px !important;
+    height: 50px !important;
     margin-right: 8px !important;
   }
 }
