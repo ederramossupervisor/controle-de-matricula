@@ -1789,3 +1789,30 @@ select.btn-paginacao {
   color: var(--btn-primary-bg) !important;
 }
 
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  position: absolute;
+  right: 0;
+  top: 45px;
+  background-color: var(--card-bg);
+  min-width: 220px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  padding: 8px;
+  z-index: 1000;
+  border: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropdown-content button {
+  width: 100%;
+  text-align: left;
+  justify-content: flex-start;
+  margin: 0;
+}
