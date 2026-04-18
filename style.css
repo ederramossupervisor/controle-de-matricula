@@ -64,7 +64,7 @@
 
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(145deg, #b8c6db 0%, #f5d0d9 100%);
+  background: #a0cbc3;
   margin: 0;
   padding: 0;
   color: var(--text-primary);
