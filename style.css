@@ -100,28 +100,40 @@ header {
   font-weight: 600;
   color: var(--text-primary);
 }
+/* Container dos badges à direita */
 .header-right {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
 
-.escola-badge, .email-badge {
-  background: var(--input-border);
-  padding: 6px 14px;
-  border-radius: 40px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  white-space: nowrap;
+/* Badge do perfil (escola / Supervisor) */
+.escola-badge {
+  background: transparent;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
 }
 
+/* Badge do e‑mail (discreto) */
 .email-badge {
-  background: #f1f5f9;
-  color: #64748b;
+  background: transparent;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
+.email-badge i {
+  font-size: 11px;
+  opacity: 0.7;
+}
 .header-actions {
   width: 100%;
   display: flex;
