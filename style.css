@@ -219,16 +219,18 @@ header > * {
   box-shadow: none !important;
 }
 
-/* Ícone dentro do menu */
+/* Ícone dentro do menu – visível e alinhado */
 .dropdown-content .btn-header i {
+  display: inline-block !important;   /* Garante que o ícone apareça */
   width: 20px !important;
   flex-shrink: 0 !important;
   text-align: center !important;
   margin: 0 !important;
   font-size: 1rem !important;
-  color: var(--btn-primary-bg) !important;
+  color: #2563eb !important;          /* Cor azul fixa, substitua se desejar */
+  visibility: visible !important;
+  opacity: 1 !important;
 }
-
 /* Hover */
 .dropdown-content .btn-header:hover {
   background-color: var(--card-border) !important;
