@@ -123,41 +123,57 @@ const LISTA_MODELOS = [
   "PLANO INTERVENÇÃO - PFA"
 ];
 
-const FUNDOS_ESCOLAS = {
-  "CEEFMTI Afonso Cláudio": "fundos/CEEFMTI_Afonso_Cláudio.png",
-  "CEEFMTI Elisa Paiva": "fundos/CEEFMTI_Elisa_Paiva.png",
-  "EEEF Ivana Casagrande Scabelo": "fundos/EEEF_Ivana_Casagrande_Scabelo.png",
-  "EEEF Severino Paste": "fundos/EEEF_Severino_Paste.png",
-  "EEEFM Alto Rio Possmoser": "fundos/EEEFM_Alto_Rio_Possmoser.png",
-  "EEEFM Álvaro Castelo": "fundos/EEEFM_Álvaro_Castelo.png",
-  "EEEFM Domingos Perim": "fundos/EEEFM_Domingos_Perim.png",
-  "EEEFM Elvira Barros": "fundos/EEEFM_Elvira_Barros.png",
-  "EEEFM Fazenda Camporês": "fundos/EEEFM_Fazenda_Camporês.png",
-  "EEEFM Fazenda Emílio Schroeder": "fundos/EEEFM_Fazenda_Emílio_Schroeder.png",
-  "EEEFM Fioravante Caliman": "fundos/EEEFM_Fioravante_Caliman.png",
-  "EEEFM Frederico Boldt": "fundos/EEEFM_Frederico_Boldt.png",
-  "EEEFM Gisela Salloker Fayet": "fundos/EEEFM_Gisela_Salloker_Fayet.png",
-  "EEEFM Graça Aranha": "fundos/EEEFM_Graça_Aranha.png",
-  "EEEFM Joaquim Caetano de Paiva": "fundos/EEEFM_Joaquim_Caetano_de_Paiva.png",
-  "EEEFM José Cupertino": "fundos/EEEFM_José_Cupertino.png",
-  "EEEFM José Giestas": "fundos/EEEFM_José_Giestas.png",
-  "EEEFM José Roberto Christo": "fundos/EEEFM_José_Roberto_Christo.png",
-  "EEEFM Leogildo Severiano de Souza": "fundos/EEEFM_Leogildo_Severiano_de_Souza.png",
-  "EEEFM Luiz Jouffroy": "fundos/EEEFM_Luiz_Jouffroy.png",
-  "EEEFM Maria de Abreu Alvim": "fundos/EEEFM_Maria_de_Abreu_Alvim.png",
-  "EEEFM Mário Bergamin": "fundos/EEEFM_Mário_Bergamin.png",
-  "EEEFM Marlene Brandão": "fundos/EEEFM_Marlene_Brandão.png",
-  "EEEFM Pedra Azul": "fundos/EEEFM_Pedra_Azul.png",
-  "EEEFM Ponto do Alto": "fundos/EEEFM_Ponto_do_Alto.png",
-  "EEEFM Profª Aldy Soares Merçon Vargas": "fundos/EEEFM_Profª_Aldy_Soares_Merçon_Vargas.png",
-  "EEEFM Prof Hermman Berger": "fundos/EEEFM_Prof_Hermman_Berger.png",
-  "EEEFM São Jorge": "fundos/EEEFM_São_Jorge.png",
-  "EEEFM São Luís": "fundos/EEEFM_São_Luís.png",
-  "EEEFM Teófilo Paulino": "fundos/EEEFM_Teófilo_Paulino.png",
-  "EEEM Francisco Guilherme": "fundos/EEEM_Francisco_Guilherme.png",
-  "EEEM Mata fria": "fundos/EEEM_Mata_Fria.png",
-  "EEEM Sobreiro": "fundos/EEEM_Sobreiro.png",
-  "default": "fundos/default.png"
+const FUNDOS_HEADER_ESCOLAS = {
+  "CEEFMTI Afonso Cláudio": "fundos-header/escolas/CEEFMTI_Afonso_Cláudio.png",
+  "CEEFMTI Elisa Paiva": "fundos-header/escolas/CEEFMTI_Elisa_Paiva.png",
+  "EEEF Ivana Casagrande Scabelo": "fundos-header/escolas/EEEF_Ivana_Casagrande_Scabelo.png",
+  "EEEF Severino Paste": "fundos-header/escolas/EEEF_Severino_Paste.png",
+  "EEEFM Alto Rio Possmoser": "fundos-header/escolas/EEEFM_Alto_Rio_Possmoser.png",
+  "EEEFM Álvaro Castelo": "fundos-header/escolas/EEEFM_Álvaro_Castelo.png",
+  "EEEFM Domingos Perim": "fundos-header/escolass/EEEFM_Domingos_Perim.png",
+  "EEEFM Elvira Barros": "fundos-header/escolas/EEEFM_Elvira_Barros.png",
+  "EEEFM Fazenda Camporês": "fundos-header/escolas/EEEFM_Fazenda_Camporês.png",
+  "EEEFM Fazenda Emílio Schroeder": "fundos-header/escolas/EEEFM_Fazenda_Emílio_Schroeder.png",
+  "EEEFM Fioravante Caliman": "fundos-header/escolas/EEEFM_Fioravante_Caliman.png",
+  "EEEFM Frederico Boldt": "fundos-header/escolas/EEEFM_Frederico_Boldt.png",
+  "EEEFM Gisela Salloker Fayet": "fundos-header/escolas/EEEFM_Gisela_Salloker_Fayet.png",
+  "EEEFM Graça Aranha": "fundos-header/escolas/EEEFM_Graça_Aranha.png",
+  "EEEFM Joaquim Caetano de Paiva": "fundos-header/escolas/EEEFM_Joaquim_Caetano_de_Paiva.png",
+  "EEEFM José Cupertino": "fundos-header/escolas/EEEFM_José_Cupertino.png",
+  "EEEFM José Giestas": "fundos-header/escolas/EEEFM_José_Giestas.png",
+  "EEEFM José Roberto Christo": "fundos-header/escolas/EEEFM_José_Roberto_Christo.png",
+  "EEEFM Leogildo Severiano de Souza": "fundos-header/escolas/EEEFM_Leogildo_Severiano_de_Souza.png",
+  "EEEFM Luiz Jouffroy": "fundos-header/escolas/EEEFM_Luiz_Jouffroy.png",
+  "EEEFM Maria de Abreu Alvim": "fundos-header/escolas/EEEFM_Maria_de_Abreu_Alvim.png",
+  "EEEFM Mário Bergamin": "fundos-header/escolas/EEEFM_Mário_Bergamin.png",
+  "EEEFM Marlene Brandão": "fundos-header/escolas/EEEFM_Marlene_Brandão.png",
+  "EEEFM Pedra Azul": "fundos-header/escolas/EEEFM_Pedra_Azul.png",
+  "EEEFM Ponto do Alto": "fundos-header/escolas/EEEFM_Ponto_do_Alto.png",
+  "EEEFM Profª Aldy Soares Merçon Vargas": "fundos-header/escolas/EEEFM_Profª_Aldy_Soares_Merçon_Vargas.png",
+  "EEEFM Prof Hermman Berger": "fundos-header/escolas/EEEFM_Prof_Hermman_Berger.png",
+  "EEEFM São Jorge": "fundos-header/escolas/EEEFM_São_Jorge.png",
+  "EEEFM São Luís": "fundos-header/escolas/EEEFM_São_Luís.png",
+  "EEEFM Teófilo Paulino": "fundos-header/escolas/EEEFM_Teófilo_Paulino.png",
+  "EEEM Francisco Guilherme": "fundos-header/escolas/EEEM_Francisco_Guilherme.png",
+  "EEEM Mata fria": "fundos-header/escolas/EEEM_Mata_Fria.png",
+  "EEEM Sobreiro": "fundos-header/escolas/EEEM_Sobreiro.png",
+  "default": "fundos-header/default.png"
+};
+
+const FUNDOS_HEADER_SUPERVISORES = {
+  "ecramos@sedu.es.gov.br": "fundos-header/supervisores/ecramos.png",
+  "jvpagotto@sedu.es.gov.br": "fundos-header/supervisores/jvpagotto.png",
+  "ceuaraujo@sedu.es.gov.br": "fundos-header/supervisores/ceuaraujo.png",
+  "rcspautz@sedu.es.gov.br": "fundos-header/supervisores/rcspautz.png",
+  "zanascimento@sedu.es.gov.br": "fundos-header/supervisores/zanascimento.png",
+  "jclsouza@sedu.es.gov.br": "fundos-header/supervisores/jclsouza.png",
+  "iosilva@sedu.es.gov.br": "fundos-header/supervisores/iosilva.png",
+  "mglpires@sedu.es.gov.br": "fundos-header/supervisores/mglpires.png",
+  "rfdelarmelina@sedu.es.gov.br": "fundos-header/supervisores/rfdelarmelina.png",
+  "slarmelina@sedu.es.gov.br": "fundos-header/supervisores/slarmelina.png",
+  "kalopes@sedu.es.gov.br": "fundos-header/supervisores/kalopes.png",
+  "eder.ramos@educador.edu.es.gov.br": "fundos-header/supervisores/eder_ramos.png",
+  "default": "fundos-header/default.png"
 };
 let paginaAtual = 1;
 let alunosPorPagina = 20;
@@ -704,6 +720,27 @@ async function fazerUploadModelo() {
     }, 1000);
   }
 }
+
+function aplicarFundoHeader(escolaOuEmail) {
+  const header = document.querySelector('header');
+  if (!header) return;
+  
+  let imagemUrl = "";
+  
+  if (perfilUsuario === "SUPERVISOR") {
+    imagemUrl = FUNDOS_HEADER_SUPERVISORES[emailUsuario] || FUNDOS_HEADER_SUPERVISORES["default"] || "";
+  } else {
+    imagemUrl = FUNDOS_HEADER_ESCOLAS[escolaOuEmail] || FUNDOS_HEADER_ESCOLAS["default"] || "";
+  }
+  
+  if (imagemUrl) {
+    header.style.backgroundImage = `url('${imagemUrl}')`;
+  } else {
+    // fallback para gradiente
+    header.style.backgroundImage = "linear-gradient(145deg, #b8c6db 0%, #f5d0d9 100%)";
+  }
+}
+
 async function carregarAtos() {
   mostrarLoading();
   const escola = document.getElementById("filtroEscolaAto").value;
@@ -2035,11 +2072,7 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
       return;
     }
 
-    if (perfilUsuario === "SECRETARIA") {
-      aplicarFundoPorEscola(escolaUsuario);
-    } else {
-      aplicarFundoPorEscola("default");
-    }
+    aplicarFundoHeader(escolaUsuario);
 
     // 🔥 Agora dados.alunos contém apenas a página atual
     dadosGlobais = dados.alunos;
