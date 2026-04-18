@@ -161,20 +161,9 @@ const FUNDOS_HEADER_ESCOLAS = {
 };
 
 const FUNDOS_HEADER_SUPERVISORES = {
-  "ecramos@sedu.es.gov.br": "fundos-header/supervisores/ecramos.png",
-  "jvpagotto@sedu.es.gov.br": "fundos-header/supervisores/jvpagotto.png",
-  "ceuaraujo@sedu.es.gov.br": "fundos-header/supervisores/ceuaraujo.png",
-  "rcspautz@sedu.es.gov.br": "fundos-header/supervisores/rcspautz.png",
-  "zanascimento@sedu.es.gov.br": "fundos-header/supervisores/zanascimento.png",
-  "jclsouza@sedu.es.gov.br": "fundos-header/supervisores/jclsouza.png",
-  "iosilva@sedu.es.gov.br": "fundos-header/supervisores/iosilva.png",
-  "mglpires@sedu.es.gov.br": "fundos-header/supervisores/mglpires.png",
-  "rfdelarmelina@sedu.es.gov.br": "fundos-header/supervisores/rfdelarmelina.png",
-  "slarmelina@sedu.es.gov.br": "fundos-header/supervisores/slarmelina.png",
-  "kalopes@sedu.es.gov.br": "fundos-header/supervisores/kalopes.png",
-  "eder.ramos@educador.edu.es.gov.br": "fundos-header/supervisores/eder_ramos.png",
   "default": "fundos-header/default.png"
 };
+
 let paginaAtual = 1;
 let alunosPorPagina = 20;
 let dadosFiltradosGlobais = [];
