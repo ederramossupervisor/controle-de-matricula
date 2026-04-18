@@ -194,24 +194,40 @@ header > * {
   overflow-y: auto;
 }
 
-/* Botões dentro do menu dropdown - alinhamento consistente */
+/* Botões dentro do menu dropdown – alinhamento perfeito */
 .dropdown-content .btn-header {
-  justify-content: flex-start;  /* Alinha ícone e texto à esquerda */
-  padding: 10px 16px;           /* Padding confortável */
-  width: 100%;                  /* Ocupa toda a largura do menu */
-  text-align: left;             /* Garante alinhamento do texto */
-  gap: 12px;                    /* Espaçamento uniforme entre ícone e texto */
-  white-space: nowrap;          /* Evita quebra de linha */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  padding: 10px 16px !important;
+  width: 100% !important;
+  text-align: left !important;
+  gap: 12px !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  line-height: 1.4 !important;
+  border: none !important;            /* remove borda duplicada */
+  background: transparent !important; /* fundo transparente para herdar do menu */
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+  transition: background 0.2s !important;
 }
 
-/* Ajuste opcional para o ícone */
+/* Ícone: largura fixa e alinhamento central */
 .dropdown-content .btn-header i {
-  width: 20px;                  /* Largura fixa para ícones alinharem verticalmente */
-  text-align: center;           /* Centraliza o ícone dentro do espaço */
-  margin-right: 0;              /* Remove margens extras (já controladas pelo gap) */
-  color: #2563eb;               /* Mantém a cor azul */
+  width: 20px !important;
+  text-align: center !important;
+  margin: 0 !important;
+  font-size: 1rem !important;
+  color: var(--btn-primary-bg) !important;
+  flex-shrink: 0 !important;
 }
 
+/* Hover suave */
+.dropdown-content .btn-header:hover {
+  background-color: var(--card-border) !important;
+  border-radius: 6px !important;
+}
 /* Estilo base dos botões */
 .header-actions button,
 .btn-header {
