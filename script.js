@@ -2006,7 +2006,7 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
     escolaUsuario = dados.escola;
 
     document.getElementById("escolaUsuarioDisplay").textContent = 
-      perfilUsuario === "SUPERVISOR" ? "Supervisor" : `${escolaUsuario}`;
+      perfilUsuario === "SUPERVISOR" ? "Supervisão" : `${escolaUsuario}`;
 
     // Exibir e-mail do usuário logado
     const emailSpan = document.getElementById("emailUsuarioTexto");
