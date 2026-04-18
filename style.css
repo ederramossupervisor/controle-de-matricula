@@ -1744,13 +1744,7 @@ select.btn-paginacao {
 [data-theme="dark"] .email-badge i {
   color: #60a5fa;
 }
-#logoEscola {
-  height: 70px;
-  width: auto;
-  margin-right: 16px;
-  border-radius: 8px;
-  object-fit: contain; /* garante que a imagem não distorça */
-}
+
 #logoEscola {
   height: 45px;
   width: auto;
