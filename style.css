@@ -1825,3 +1825,7 @@ select.btn-paginacao {
     max-width: calc(100vw - 20px);
   }
 }
+
+.dropdown-content {
+  transform: translateX(0);
+}
