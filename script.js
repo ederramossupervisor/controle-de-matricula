@@ -2795,6 +2795,21 @@ function renderPorEscola(mapa, metricas) {
   
   painel.appendChild(card);
 }
+
+function gerarCoresPorEscola(escolas) {
+  const cores = {};
+  escolas.forEach((escola, index) => {
+    // Gera um matiz (hue) baseado no nome, variando de 0 a 360
+    let hash = 0;
+    for (let i = 0; i < escola.length; i++) {
+      hash = escola.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const hue = Math.abs(hash) % 360;
+    cores[escola] = `hsl(${hue}, 70%, 60%)`; // cor vibrante mas suave
+  });
+  return cores;
+}
+
 // =========================
 // LOGOUT
 // =========================
