@@ -476,23 +476,31 @@
     </span>
   </div>
 
-  <!-- Botões de ação (ocupam a linha inteira abaixo) -->
   <div class="header-actions">
+    <!-- Botões principais visíveis -->
     <button onclick="abrirNovoAluno()" class="btn-primary"><i class="fas fa-plus"></i> Novo Aluno</button>
-    <button onclick="abrirModalImportacao()" class="btn-header"><i class="fas fa-upload"></i> Importar CSV</button>
-    <button onclick="abrirModalDocumentos()" id="btnDocumentos" class="btn-header"><i class="fas fa-folder-open"></i> Documentos</button>
-    <button onclick="abrirModalModelos()" id="btnModelos" class="btn-header"><i class="fas fa-file-alt"></i> Modelos</button>
-    <button onclick="abrirModalInativos()" id="btnInativos" class="btn-header">
-      <i class="fas fa-archive"></i> Histórico
-    </button>
-    <button onclick="abrirModalProcessos()" id="btnProcessos" class="btn-header"><i class="fas fa-folder-open"></i> Edocs</button>
-    <button onclick="abrirModalLegalizacao()" id="btnLegalizacao" class="btn-header" style="display:none;"><i class="fas fa-gavel"></i> Legalização</button>
-    <button onclick="abrirModalTurmas()" id="btnTurmas" class="btn-header"><i class="fas fa-school"></i> Turmas</button>
-    <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios" class="btn-header"><i class="fas fa-users"></i> Usuários</button>
-    <button onclick="abrirModalCadastroUsuario()" id="btnCadastrarUsuario" class="btn-header"><i class="fas fa-user-plus"></i> Usuário</button>
-    <button onclick="abrirModalAlterarSenha()" class="btn-header" id="btnAlterarSenha">
-      <i class="fas fa-key"></i> Alterar Senha
-    </button>
+
+  <!-- Menu Hamburguer -->
+  <div class="dropdown">
+    <button class="btn-header" onclick="toggleMenu()"><i class="fas fa-bars"></i> Menu</button>
+    <div id="menuDropdown" class="dropdown-content" style="display: none;">
+      <!-- Todos os outros botões -->
+      <button onclick="abrirModalImportacao()" class="btn-header"><i class="fas fa-upload"></i> Importar CSV</button>
+      <button onclick="abrirModalDocumentos()" id="btnDocumentos" class="btn-header"><i class="fas fa-folder-open"></i> Documentos</button>
+      <button onclick="abrirModalModelos()" id="btnModelos" class="btn-header"><i class="fas fa-file-alt"></i> Modelos</button>
+      <button onclick="abrirModalInativos()" id="btnInativos" class="btn-header">
+        <i class="fas fa-archive"></i> Histórico
+      </button>
+      <button onclick="abrirModalProcessos()" id="btnProcessos" class="btn-header"><i class="fas fa-folder-open"></i> Edocs</button>
+      <button onclick="abrirModalLegalizacao()" id="btnLegalizacao" class="btn-header" style="display:none;"><i class="fas fa-gavel"></i> Legalização</button>
+      <button onclick="abrirModalTurmas()" id="btnTurmas" class="btn-header"><i class="fas fa-school"></i> Turmas</button>
+      <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios" class="btn-header"><i class="fas fa-users"></i> Usuários</button>
+      <button onclick="abrirModalCadastroUsuario()" id="btnCadastrarUsuario" class="btn-header"><i class="fas fa-user-plus"></i> Usuário</button>
+      <button onclick="abrirModalAlterarSenha()" class="btn-header" id="btnAlterarSenha">
+        <i class="fas fa-key"></i> Alterar Senha
+      </button>
+    </div>
+  </div>
     <button onclick="logout()" class="btn-outline"><i class="fas fa-sign-out-alt"></i> Sair</button>
     <button id="darkModeToggle" class="btn-icone" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></button>
   </div>
