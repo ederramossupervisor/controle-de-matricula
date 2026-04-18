@@ -1850,7 +1850,7 @@ select.btn-paginacao {
   border-radius: 20px;                /* cantos mais arredondados */
   
   /* Gradiente moderno: cinza -> rosa -> azul */
-  background: linear-gradient(145deg, #e2e8f0 0%, #fbcfe8 50%, #bfdbfe 100%);
+  background: linear-gradient(90deg, #e2e8f0 0%, #fbcfe8 50%, #bfdbfe 100%);
   
   /* Sombra para profundidade 3D */
   box-shadow: 
