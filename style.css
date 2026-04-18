@@ -2198,3 +2198,19 @@ background: linear-gradient(145deg, #fafbff 0%, #edf2fa 100%);
 .header-actions .dropdown .btn-header {
   height: 100%;
 }
+
+/* Botão de menu (ícone hambúrguer) – quadrado e centralizado */
+.dropdown .btn-header {
+  padding: 0 !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Ajuste fino para o ícone dentro do botão de menu */
+.dropdown .btn-header i {
+  margin: 0 !important;
+  font-size: 1.2rem !important;
+}
