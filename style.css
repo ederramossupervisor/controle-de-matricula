@@ -194,6 +194,24 @@ header > * {
   overflow-y: auto;
 }
 
+/* Botões dentro do menu dropdown - alinhamento consistente */
+.dropdown-content .btn-header {
+  justify-content: flex-start;  /* Alinha ícone e texto à esquerda */
+  padding: 10px 16px;           /* Padding confortável */
+  width: 100%;                  /* Ocupa toda a largura do menu */
+  text-align: left;             /* Garante alinhamento do texto */
+  gap: 12px;                    /* Espaçamento uniforme entre ícone e texto */
+  white-space: nowrap;          /* Evita quebra de linha */
+}
+
+/* Ajuste opcional para o ícone */
+.dropdown-content .btn-header i {
+  width: 20px;                  /* Largura fixa para ícones alinharem verticalmente */
+  text-align: center;           /* Centraliza o ícone dentro do espaço */
+  margin-right: 0;              /* Remove margens extras (já controladas pelo gap) */
+  color: #2563eb;               /* Mantém a cor azul */
+}
+
 /* Estilo base dos botões */
 .header-actions button,
 .btn-header {
