@@ -1824,3 +1824,20 @@ select.btn-paginacao {
     transform: none;
   }
 }
+
+/* Garantir que o dropdown não seja cortado por nenhum ancestral */
+header,
+.header-actions,
+.dropdown {
+  overflow: visible !important;
+}
+
+/* Ajuste fino para telas muito pequenas */
+@media (max-width: 480px) {
+  .dropdown-content {
+    right: 0;
+    left: auto;
+    transform: none;
+    max-width: calc(100vw - 20px);
+  }
+}
