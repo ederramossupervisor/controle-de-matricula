@@ -2027,3 +2027,17 @@ background: linear-gradient(145deg, #fafbff 0%, #edf2fa 100%);
   margin: 0 !important;        /* remove qualquer margem residual */
   font-size: 1.2rem;
 }
+
+/* Alinhamento: Menu à esquerda, demais botões à direita */
+.header-actions {
+  justify-content: flex-start;   /* garante início padrão */
+}
+
+.header-actions .dropdown {
+  margin-right: auto;            /* empurra tudo que vem depois para a direita */
+}
+
+/* Ajuste opcional para alinhar verticalmente o dropdown */
+.header-actions .dropdown .btn-header {
+  height: 100%;
+}
