@@ -1836,3 +1836,8 @@ select.btn-paginacao {
   left: 0;
   right: auto;
 }
+.header-left,
+.header-center,
+.header-right {
+  background-color: transparent !important;
+}
