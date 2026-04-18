@@ -1796,12 +1796,11 @@ select.btn-paginacao {
 
 .dropdown-content {
   position: absolute;
-  right: 0;
   top: 100%;
   margin-top: 8px;
   background-color: var(--card-bg);
   min-width: 240px;
-  max-width: calc(100vw - 32px);  /* 🔥 impede que ultrapasse a tela */
+  max-width: calc(100vw - 32px);
   box-shadow: 0 8px 16px rgba(0,0,0,0.1);
   border-radius: 12px;
   padding: 8px;
@@ -1810,34 +1809,19 @@ select.btn-paginacao {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  
-  /* Permite rolagem se houver muitos botões */
   max-height: 70vh;
   overflow-y: auto;
+  
+  /* Alinhamento padrão (direita) */
+  right: 0;
+  left: auto;
 }
 
-/* Se o menu for muito largo, alinhe pela direita, mas sem ultrapassar */
+/* Em telas pequenas, se não couber, alinhe pela esquerda */
 @media (max-width: 480px) {
   .dropdown-content {
-    right: 0;
-    left: auto;
-    transform: none;
-  }
-}
-
-/* Garantir que o dropdown não seja cortado por nenhum ancestral */
-header,
-.header-actions,
-.dropdown {
-  overflow: visible !important;
-}
-
-/* Ajuste fino para telas muito pequenas */
-@media (max-width: 480px) {
-  .dropdown-content {
-    right: 0;
-    left: auto;
-    transform: none;
+    right: auto;
+    left: 0;
     max-width: calc(100vw - 20px);
   }
 }
