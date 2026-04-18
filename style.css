@@ -96,12 +96,12 @@ header {
 }
 
 .header-center h1 {
-  margin: 25px;
-  font-size: 36px;
+  margin: 0;
+  font-size: 32px;
   font-weight: 600;
   color: var(--text-primary);
-}
-/* Container dos badges à direita */
+  transform: translateY(13px);
+  
 .header-right {
   display: flex;
   flex-direction: column;
