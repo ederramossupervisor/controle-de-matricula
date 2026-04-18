@@ -72,7 +72,8 @@ body {
 
 /* HEADER */
 header {
-  background: var(--header-bg);
+  background: linear-gradient(145deg, #b8c6db 0%, #f5d0d9 100%);
+  /* substitui o background: var(--header-bg); */
   color: var(--header-text);
   padding: 16px 24px;
   display: flex;
