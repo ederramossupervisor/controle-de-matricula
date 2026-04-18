@@ -194,40 +194,54 @@ header > * {
   overflow-y: auto;
 }
 
-/* Botões dentro do menu dropdown – alinhamento perfeito */
+/* ============================================
+   MENU DROPDOWN - ALINHAMENTO PERFEITO (FIX)
+   ============================================ */
 .dropdown-content .btn-header {
   display: flex !important;
   align-items: center !important;
-  justify-content: flex-start !important;
+  justify-content: flex-start !important;  /* força início */
   padding: 10px 16px !important;
+  margin: 0 !important;
   width: 100% !important;
+  box-sizing: border-box !important;
   text-align: left !important;
   gap: 12px !important;
   white-space: nowrap !important;
-  box-sizing: border-box !important;
   line-height: 1.4 !important;
-  border: none !important;            /* remove borda duplicada */
-  background: transparent !important; /* fundo transparente para herdar do menu */
+  border: none !important;
+  background: transparent !important;
   color: var(--text-primary) !important;
   font-weight: 500 !important;
+  font-size: 14px !important;
   transition: background 0.2s !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
 }
 
-/* Ícone: largura fixa e alinhamento central */
+/* Ícone dentro do menu */
 .dropdown-content .btn-header i {
   width: 20px !important;
+  flex-shrink: 0 !important;
   text-align: center !important;
   margin: 0 !important;
   font-size: 1rem !important;
   color: var(--btn-primary-bg) !important;
-  flex-shrink: 0 !important;
 }
 
-/* Hover suave */
+/* Hover */
 .dropdown-content .btn-header:hover {
   background-color: var(--card-border) !important;
-  border-radius: 6px !important;
 }
+
+/* Remove qualquer estilo de botão apenas com ícone que possa vazar */
+.dropdown-content .btn-header:has(i:only-child) {
+  /* não se aplica pois há texto, mas garantimos que não herde */
+  padding: 10px 16px !important;
+  width: 100% !important;
+  justify-content: flex-start !important;
+}
+
 /* Estilo base dos botões */
 .header-actions button,
 .btn-header {
