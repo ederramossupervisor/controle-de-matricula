@@ -71,12 +71,17 @@ body {
 }
 
 /* HEADER */
+/* =========================
+   HEADER - LAYOUT COMPLETO
+   ========================= */
+
+/* Container principal do cabeçalho */
 header {
-  position: relative;            /* já existia */
+  position: relative;
   z-index: 50;
-  height: 200px;                 /* NOVO */
-  box-sizing: border-box;        /* NOVO */
-  background-size: 100% 100%;    /* ALTERADO (era cover) */
+  height: 200px;
+  box-sizing: border-box;
+  background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
   color: var(--header-text);
@@ -89,9 +94,6 @@ header {
   gap: 16px;
 }
 
-header {
-  position: relative;
-}
 header::before {
   content: "";
   position: absolute;
@@ -99,7 +101,7 @@ header::before {
   left: 0;
   width: 100%;
   height: 100%;
-  /* background-color: rgba(255, 255, 255, 0.3);  ⬅️ comente esta linha */
+  /* background-color removido para imagens puras */
   z-index: 0;
 }
 
@@ -107,24 +109,8 @@ header > * {
   position: relative;
   z-index: 1;
 }
-.header-left {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-}
 
-.header-center {
-  flex: 1;
-  text-align: center;
-}
-
-.header-center h1 {
-  margin: 0;
-  font-size: 36px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-/* Container dos badges à direita */
+/* Badges de perfil e email (canto superior direito) */
 .header-right {
   display: flex;
   flex-direction: column;
@@ -133,24 +119,23 @@ header > * {
   margin-left: auto;
 }
 
-/* Badge do perfil (escola / Supervisor) */
+/* Estilos dos badges (texto branco com sombra) */
 .escola-badge {
   background: transparent;
   padding: 0;
   font-size: 15px;
   font-weight: 600;
-  color: #ffffff;                     /* Texto branco */
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);  /* Sombra escura */
+  color: #ffffff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
   line-height: 1.2;
 }
 
-/* Badge do e‑mail */
 .email-badge {
   background: transparent;
   padding: 0;
   font-size: 12px;
   font-weight: 400;
-  color: #ffffff;                     /* Texto branco */
+  color: #ffffff;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -162,44 +147,175 @@ header > * {
   opacity: 0.9;
   color: #ffffff;
 }
-.email-badge i {
-  font-size: 11px;
-  opacity: 0.7;
-}
 
+/* Barra de ações (segunda linha do header) */
 .header-actions {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;  /* Grupos nos extremos */
+  gap: 16px;
   margin-top: 8px;
 }
 
-/* Grupo de botões da direita */
-.header-actions .acoes-direita {
+/* Grupo da esquerda (contém o dropdown do menu) */
+.header-actions-left {
   display: flex;
+  align-items: center;
   gap: 8px;
-  margin-left: auto;   /* empurra para a direita */
 }
 
-.header-actions button {
-  background: var(--card-bg);
-  color: var(--text-primary);
+/* Grupo da direita (Novo Aluno, Sair, Dark Mode) */
+.header-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;  /* Reforça alinhamento à direita */
+}
+
+/* Dropdown do menu (mantém posicionamento correto) */
+.dropdown {
+  position: relative;
+  display: inline-block;
+  z-index: 100;
+}
+
+.dropdown-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background-color: var(--card-bg);
+  min-width: 240px;
+  max-width: calc(100vw - 32px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-radius: 12px;
+  padding: 8px;
+  z-index: 9999;
   border: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Estilo base dos botões da barra de ações */
+.header-actions button,
+.btn-header {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px;
   padding: 10px 16px;
-  border-radius: 40px;
+  font-size: 14px;
   font-weight: 500;
-  transition: all 0.2s;
-  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  cursor: pointer;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-.header-actions button:hover {
-  background: var(--input-border);
-  border-color: var(--text-muted);
-  transform: translateY(-1px);
+.header-actions button:hover,
+.btn-header:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
+/* Ícones dentro dos botões */
+.header-actions button i,
+.btn-header i {
+  color: #2563eb;
+  font-size: 16px;
+}
+
+/* Botão de destaque "Novo Aluno" */
+.header-actions .btn-primary {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #2563eb !important;
+}
+
+.header-actions .btn-primary i {
+  color: #2563eb;
+}
+
+.header-actions .btn-primary:hover {
+  background-color: #eff6ff !important;
+  border-color: #1d4ed8 !important;
+}
+
+/* Botão Sair */
+.header-actions .btn-outline {
+  background-color: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.header-actions .btn-outline:hover {
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+}
+
+/* Botões apenas com ícone (Menu, Sair, Dark Mode) - centralização perfeita */
+.header-actions button:has(i:only-child),
+.btn-header:has(i:only-child),
+.btn-outline:has(i:only-child) {
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+}
+
+.header-actions button:has(i:only-child) i,
+.btn-header:has(i:only-child) i,
+.btn-outline:has(i:only-child) i {
+  margin: 0 !important;
+  font-size: 1.2rem;
+}
+
+/* Botão Dark Mode (ícone apenas) */
+#darkModeToggle {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* Fundo transparente para elementos internos (evita cobrir imagem) */
+.header-left,
+.header-center,
+.header-right {
+  background-color: transparent !important;
+}
+
+/* Responsividade: em telas pequenas, os grupos empilham */
+@media (max-width: 640px) {
+  header {
+    height: auto;
+    min-height: 150px;
+    padding: 12px 16px;
+  }
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .header-actions-left,
+  .header-actions-right {
+    justify-content: center;
+    margin-left: 0;
+  }
+  .header-actions button {
+    flex: 1;
+    text-align: center;
+  }
+}
 .btn-primary {
   background: var(--btn-primary-bg) !important;
   color: white !important;
