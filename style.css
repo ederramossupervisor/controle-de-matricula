@@ -72,10 +72,12 @@ body {
 
 /* HEADER */
 header {
-  background-size: cover;
+  position: relative;            /* já existia */
+  height: 200px;                 /* NOVO */
+  box-sizing: border-box;        /* NOVO */
+  background-size: 100% 100%;    /* ALTERADO (era cover) */
   background-position: center;
   background-repeat: no-repeat;
-  /* o gradiente será mantido como fallback via JavaScript */
   color: var(--header-text);
   padding: 16px 24px;
   display: flex;
@@ -1842,13 +1844,3 @@ select.btn-paginacao {
   background-color: transparent !important;
 }
 
-header {
-  height: 200px;                /* altura exata da imagem */
-  box-sizing: border-box;       /* inclui padding na altura total */
-  /* ... outras propriedades já existentes ... */
-}
-header {
-  background-size: 100% 100%;
-  background-position: center;
-  background-repeat: no-repeat;
-}
