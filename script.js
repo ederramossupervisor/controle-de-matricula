@@ -372,6 +372,19 @@ function alterarMinhaSenha() {
     }
   });
 }
+
+function toggleMenu() {
+  const menu = document.getElementById("menuDropdown");
+  menu.style.display = menu.style.display === "none" ? "block" : "none";
+}
+
+// Fechar o menu se clicar fora (opcional)
+window.addEventListener('click', function(e) {
+  if (!e.target.closest('.dropdown')) {
+    document.getElementById("menuDropdown").style.display = 'none';
+  }
+});
+
 // Reativar aluno
 function reativarAlunoInativo(id, nome, row, escola) {
   if (!confirm(`Deseja reativar o aluno "${nome}"? Ele voltará a aparecer na lista principal como "Ativo".`)) return;
