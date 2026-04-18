@@ -2133,7 +2133,6 @@ function renderLista(dados) {
     const div = document.createElement("div");
     div.className = "fade";
     
-    div.style.background = "white";
     div.style.borderRadius = "16px";
     div.style.padding = "12px 16px";
     div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.04)";
