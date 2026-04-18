@@ -1277,53 +1277,61 @@ textarea:focus {
 }
 
 /* =========================
-   TOOLTIP PERSONALIZADO
+   TOOLTIP PERSONALIZADO (MULTILINHAS)
    ========================= */
 [data-tooltip] {
   position: relative;
   cursor: pointer;
 }
 
-[data-tooltip]:before,
-[data-tooltip]:after {
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
-  position: absolute;
-  z-index: 1000;
-}
-
-/* Caixa de texto */
 [data-tooltip]:before {
   content: attr(data-tooltip);
+  position: absolute;
   background: #1e293b;
   color: #f8fafc;
   font-size: 13px;
   font-weight: 500;
   padding: 8px 12px;
   border-radius: 8px;
-  white-space: nowrap;
+  white-space: pre-line;        /* Permite quebras de linha com \n */
+  max-width: 220px;
+  width: max-content;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
-  margin-bottom: 8px;
+  z-index: 1000;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+  line-height: 1.4;
+  text-align: left;
 }
 
-/* Seta */
 [data-tooltip]:after {
   content: '';
+  position: absolute;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-top: 6px solid #1e293b;
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
-  margin-bottom: 2px;
+  z-index: 1000;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s, visibility 0.2s;
+  margin-bottom: -6px;
 }
 
-/* Quando o elemento está no topo da tela, mostramos o tooltip ABAIXO */
+[data-tooltip]:hover:before,
+[data-tooltip]:hover:after {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Ajuste para tooltips que ficam acima do elemento (evita cortes no topo) */
 @media (max-height: 600px) {
   [data-tooltip]:before {
     bottom: auto;
@@ -1341,48 +1349,19 @@ textarea:focus {
   }
 }
 
-/* Correção automática via JS (opcional) - preferível usar CSS puro */
-/* Caso o media query não seja suficiente, podemos usar um pequeno script */
-/* =========================
-   TOOLTIP PERSONALIZADO
-   ========================= */
-[data-tooltip] {
-  position: relative;
-  cursor: pointer;
-}
-
-[data-tooltip]:before {
-  content: attr(data-tooltip);
-  position: absolute;
-  background: #1e293b;
-  color: #f8fafc;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.2s, visibility 0.2s;
-  pointer-events: none;
-}
-
-[data-tooltip]:hover:before {
-  visibility: visible;
-  opacity: 1;
-}
-
 /* Modo escuro */
 [data-theme="dark"] [data-tooltip]:before {
   background: #f1f5f9;
   color: #0f172a;
 }
-
+[data-theme="dark"] [data-tooltip]:after {
+  border-top-color: #f1f5f9;
+}
+@media (max-height: 600px) {
+  [data-theme="dark"] [data-tooltip]:after {
+    border-bottom-color: #f1f5f9;
+  }
+}
 
 button i, .input-icon .icon i {
   margin-right: 8px;
