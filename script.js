@@ -2029,15 +2029,15 @@ function abrirModalDetalhes(aluno) {
   `;
   
   const docsBasicos = [
-    { label: "Certidão de Nascimento", coluna: 9, valor: aluno.CERTIDAO },
-    { label: "CPF do aluno", coluna: 10, valor: aluno.CPF },
-    { label: "RG do aluno", coluna: 11, valor: aluno.RG },
-    { label: "Carteira de Vacinação", coluna: 12, valor: aluno.VACINA },
-    { label: "Cartão do SUS", coluna: 13, valor: aluno.SUS },
-    { label: "Comprovante de Residência", coluna: 14, valor: aluno.RESIDENCIA },
-    { label: "Documentos do Responsável", coluna: 15, valor: aluno.RESP_DOCS },
-    { label: "Histórico Escolar", coluna: 16, valor: aluno.HISTORICO },
-    { label: "Declaração de Transferência", coluna: 17, valor: aluno.DECL_TRANSF }
+    { label: "Certidão de Nascimento", coluna: 8, valor: aluno.CERTIDAO },
+    { label: "CPF do aluno", coluna: 9, valor: aluno.CPF },
+    { label: "RG do aluno", coluna: 10, valor: aluno.RG },
+    { label: "Carteira de Vacinação", coluna: 11, valor: aluno.VACINA },
+    { label: "Cartão do SUS", coluna: 12, valor: aluno.SUS },
+    { label: "Comprovante de Residência", coluna: 13, valor: aluno.RESIDENCIA },
+    { label: "Documentos do Responsável", coluna: 14, valor: aluno.RESP_DOCS },
+    { label: "Histórico Escolar", coluna: 15, valor: aluno.HISTORICO },
+    { label: "Declaração de Transferência", coluna: 16, valor: aluno.DECL_TRANSF }
   ];
   
   docsBasicos.forEach(doc => {
@@ -2055,7 +2055,7 @@ function abrirModalDetalhes(aluno) {
   });
   
   if (aluno.ED_ESPECIAL === true) {
-    const docEspecial = { label: "Laudo/Relatório Pedagógico (Ed. Especial)", coluna: 18, valor: aluno.ED_ESPECIAL };
+    const docEspecial = { label: "Laudo/Relatório Pedagógico (Ed. Especial)", coluna: 17, valor: aluno.ED_ESPECIAL };
     const chave = `${aluno._row}_${docEspecial.coluna}`;
     const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : docEspecial.valor;
     html += `
