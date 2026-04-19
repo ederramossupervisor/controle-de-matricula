@@ -2458,6 +2458,7 @@ function preencherFiltroEscolas() {
 }
 
 function aplicarFiltros(pagina = 1) {
+  console.log("✅ aplicarFiltros chamada com página:", pagina);
   const filtros = {
     escola: document.getElementById("filtroEscola")?.value || "",
     turma: document.getElementById("filtroTurma")?.value || "",
