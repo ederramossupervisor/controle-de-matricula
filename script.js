@@ -42,6 +42,7 @@ const LISTA_ESCOLAS = [
   "EEEFM Teófilo Paulino",
   "EEEM Francisco Guilherme",
   "EEEM Mata fria",
+  "EEEFM Tutorial Teste",
   "EEEM Sobreiro"
 ];
 
@@ -78,6 +79,7 @@ const LOGOS_ESCOLAS = {
   "EEEFM Teófilo Paulino": "logos/EEEFM_Teófilo_Paulino.png",
   "EEEM Francisco Guilherme": "logos/EEEM_Francisco_Guilherme.png",
   "EEEM Mata fria": "logos/EEEM_Mata_Fria.png",
+  "EEEFM Tutorial Teste": "logos/EEEFM_Tutorial_Teste.png",
   "EEEM Sobreiro": "logos/EEEM_Sobreiro.png",
   "default": "logos/default.png"
 };
@@ -156,6 +158,7 @@ const FUNDOS_HEADER_ESCOLAS = {
   "EEEFM Teófilo Paulino": "fundos-header/escolas/EEEFM_Teófilo_Paulino.png",
   "EEEM Francisco Guilherme": "fundos-header/escolas/EEEM_Francisco_Guilherme.png",
   "EEEM Mata fria": "fundos-header/escolas/EEEM_Mata_Fria.png",
+  "EEEFM Tutorial Teste": "fundos-header/escolas/EEEFM_Tutorial_Teste.png",
   "EEEM Sobreiro": "fundos-header/escolas/EEEM_Sobreiro.png",
   "default": "fundos-header/default.png"
 };
