@@ -2962,7 +2962,8 @@ async function carregarAlunosParaChecklist() {
             <input type="checkbox" 
                    id="check_${aluno._row}" 
                    data-row="${aluno._row}" 
-                   data-escola="${aluno.ESCOLA}" 
+                   data-escola="${aluno.ESCOLA}"
+                   data-ed-especial="${aluno.ED_ESPECIAL === true}"
                    ${checkedAttr} 
                    style="transform:scale(1.2); cursor:pointer;">
           </div>
@@ -2991,8 +2992,11 @@ async function salvarChecklistEmLote() {
     const row = parseInt(cb.dataset.row);
     const escola = cb.dataset.escola;
     const isChecked = cb.checked;
+    const edEspecial = cb.dataset.edEspecial === 'true'; // 🔥 novo
     
     if (isChecked) {
+      // Documentos obrigatórios: todos do índice 8 ao 16
+      // 8:CERTIDAO, 9:CPF, 10:RG, 11:VACINA, 12:SUS, 13:RESIDENCIA, 14:RESP_DOCS, 15:HISTORICO, 16:DECL_TRANSF
       const docsCols = [8, 9, 10, 11, 12, 13, 14, 15, 16];
       docsCols.forEach(col => {
         alteracoes.push({
@@ -3002,6 +3006,16 @@ async function salvarChecklistEmLote() {
           escola: escola
         });
       });
+      
+      // Se for aluno de Educação Especial, marcar também o documento extra (coluna 17)
+      if (edEspecial) {
+        alteracoes.push({
+          row: row,
+          coluna: 17, // ED_ESPECIAL
+          valor: true,
+          escola: escola
+        });
+      }
     }
   });
   
@@ -3009,6 +3023,8 @@ async function salvarChecklistEmLote() {
     mostrarToast("Nenhum aluno foi marcado como completo.", "warning");
     return;
   }
+  
+  console.log("📦 Alterações em lote:", alteracoes); // 🔥 log para depuração
   
   const btn = document.querySelector('#modalChecklistLote .btn-salvar');
   showButtonLoading(btn);
@@ -3022,10 +3038,9 @@ async function salvarChecklistEmLote() {
   postSemResposta(dados, "Documentação atualizada em lote com sucesso!", () => {
     hideButtonLoading(btn);
     fecharModalChecklistLote();
-    carregarAlunos();
+    carregarAlunos(); // recarrega lista principal
   });
 }
-
 // =========================
 // GESTÃO DE TURMAS (SUPERVISOR)
 // =========================
