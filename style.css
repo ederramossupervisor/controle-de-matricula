@@ -2360,3 +2360,25 @@ button:has(.spinner-btn) {
 .btn-pequeno i {
   margin-right: 4px;
 }
+/* Forçar o filtro de documento específico a ficar inline */
+#filtroDocEspecificoWrapper {
+  min-width: 120px !important;   /* largura mínima bem reduzida */
+  flex: 0 0 auto !important;     /* não cresce, não encolhe além do conteúdo */
+}
+
+#filtroDocEspecificoWrapper select {
+  padding-left: 36px !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis;
+}
+
+/* Opcional: ajuste global para todos os filtros em telas grandes */
+@media (min-width: 1300px) {
+  .filtros-container {
+    flex-wrap: nowrap !important;  /* impede quebra de linha */
+  }
+  .filtros-container .input-icon {
+    min-width: 100px !important;   /* ainda mais compacto */
+  }
+}
