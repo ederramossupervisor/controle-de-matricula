@@ -1866,6 +1866,9 @@ function renderizarListaDocumentos(docs) {
 function inicializarFiltros() {
   const selectEscola = document.getElementById("filtroEscola");
   if (selectEscola) {
+    // 🔥 Salva o valor atualmente selecionado ANTES de reconstruir
+    const valorSelecionado = selectEscola.value;
+    
     const escolas = getEscolasPermitidas();
     selectEscola.innerHTML = '<option value="">Todas as escolas</option>';
     escolas.forEach(esc => {
@@ -1874,6 +1877,11 @@ function inicializarFiltros() {
       opt.textContent = esc;
       selectEscola.appendChild(opt);
     });
+    
+    // 🔥 Restaura a seleção anterior (se existir nas opções)
+    if (valorSelecionado) {
+      selectEscola.value = valorSelecionado;
+    }
   }
 
   const campoBusca = document.getElementById("pesquisaNome");
@@ -1884,8 +1892,7 @@ function inicializarFiltros() {
   }
 
   carregarTurmasParaFiltro();
-} // <-- esta chave estava faltando, e o comentário "Status já está fixo..." deve ser removido
-
+}
 // Carrega turmas para o select de filtro (baseado na escola selecionada ou perfil)
 async function carregarTurmas(escola = "") {
   mostrarLoading();
