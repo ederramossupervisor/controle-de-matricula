@@ -2024,7 +2024,12 @@ function abrirModalDetalhes(aluno) {
       <span><i class="fas fa-school"></i> ${aluno.ESCOLA}</span>
       <span><i class="fas fa-calendar-alt"></i> Matrícula: ${new Date(aluno.DATA_MATRICULA).toLocaleDateString('pt-BR')}</span>
     </p>
-    <h3 style="margin-bottom:8px;">Documentos</h3>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+      <h3 style="margin:0;">Documentos</h3>
+      <button type="button" class="btn-pequeno" onclick="toggleTodosDocumentos()" style="background: var(--card-border);">
+        <i class="fas fa-check-double"></i> Marcar/Desmarcar Todos
+      </button>
+    </div>
     <div class="checkboxes-container">
   `;
   
@@ -2080,6 +2085,29 @@ function abrirModalDetalhes(aluno) {
   carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
   document.getElementById("modalDetalhes").style.display = "flex";
 }
+
+function toggleTodosDocumentos() {
+  const container = document.querySelector('#modalDetalhes .checkboxes-container');
+  if (!container) return;
+  
+  const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+  if (checkboxes.length === 0) return;
+  
+  // Verifica se todos já estão marcados
+  const todosMarcados = Array.from(checkboxes).every(cb => cb.checked);
+  
+  // Define o novo estado (inverso do atual)
+  const novoEstado = !todosMarcados;
+  
+  checkboxes.forEach(cb => {
+    cb.checked = novoEstado;
+    // Dispara o evento onchange manualmente para atualizar alteracoesPendentes
+    cb.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  
+  mostrarToast(novoEstado ? 'Todos os documentos marcados.' : 'Todos os documentos desmarcados.', 'info');
+}
+
 function fecharModalDetalhes() {
   document.getElementById("modalDetalhes").style.display = "none";
   dadosAlunoAtual = null;
