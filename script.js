@@ -2895,6 +2895,137 @@ function logout() {
   dadosGlobais = [];
 }
 
+function abrirModalChecklistLote() {
+  document.getElementById("modalChecklistLote").style.display = "flex";
+  document.getElementById("escolaAtualChecklist").textContent = escolaUsuario;
+  
+  const select = document.getElementById("selectTurmaChecklist");
+  select.innerHTML = '<option value="">Selecione uma turma</option>';
+  
+  const turmasDaEscola = turmasDisponiveis.filter(t => t.escola === escolaUsuario);
+  if (turmasDaEscola.length === 0) {
+    carregarTurmas(escolaUsuario).then(() => {
+      const turmas = turmasGlobais.filter(t => t.escola === escolaUsuario);
+      turmas.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.turma;
+        opt.textContent = t.turma;
+        select.appendChild(opt);
+      });
+    });
+  } else {
+    turmasDaEscola.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.turma;
+      opt.textContent = t.turma;
+      select.appendChild(opt);
+    });
+  }
+  
+  document.getElementById("listaChecklistContainer").innerHTML = '<p style="padding:20px; text-align:center;">Selecione uma turma...</p>';
+}
+
+function fecharModalChecklistLote() {
+  document.getElementById("modalChecklistLote").style.display = "none";
+}
+
+async function carregarAlunosParaChecklist() {
+  const turmaSelecionada = document.getElementById("selectTurmaChecklist").value;
+  const container = document.getElementById("listaChecklistContainer");
+  
+  if (!turmaSelecionada) {
+    container.innerHTML = '<p style="padding:20px; text-align:center;">Selecione uma turma...</p>';
+    return;
+  }
+  
+  mostrarLoading();
+  
+  let url = `${API_URL}?email=${emailUsuario}&turma=${encodeURIComponent(turmaSelecionada)}&limite=1000`;
+  
+  jsonp(url, function(dados) {
+    const alunos = dados.alunos.filter(a => a.SITUACAO === "Ativo");
+    
+    if (alunos.length === 0) {
+      container.innerHTML = '<p style="padding:20px; text-align:center;">Nenhum aluno ativo encontrado nesta turma.</p>';
+      esconderLoading();
+      return;
+    }
+    
+    let html = '<div style="display:flex; flex-direction:column;">';
+    alunos.forEach(aluno => {
+      const isCompleto = aluno.STATUS === "✅ Completo";
+      const checkedAttr = isCompleto ? "checked" : "";
+      
+      html += `
+        <div style="display:flex; align-items:center; padding:12px 16px; border-bottom:1px solid var(--card-border); gap:16px;">
+          <div style="width:30px; text-align:center;">
+            <input type="checkbox" 
+                   id="check_${aluno._row}" 
+                   data-row="${aluno._row}" 
+                   data-escola="${aluno.ESCOLA}" 
+                   ${checkedAttr} 
+                   style="transform:scale(1.2); cursor:pointer;">
+          </div>
+          <div style="flex:1;">
+            <span style="font-weight:500;">${aluno.ALUNO}</span>
+          </div>
+          <div style="width:100px; text-align:right;">
+            ${isCompleto ? 
+              '<span style="color:#10b981;"><i class="fas fa-check-circle"></i> Completo</span>' : 
+              '<span style="color:#f59e0b;"><i class="fas fa-exclamation-circle"></i> Pendente</span>'}
+          </div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    esconderLoading();
+  });
+}
+
+async function salvarChecklistEmLote() {
+  const checkboxes = document.querySelectorAll('#listaChecklistContainer input[type="checkbox"]');
+  const alteracoes = [];
+  
+  checkboxes.forEach(cb => {
+    const row = parseInt(cb.dataset.row);
+    const escola = cb.dataset.escola;
+    const isChecked = cb.checked;
+    
+    if (isChecked) {
+      const docsCols = [8, 9, 10, 11, 12, 13, 14, 15, 16];
+      docsCols.forEach(col => {
+        alteracoes.push({
+          row: row,
+          coluna: col,
+          valor: true,
+          escola: escola
+        });
+      });
+    }
+  });
+  
+  if (alteracoes.length === 0) {
+    mostrarToast("Nenhum aluno foi marcado como completo.", "warning");
+    return;
+  }
+  
+  const btn = document.querySelector('#modalChecklistLote .btn-salvar');
+  showButtonLoading(btn);
+  
+  const dados = {
+    acao: "atualizarDocumentosEmLote",
+    alteracoes: alteracoes,
+    email: emailUsuario
+  };
+  
+  postSemResposta(dados, "Documentação atualizada em lote com sucesso!", () => {
+    hideButtonLoading(btn);
+    fecharModalChecklistLote();
+    carregarAlunos();
+  });
+}
+
 // =========================
 // GESTÃO DE TURMAS (SUPERVISOR)
 // =========================
