@@ -2484,7 +2484,8 @@ async function salvarAlteracoesEmLote(row) {
       alteracoes.push({
         row: linha,
         coluna: coluna,
-        valor: alteracoesPendentes[chave]
+        valor: alteracoesPendentes[chave],
+        escola: dadosAlunoAtual.ESCOLA   // 🔥 ADICIONE ESTA LINHA
       });
     }
   }
@@ -2500,7 +2501,6 @@ async function salvarAlteracoesEmLote(row) {
   const dados = {
     acao: "atualizarDocumentosEmLote",
     alteracoes: alteracoes,
-    escola: dadosAlunoAtual.ESCOLA, 
     email: emailUsuario
   };
   
