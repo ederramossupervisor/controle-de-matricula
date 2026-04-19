@@ -167,6 +167,28 @@ const FUNDOS_HEADER_SUPERVISORES = {
   "default": "fundos-header/default.png"
 };
 
+// =========================
+// CONFIGURAÇÃO DOS ÍCONES DE DOCUMENTOS NOS CARDS
+// =========================
+const CONFIG_DOCS_CARD = [
+  { coluna: "CERTIDAO",   icone: "fa-file-alt",       label: "Certidão de Nascimento" },
+  { coluna: "CPF",        icone: "fa-id-card",        label: "CPF" },
+  { coluna: "RG",         icone: "fa-address-card",   label: "RG" },
+  { coluna: "VACINA",     icone: "fa-syringe",        label: "Carteira de Vacinação" },
+  { coluna: "SUS",        icone: "fa-hospital",       label: "Cartão do SUS" },
+  { coluna: "RESIDENCIA", icone: "fa-home",           label: "Comprovante de Residência" },
+  { coluna: "RESP_DOCS",  icone: "fa-users",          label: "Documentos do Responsável" },
+  { coluna: "HISTORICO",  icone: "fa-book",           label: "Histórico Escolar" },
+  { coluna: "DECL_TRANSF",icone: "fa-exchange-alt",   label: "Declaração de Transferência" }
+];
+
+// Ícone extra para Educação Especial
+const DOC_ESPECIAL = {
+  coluna: "ED_ESPECIAL",
+  icone: "fa-wheelchair",
+  label: "Laudo/Relatório Pedagógico (Ed. Especial)"
+};
+
 let paginaAtual = 1;
 let alunosPorPagina = 20;
 let dadosFiltradosGlobais = [];
@@ -182,6 +204,34 @@ let paginaAtualInativos = 1;
 let totalPaginasInativos = 1;
 let alunosPorPaginaInativos = 20;
 let filtrosInativosAtuais = {};
+
+function getDocIconStatus(entregue, prazoFinal, nomeDoc) {
+  if (entregue) {
+    return {
+      classe: 'entregue',
+      tooltip: `${nomeDoc} - Entregue ✓`
+    };
+  }
+  
+  // Verifica se está vencido
+  if (prazoFinal) {
+    const hoje = new Date();
+    hoje.setHours(0,0,0,0);
+    const prazo = new Date(prazoFinal);
+    prazo.setHours(0,0,0,0);
+    if (prazo < hoje) {
+      return {
+        classe: 'vencido',
+        tooltip: `${nomeDoc} - Vencido ✗`
+      };
+    }
+  }
+  
+  return {
+    classe: 'pendente',
+    tooltip: `${nomeDoc} - Pendente ⏳`
+  };
+}
 
 // Abre o modal e carrega turmas para o filtro
 function abrirModalInativos() {
@@ -2213,9 +2263,9 @@ function renderLista(dados) {
     div.style.transition = "all 0.2s";
     
     let statusClass = "";
-    if (aluno.STATUS.includes("✅")) statusClass = "status-completo";
-    else if (aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
-    else if (aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
+    if (aluno.STATUS && aluno.STATUS.includes("✅")) statusClass = "status-completo";
+    else if (aluno.STATUS && aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
+    else if (aluno.STATUS && aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
 
     div.className = "fade " + statusClass;
 
@@ -2263,6 +2313,32 @@ function renderLista(dados) {
       }
     }
 
+    // 🔥 Geração dos ícones de documentos
+    let docsIconsHtml = '<div class="docs-icons">';
+    
+    CONFIG_DOCS_CARD.forEach(doc => {
+      const entregue = aluno[doc.coluna] === true;
+      const status = getDocIconStatus(entregue, aluno.PRAZO_FINAL, doc.label);
+      docsIconsHtml += `
+        <span class="doc-icon ${status.classe}" data-tooltip="${status.tooltip}">
+          <i class="fas ${doc.icone}"></i>
+        </span>
+      `;
+    });
+    
+    // Se for Ed. Especial, adiciona o ícone extra
+    if (aluno.ED_ESPECIAL === true) {
+      const entregueEsp = aluno.ED_ESPECIAL === true;
+      const statusEsp = getDocIconStatus(entregueEsp, aluno.PRAZO_FINAL, DOC_ESPECIAL.label);
+      docsIconsHtml += `
+        <span class="doc-icon ${statusEsp.classe}" data-tooltip="${statusEsp.tooltip}">
+          <i class="fas ${DOC_ESPECIAL.icone}"></i>
+        </span>
+      `;
+    }
+    
+    docsIconsHtml += '</div>';
+
     const inicial = (aluno.ALUNO && typeof aluno.ALUNO === 'string' && aluno.ALUNO.trim().length > 0)
       ? aluno.ALUNO.trim().charAt(0).toUpperCase()
       : "?";
@@ -2272,7 +2348,11 @@ function renderLista(dados) {
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${aluno.ALUNO || ''}">${aluno.ALUNO || 'Nome inválido'}</div>
         ${aluno.TURMA ? `<div style="font-size:11px;color:#64748b;margin-bottom:4px;"><i class="fas fa-book"></i> ${aluno.TURMA}</div>` : ''}
-        ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;"><i class="fas fa-thumbtack"></i> ${aluno.SITUACAO}</div>` : ''}  
+        ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;"><i class="fas fa-thumbtack"></i> ${aluno.SITUACAO}</div>` : ''}
+        
+        <!-- 🔥 NOVA LINHA DE ÍCONES DE DOCUMENTOS -->
+        ${docsIconsHtml}
+        
         <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
           <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
           ${prazoTexto ? `<span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;"><i class="fas fa-hourglass-half"></i> ${prazoTexto}</span>` : ''}
@@ -2287,6 +2367,7 @@ function renderLista(dados) {
     lista.appendChild(div);
   });
 }
+
 function ajustarOpcoesCadastroUsuario() {
   const selectPerfil = document.getElementById('perfil');
   if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
