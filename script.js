@@ -1217,20 +1217,43 @@ async function executarImportacao() {
   const statusDiv = document.getElementById('statusImportacao');
   
   showButtonLoading(btn);
-  statusDiv.innerHTML = 'Enviando todos os alunos para importação...';
   
-  const dados = {
-    acao: 'importarAlunosLote',
-    email: emailUsuario,
-    alunos: alunosImportados
-  };
+  const loteSize = 20;
+  let sucessos = 0;
   
-  postSemResposta(dados, null, () => {
-    statusDiv.innerHTML = `Importação concluída! ${alunosImportados.length} alunos enviados.`;
+  try {
+    for (let i = 0; i < alunosImportados.length; i += loteSize) {
+      const lote = alunosImportados.slice(i, i + loteSize);
+      statusDiv.innerHTML = `Importando lote ${Math.floor(i/loteSize)+1} de ${Math.ceil(alunosImportados.length/loteSize)}...`;
+      
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            acao: 'importarAlunosLote',
+            email: emailUsuario,
+            alunos: lote
+          })
+        });
+        sucessos += lote.length;
+      } catch (e) {
+        console.error('Erro no lote:', e);
+      }
+    }
+    
+    statusDiv.innerHTML = `Importação concluída! ${sucessos} alunos enviados.`;
+  } catch (error) {
+    statusDiv.innerHTML = `Erro durante a importação.`;
+    console.error('Erro geral na importação:', error);
+  } finally {
     hideButtonLoading(btn);
-    carregarAlunos(); // atualiza a lista
-  });
+    btn.innerHTML = '<i class="fas fa-download"></i> Iniciar Importação';
+  }
+  
+  carregarAlunos();
 }
+
 function aplicarFundoPorEscola(escola) {
   const body = document.body;
   let imagemFundo = FUNDOS_ESCOLAS[escola];
