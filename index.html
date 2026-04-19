@@ -752,7 +752,22 @@
         <input type="text" id="pesquisaNome" placeholder="Buscar aluno por nome...">
       </div>
     </div>
-    
+    <!-- Pesquisa por documento -->
+    <div class="input-icon" id="filtroDocEspecificoWrapper" style="min-width: 180px;">
+      <span class="icon"><i class="fas fa-file-alt"></i></span>
+      <select id="filtroDocEspecifico" onchange="aplicarFiltros()">
+        <option value="">Todos os documentos</option>
+        <option value="CERTIDAO">Falta Certidão</option>
+        <option value="CPF">Falta CPF</option>
+        <option value="RG">Falta RG</option>
+        <option value="VACINA">Falta Vacina</option>
+        <option value="SUS">Falta Cartão SUS</option>
+        <option value="RESIDENCIA">Falta Comprovante Residência</option>
+        <option value="RESP_DOCS">Falta Documentos Responsável</option>
+        <option value="HISTORICO">Falta Histórico</option>
+        <option value="DECL_TRANSF">Falta Declaração Transferência</option>
+      </select>
+    </div>
     <!-- PAINEL DE MÉTRICAS -->
     <div id="painel" class="painel-metricas">
       <!-- Será preenchido via JS -->
