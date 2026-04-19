@@ -2347,3 +2347,13 @@ button:has(.spinner-btn) {
 [data-theme="dark"] .doc-icon:hover {
   background-color: rgba(255,255,255,0.1);
 }
+.btn-pequeno.btn-perigo {
+  background: #dc2626 !important;
+  color: white !important;
+  border: 1px solid #dc2626 !important;
+}
+
+.btn-pequeno.btn-perigo:hover {
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+}
