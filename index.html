@@ -187,25 +187,35 @@
           </div>  
           <div id="detalhesConteudo"></div>
           <div class="modal-actions" style="flex-wrap: wrap; gap: 10px;">
-            <!-- Seção Encerrar matrícula -->
-            <div style="width: 100%; border-top: 1px solid var(--card-border); padding-top: 16px; margin-top: 8px;">
-              <p style="margin: 0 0 8px; font-weight: 500;"><i class="fas fa-thumbtack"></i> Encerrar matrícula:</p>
-              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button class="btn-cancelar" onclick="alterarSituacaoAluno('Transferido')" style="flex:1;"><i class="fas fa-exchange-alt"></i> Transferido</button>
-                <button class="btn-cancelar" onclick="alterarSituacaoAluno('Concluído')" style="flex:1;"><i class="fas fa-graduation-cap"></i> Concluído</button>
-              </div>
-              <div style="margin-top: 12px;">
-                <button class="btn-pequeno" onclick="excluirAlunoPermanentemente()" style="background: #dc2626; color: white; border-color: #dc2626; width: auto; padding: 6px 12px;">
-                  <i class="fas fa-trash-alt"></i> Excluir permanentemente
-                </button>
-              </div>
+          <!-- Seção Encerrar matrícula -->
+          <div style="width: 100%; border-top: 1px solid #e2e8f0; padding-top: 16px; margin-top: 8px;">
+            <p style="margin: 0 0 8px; font-weight: 500;"><i class="fas fa-thumbtack"></i> Encerrar matrícula:</p>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+              <!-- Botão Transferido (ícone + tooltip) -->
+              <button class="btn-icone" onclick="alterarSituacaoAluno('Transferido')" data-tooltip="Transferir aluno" style="color: #2563eb;">
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+              
+              <!-- Botão Concluído (ícone + tooltip) -->
+              <button class="btn-icone" onclick="alterarSituacaoAluno('Concluído')" data-tooltip="Concluir matrícula" style="color: #10b981;">
+                <i class="fas fa-graduation-cap"></i>
+              </button>
+              
+              <!-- Botão Excluir Permanentemente (ícone + tooltip) - vermelho e menor -->
+              <button class="btn-icone" onclick="excluirAlunoPermanentemente()" data-tooltip="Excluir permanentemente" style="color: #dc2626; width: 32px; height: 32px; font-size: 14px;">
+                <i class="fas fa-trash-alt"></i>
+              </button>
             </div>
-            
-            <!-- Ações principais -->
-            <button class="btn-salvar" id="btnSalvarDetalhes" onclick="salvarAlteracoesEmLote(dadosAlunoAtual._row)" style="flex:2;">
-              <i class="fas fa-save"></i> Salvar alterações
+          </div>
+          
+          <!-- Ações principais (Salvar alterações e Voltar) -->
+          <div style="display: flex; gap: 8px; width: 100%; justify-content: flex-end;">
+            <button class="btn-icone" id="btnSalvarDetalhes" onclick="salvarAlteracoesEmLote(dadosAlunoAtual._row)" data-tooltip="Salvar alterações" style="color: #10b981;">
+              <i class="fas fa-save"></i>
             </button>
-            <button class="btn-cancelar" onclick="fecharModalDetalhes()" style="flex:1;">Voltar</button>
+            <button class="btn-icone" onclick="fecharModalDetalhes()" data-tooltip="Voltar" style="color: #64748b;">
+              <i class="fas fa-times"></i>
+            </button>
           </div>
         </div>
       </div>
