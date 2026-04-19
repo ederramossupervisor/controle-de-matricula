@@ -2214,3 +2214,83 @@ background: linear-gradient(145deg, #fafbff 0%, #edf2fa 100%);
   margin: 0 !important;
   font-size: 1.2rem !important;
 }
+
+/* =========================
+   SPINNER PARA BOTÕES DE AÇÃO (LOADING)
+   ========================= */
+
+/* Spinner base */
+.spinner-btn {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: girar 0.8s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 4px;
+}
+
+/* Quando o spinner está dentro de um botão com texto */
+button .spinner-btn {
+  margin-left: 8px;
+  margin-right: 0;
+}
+
+/* Botões que têm apenas ícone (quadrados) - spinner centralizado */
+.btn-header .spinner-btn,
+.btn-outline .spinner-btn,
+.btn-icone .spinner-btn,
+.header-actions button:has(i:only-child) .spinner-btn {
+  margin: 0;
+  width: 20px;
+  height: 20px;
+}
+
+/* Ajuste para o botão de menu (dropdown) quando em loading */
+.dropdown .btn-header .spinner-btn {
+  margin: 0;
+}
+
+/* Garante que o botão não mude de tamanho durante o loading */
+button:has(.spinner-btn) {
+  min-width: 100px; /* ajuste conforme necessário */
+}
+
+/* Botões quadrados mantêm tamanho fixo */
+.btn-header:has(.spinner-btn),
+.btn-outline:has(.spinner-btn),
+.btn-icone:has(.spinner-btn) {
+  min-width: 40px;
+  width: auto;
+}
+
+/* Animação de rotação (já deve existir, mas garantimos) */
+@keyframes girar {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Modo escuro - ajuste de cores se necessário */
+[data-theme="dark"] .spinner-btn {
+  border-color: rgba(255, 255, 255, 0.2);
+  border-top-color: #ffffff;
+}
+
+/* Para botões com fundo claro (ex.: btn-cancelar), spinner escuro */
+.btn-cancelar .spinner-btn {
+  border-color: rgba(0, 0, 0, 0.1);
+  border-top-color: #475569;
+}
+
+[data-theme="dark"] .btn-cancelar .spinner-btn {
+  border-color: rgba(255, 255, 255, 0.2);
+  border-top-color: #cbd5e1;
+}
+
+/* Ajuste para o botão "Novo Aluno" (btn-primary) */
+.btn-primary .spinner-btn {
+  border-color: rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+}
