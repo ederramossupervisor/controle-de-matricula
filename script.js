@@ -1923,6 +1923,9 @@ async function carregarTurmasParaFiltro() {
     return;
   }
 
+  // 🔥 Salva o valor atualmente selecionado antes de recarregar
+  const valorSelecionado = selectTurma.value;
+
   selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
 
   const url = `${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escolaFiltro)}`;
@@ -1935,9 +1938,17 @@ async function carregarTurmasParaFiltro() {
       opt.textContent = t.turma;
       selectTurma.appendChild(opt);
     });
+    
+    // 🔥 Restaura a seleção anterior, se ainda existir nas opções
+    if (valorSelecionado) {
+      // Verifica se a opção ainda existe (pode ter sido removida da escola)
+      const existe = Array.from(selectTurma.options).some(opt => opt.value === valorSelecionado);
+      if (existe) {
+        selectTurma.value = valorSelecionado;
+      }
+    }
   });
 }
-
 function abrirModalTurmas() {
   document.getElementById("modalTurmas").style.display = "flex";
   carregarTurmas();
