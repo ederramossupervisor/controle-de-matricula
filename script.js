@@ -2173,6 +2173,7 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
   if (filtros.nome) url += `&nome=${encodeURIComponent(filtros.nome)}`;
   if (filtros.status) url += `&status=${encodeURIComponent(filtros.status)}`;
   if (filtros.situacao) url += `&situacao=${encodeURIComponent(filtros.situacao)}`;
+  if (filtros.docEspecifico) url += `&docEspecifico=${encodeURIComponent(filtros.docEspecifico)}`;
   
   jsonp(url, function(dados) {
     if (dados.erro) {
@@ -2437,6 +2438,9 @@ function ajustarInterfacePorPerfil() {
     if (btnLegalizacao) btnLegalizacao.style.display = "none";
   }
 
+  // 🔥 NOVO: controle do filtro de documento específico
+  const filtroDocEspecificoWrapper = document.getElementById("filtroDocEspecificoWrapper");
+
   if (perfilUsuario === "SECRETARIA") {
     // Secretaria
     if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "none";
@@ -2449,7 +2453,8 @@ function ajustarInterfacePorPerfil() {
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "none";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "none";
-    if (btnModelos) btnModelos.style.display = "inline-block"; // NOVO
+    if (btnModelos) btnModelos.style.display = "inline-block";
+    if (filtroDocEspecificoWrapper) filtroDocEspecificoWrapper.style.display = "block";  // 🔥 NOVO
 
   } else if (perfilUsuario === "SUPERVISOR") {
     // Supervisor: regras gerais
@@ -2462,7 +2467,8 @@ function ajustarInterfacePorPerfil() {
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "inline-block";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "block";
-    if (btnModelos) btnModelos.style.display = "inline-block"; // NOVO
+    if (btnModelos) btnModelos.style.display = "inline-block";
+    if (filtroDocEspecificoWrapper) filtroDocEspecificoWrapper.style.display = "block";  // 🔥 NOVO
 
     // Regra específica para o botão Importar CSV:
     if (isSupervisorMaster) {
@@ -2576,7 +2582,8 @@ function aplicarFiltros(pagina = 1) {
     turma: document.getElementById("filtroTurma")?.value || "",
     status: document.getElementById("filtroStatus")?.value || "",
     situacao: document.getElementById("filtroSituacao")?.value || "",
-    nome: document.getElementById("pesquisaNome")?.value.toLowerCase() || ""
+    nome: document.getElementById("pesquisaNome")?.value.toLowerCase() || "",
+    docEspecifico: document.getElementById("filtroDocEspecifico")?.value || ""   // 🔥 NOVA LINHA
   };
   
   carregarAlunos(pagina, filtros);
