@@ -206,33 +206,31 @@ let alunosPorPaginaInativos = 20;
 let filtrosInativosAtuais = {};
 
 function getDocIconStatus(entregue, prazoFinal, nomeDoc) {
+  let statusTexto;
   if (entregue) {
-    return {
-      classe: 'entregue',
-      tooltip: `${nomeDoc} - Entregue ✓`
-    };
-  }
-  
-  // Verifica se está vencido
-  if (prazoFinal) {
-    const hoje = new Date();
-    hoje.setHours(0,0,0,0);
-    const prazo = new Date(prazoFinal);
-    prazo.setHours(0,0,0,0);
-    if (prazo < hoje) {
-      return {
-        classe: 'vencido',
-        tooltip: `${nomeDoc} - Vencido ✗`
-      };
+    statusTexto = '✓ Entregue';
+  } else {
+    // Verifica se está vencido
+    if (prazoFinal) {
+      const hoje = new Date();
+      hoje.setHours(0,0,0,0);
+      const prazo = new Date(prazoFinal);
+      prazo.setHours(0,0,0,0);
+      if (prazo < hoje) {
+        statusTexto = '✗ Vencido';
+      } else {
+        statusTexto = '⏳ Pendente';
+      }
+    } else {
+      statusTexto = '⏳ Pendente';
     }
   }
   
   return {
-    classe: 'pendente',
-    tooltip: `${nomeDoc} - Pendente ⏳`
+    classe: entregue ? 'entregue' : ((statusTexto.includes('Vencido')) ? 'vencido' : 'pendente'),
+    tooltip: `${nomeDoc}\n${statusTexto}`   // 🔥 Quebra de linha explícita
   };
 }
-
 // Abre o modal e carrega turmas para o filtro
 function abrirModalInativos() {
   document.getElementById("modalInativos").style.display = "flex";
