@@ -38,11 +38,11 @@
   
        <div class="input-icon">
         <span class="icon"><i class="fas fa-envelope"></i></span>
-        <input type="email" id="email" placeholder="escola@sedu.es.gov.br" autofocus>
+        <input type="email" id="email" placeholder="escola@sedu.es.gov.br" autofocus onkeypress="if(event.key==='Enter') login()">
       </div>
       <div class="input-icon">
         <span class="icon"><i class="fas fa-lock"></i></span>
-        <input type="password" id="senha" placeholder="Senha">
+          <input type="password" id="senha" placeholder="Senha" onkeypress="if(event.key==='Enter') login()">
         <span class="toggle-password" onclick="toggleSenha(this)">
           <i class="far fa-eye"></i>
         </span>
