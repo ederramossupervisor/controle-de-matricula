@@ -361,13 +361,13 @@ function alterarMinhaSenha() {
     return;
   }
 
-  mostrarLoading();
+  const btnSalvar = document.querySelector("#modalAlterarSenha .btn-salvar");
+  showButtonLoading(btnSalvar);
   
-  // Monta URL com callback para JSONP
   const url = `${API_URL}?tipo=alterarSenha&email=${encodeURIComponent(emailUsuario)}&senhaAtual=${encodeURIComponent(senhaAtual)}&novaSenha=${encodeURIComponent(novaSenha)}`;
   
   jsonp(url, function(resultado) {
-    esconderLoading();
+    hideButtonLoading(btnSalvar);
     
     if (resultado.status === "ok") {
       mostrarToast(resultado.msg, "success");
@@ -377,7 +377,6 @@ function alterarMinhaSenha() {
     }
   });
 }
-
 function toggleMenu() {
   const menu = document.getElementById("menuDropdown");
   menu.style.display = menu.style.display === "none" ? "block" : "none";
@@ -629,16 +628,15 @@ async function fazerUploadModelo() {
     return;
   }
   
-  // Verificar tamanho do arquivo (exemplo: máximo 20MB)
   if (file.size > 20 * 1024 * 1024) {
     mostrarToast("Arquivo muito grande. Máximo 20 MB.", "warning");
     return;
   }
   
-  mostrarLoading();
+  const btnEnviar = document.querySelector("#abaUploadModelo .btn-salvar");
+  showButtonLoading(btnEnviar);
   
   try {
-    // Ler arquivo como base64
     const base64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result.split(',')[1]);
@@ -655,7 +653,6 @@ async function fazerUploadModelo() {
       fileBase64: base64
     };
     
-    // Usar AbortController para timeout de 60 segundos
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000);
     
@@ -668,7 +665,6 @@ async function fazerUploadModelo() {
     
     clearTimeout(timeoutId);
     
-    // Tentar ler a resposta como JSON (pode falhar se a resposta não for JSON válido)
     let result = { status: "ok", msg: "Modelo enviado com sucesso!" };
     try {
       const text = await resp.text();
@@ -676,40 +672,33 @@ async function fazerUploadModelo() {
         result = JSON.parse(text);
       }
     } catch (parseError) {
-      // Se não conseguir parsear, assumimos sucesso (upload funcionou)
       console.warn("Resposta não é JSON, assumindo sucesso.", parseError);
     }
-    
-    esconderLoading();
     
     if (result.status === "ok") {
       mostrarToast(result.msg || "Modelo enviado com sucesso!", "success");
       fileInput.value = "";
       select.value = "";
-      mostrarAbaListarModelos(); // Recarrega a lista automaticamente
+      mostrarAbaListarModelos();
     } else {
       mostrarToast("Erro: " + (result.msg || "Falha no upload"), "error");
     }
   } catch (error) {
-    esconderLoading();
     console.error("Erro no upload do modelo:", error);
-    
     if (error.name === 'AbortError') {
       mostrarToast("Tempo limite excedido. O arquivo pode ter sido enviado. Verifique a lista.", "warning");
     } else {
-      // Como o upload pode ter funcionado apesar do erro de rede, damos uma mensagem otimista
       mostrarToast("Upload pode ter sido concluído. Verifique a lista de modelos.", "warning");
     }
-    
-    // Mesmo com erro, tenta recarregar a lista após um pequeno delay
     setTimeout(() => {
       if (document.getElementById("modalModelos").style.display === "flex") {
         mostrarAbaListarModelos();
       }
     }, 1000);
+  } finally {
+    hideButtonLoading(btnEnviar);
   }
 }
-
 function aplicarFundoHeader(escolaOuEmail) {
   const header = document.querySelector('header');
   if (!header) return;
@@ -835,52 +824,65 @@ async function salvarAto() {
   const cursoEtapa = document.getElementById("atoCursoEtapa").value;
   const numeroAto = document.getElementById("atoNumero").value;
   const dataPublicacao = document.getElementById("atoDataPublicacao").value;
+  const dataHomologacao = document.getElementById("atoDataHomologacao").value;
   const validadeAnos = document.getElementById("atoValidadeAnos").value;
   const observacoes = document.getElementById("atoObservacoes").value;
   const arquivoInput = document.getElementById("atoArquivo");
   const file = arquivoInput.files[0];
 
-  if (!escola || !tipoAto || !numeroAto || !dataPublicacao) {
+  if (!escola || !tipoAto || !numeroAto || !dataPublicacao || !dataHomologacao) {
     mostrarToast("Preencha todos os campos obrigatórios.", "warning");
     return;
   }
 
+  const btnSalvar = document.querySelector("#modalFormAto .btn-salvar");
+  showButtonLoading(btnSalvar);
+
   let fileBase64 = null, fileName = null, mimeType = null;
 
-  if (file) {
-    if (file.size > 10 * 1024 * 1024) {
-      mostrarToast("Arquivo muito grande. Máximo 10 MB.", "warning");
-      return;
+  try {
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        mostrarToast("Arquivo muito grande. Máximo 10 MB.", "warning");
+        hideButtonLoading(btnSalvar);
+        return;
+      }
+      fileName = file.name;
+      mimeType = file.type;
+      fileBase64 = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      });
     }
-    fileName = file.name;
-    mimeType = file.type;
-    fileBase64 = await new Promise(resolve => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result.split(',')[1]);
-      reader.readAsDataURL(file);
+
+    const dados = {
+      acao: "salvarAtoAutorizativo",
+      email: emailUsuario,
+      id: id,
+      escola: escola,
+      tipoAto: tipoAto,
+      cursoEtapa: cursoEtapa,
+      numeroAto: numeroAto,
+      dataPublicacao: dataPublicacao,
+      dataHomologacao: dataHomologacao,
+      validadeAnos: validadeAnos,
+      observacoes: observacoes,
+      fileBase64: fileBase64,
+      fileName: fileName,
+      mimeType: mimeType
+    };
+
+    postSemResposta(dados, "Ato salvo com sucesso!", () => {
+      hideButtonLoading(btnSalvar);
+      fecharFormAto();
+      carregarAtos();
     });
+  } catch (error) {
+    console.error("Erro ao salvar ato:", error);
+    mostrarToast("Erro ao processar o arquivo.", "error");
+    hideButtonLoading(btnSalvar);
   }
-
-  const dados = {
-    acao: "salvarAtoAutorizativo",
-    email: emailUsuario,
-    id: id,
-    escola: escola,
-    tipoAto: tipoAto,
-    cursoEtapa: cursoEtapa,
-    numeroAto: numeroAto,
-    dataPublicacao: dataPublicacao,
-    dataHomologacao: dataHomologacao, 
-    validadeAnos: validadeAnos,
-    observacoes: observacoes,
-    fileBase64: fileBase64,
-    fileName: fileName,
-    mimeType: mimeType
-  };
-
-  postSemResposta(dados, "Ato salvo com sucesso!");
-  fecharFormAto();
-  carregarAtos();
 }
 
 async function excluirAto(id) {
@@ -1209,36 +1211,42 @@ async function executarImportacao() {
   if (alunosImportados.length === 0) return;
   
   const btn = document.getElementById('btnExecutarImportacao');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Importando...';
   const statusDiv = document.getElementById('statusImportacao');
+  
+  showButtonLoading(btn);
   
   const loteSize = 20;
   let sucessos = 0;
   
-  for (let i = 0; i < alunosImportados.length; i += loteSize) {
-    const lote = alunosImportados.slice(i, i + loteSize);
-    statusDiv.innerHTML = `Importando lote ${Math.floor(i/loteSize)+1} de ${Math.ceil(alunosImportados.length/loteSize)}...`;
-    
-    try {
-      await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          acao: 'importarAlunosLote',
-          email: emailUsuario,
-          alunos: lote
-        })
-      });
-      sucessos += lote.length;
-    } catch (e) {
-      console.error('Erro no lote:', e);
+  try {
+    for (let i = 0; i < alunosImportados.length; i += loteSize) {
+      const lote = alunosImportados.slice(i, i + loteSize);
+      statusDiv.innerHTML = `Importando lote ${Math.floor(i/loteSize)+1} de ${Math.ceil(alunosImportados.length/loteSize)}...`;
+      
+      try {
+        await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            acao: 'importarAlunosLote',
+            email: emailUsuario,
+            alunos: lote
+          })
+        });
+        sucessos += lote.length;
+      } catch (e) {
+        console.error('Erro no lote:', e);
+      }
     }
+    
+    statusDiv.innerHTML = `Importação concluída! ${sucessos} alunos enviados.`;
+  } catch (error) {
+    statusDiv.innerHTML = `Erro durante a importação.`;
+    console.error('Erro geral na importação:', error);
+  } finally {
+    hideButtonLoading(btn);
+    btn.innerHTML = '<i class="fas fa-download"></i> Iniciar Importação';
   }
-  
-  statusDiv.innerHTML = `Importação concluída! ${sucessos} alunos enviados.`;
-  btn.disabled = false;
-  btn.innerHTML = '<i class="fas fa-download"></i> Iniciar Importação';
   
   carregarAlunos();
 }
@@ -1444,6 +1452,9 @@ async function cadastrarProcesso() {
     if (!subcategoria) { mostrarToast("Selecione o componente do PFA.", "warning"); return; }
   }
   
+  const btnSalvar = document.querySelector("#abaCadastroProcesso .btn-salvar");
+  showButtonLoading(btnSalvar);
+  
   const dados = {
     acao: "cadastrarProcesso",
     email: emailUsuario,
@@ -1456,16 +1467,17 @@ async function cadastrarProcesso() {
     observacoes: observacoes
   };
   
-  postSemResposta(dados, "Processo cadastrado com sucesso!");
-  
-  // Limpar campos
-  document.getElementById("cadastroProcessoCodigo").value = "";
-  document.getElementById("cadastroProcessoObs").value = "";
-  document.getElementById("cadastroProcessoTipo").value = "";
-  document.getElementById("camposExtrasProcesso").innerHTML = "";
-  if (perfilUsuario === "SUPERVISOR") document.getElementById("cadastroProcessoEscola").value = "";
+  postSemResposta(dados, "Processo cadastrado com sucesso!", () => {
+    // Limpar campos
+    document.getElementById("cadastroProcessoCodigo").value = "";
+    document.getElementById("cadastroProcessoObs").value = "";
+    document.getElementById("cadastroProcessoTipo").value = "";
+    document.getElementById("camposExtrasProcesso").innerHTML = "";
+    if (perfilUsuario === "SUPERVISOR") document.getElementById("cadastroProcessoEscola").value = "";
+    
+    hideButtonLoading(btnSalvar);
+  });
 }
-  
 async function buscarProcessos() {
   const tipo = document.getElementById("filtroProcessoTipo").value;
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroProcessoEscola").value : "";
@@ -1481,6 +1493,46 @@ async function buscarProcessos() {
     renderizarListaProcessos(processos);
     esconderLoading();
   });
+}
+
+// =========================
+// LOADING NOS BOTÕES
+// =========================
+
+function showButtonLoading(btn) {
+  if (!btn) return;
+  if (!btn.hasAttribute('data-original-html')) {
+    btn.setAttribute('data-original-html', btn.innerHTML);
+  }
+  btn.disabled = true;
+  const textSpan = btn.querySelector('.btn-text');
+  const iconElement = btn.querySelector('i');
+  const iconClass = iconElement ? iconElement.className : '';
+  const spinner = document.createElement('span');
+  spinner.className = 'spinner-btn';
+  spinner.style.display = 'inline-block';
+  if (textSpan) {
+    textSpan.style.display = 'none';
+    btn.appendChild(spinner);
+  } else {
+    btn.innerHTML = '';
+    if (iconElement) {
+      const newIcon = document.createElement('i');
+      newIcon.className = iconClass;
+      btn.appendChild(newIcon);
+    }
+    btn.appendChild(spinner);
+  }
+}
+
+function hideButtonLoading(btn) {
+  if (!btn) return;
+  const originalHTML = btn.getAttribute('data-original-html');
+  if (originalHTML) {
+    btn.innerHTML = originalHTML;
+    btn.removeAttribute('data-original-html');
+  }
+  btn.disabled = false;
 }
 
 // Função para enviar POST sem esperar resposta (evita CORS)
@@ -1616,12 +1668,7 @@ async function salvarDadosAluno() {
   }
   
   const btn = document.getElementById("btnSalvarInfoAluno");
-  const btnText = btn.querySelector(".btn-text");
-  const spinner = btn.querySelector(".spinner-btn");
-  
-  btnText.style.display = "none";
-  spinner.style.display = "inline-block";
-  btn.disabled = true;
+  showButtonLoading(btn);
   
   const dados = {
     acao: "atualizarDadosAluno",
@@ -1635,26 +1682,18 @@ async function salvarDadosAluno() {
     email: emailUsuario
   };
   
-  postSemResposta(dados, "Dados atualizados com sucesso!");
-  
-  dadosAlunoAtual.ALUNO = nome;
-  dadosAlunoAtual.RESPONSAVEL = responsavel;
-  dadosAlunoAtual.TELEFONE = telefone;
-  dadosAlunoAtual.TURMA = turma;
-  dadosAlunoAtual.ED_ESPECIAL = edEspecial;
-  
-  document.getElementById("detalhesTitulo").textContent = nome;
-  
-  btnText.textContent = "Salvo!";
-  setTimeout(() => {
-    btnText.textContent = "Salvar informações";
-  }, 2000);
-  
-  btnText.style.display = "inline";
-  spinner.style.display = "none";
-  btn.disabled = false;
-}
-  
+  postSemResposta(dados, "Dados atualizados com sucesso!", () => {
+    dadosAlunoAtual.ALUNO = nome;
+    dadosAlunoAtual.RESPONSAVEL = responsavel;
+    dadosAlunoAtual.TELEFONE = telefone;
+    dadosAlunoAtual.TURMA = turma;
+    dadosAlunoAtual.ED_ESPECIAL = edEspecial;
+    
+    document.getElementById("detalhesTitulo").textContent = nome;
+    
+    hideButtonLoading(btn);
+  });
+}  
 function esconderLoading() {
   document.getElementById("loading").style.display = "none";
 }
@@ -1745,7 +1784,8 @@ async function fazerUpload() {
   if (!nomeAluno) { mostrarToast("Digite o nome do aluno.", "warning"); return; }
   if (!file) { mostrarToast("Selecione um arquivo.", "warning"); return; }
   
-  mostrarLoading();
+  const btnSalvar = document.querySelector("#abaUpload .btn-salvar");
+  showButtonLoading(btnSalvar);
   
   const reader = new FileReader();
   reader.onload = async function(e) {
@@ -1762,17 +1802,25 @@ async function fazerUpload() {
       fileBase64: base64
     };
     
-    postSemResposta(dados, "Upload realizado com sucesso!");
-    
-    fileInput.value = "";
-    document.getElementById("uploadNomeAluno").value = "";
-    document.getElementById("uploadTipoDoc").value = "";
-    if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
-    
-    if (document.getElementById("modalDocumentos").style.display === "flex") {
-      buscarDocumentos();
-    }
+    postSemResposta(dados, "Upload realizado com sucesso!", () => {
+      fileInput.value = "";
+      document.getElementById("uploadNomeAluno").value = "";
+      document.getElementById("uploadTipoDoc").value = "";
+      if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
+      
+      hideButtonLoading(btnSalvar);
+      
+      if (document.getElementById("modalDocumentos").style.display === "flex") {
+        buscarDocumentos();
+      }
+    });
   };
+  
+  reader.onerror = function() {
+    mostrarToast("Erro ao ler o arquivo.", "error");
+    hideButtonLoading(btnSalvar);
+  };
+  
   reader.readAsDataURL(file);
 }
   
@@ -2344,6 +2392,9 @@ async function salvarAlteracoesEmLote(row) {
     return;
   }
   
+  const btn = document.getElementById("btnSalvarDetalhes");
+  showButtonLoading(btn);
+  
   const dados = {
     acao: "atualizarDocumentosEmLote",
     alteracoes: alteracoes,
@@ -2351,15 +2402,16 @@ async function salvarAlteracoesEmLote(row) {
     email: emailUsuario
   };
   
-  postSemResposta(dados, "Documentos atualizados com sucesso!");
-  
-  for (let chave in alteracoesPendentes) {
-    const [linha] = chave.split('_').map(Number);
-    if (linha === row) delete alteracoesPendentes[chave];
-  }
-  
-  fecharModalDetalhes();
-  carregarAlunos();
+  postSemResposta(dados, "Documentos atualizados com sucesso!", () => {
+    for (let chave in alteracoesPendentes) {
+      const [linha] = chave.split('_').map(Number);
+      if (linha === row) delete alteracoesPendentes[chave];
+    }
+    
+    hideButtonLoading(btn);
+    fecharModalDetalhes();
+    carregarAlunos();
+  });
 }
 // =========================
 // ATUALIZAR
@@ -2543,6 +2595,7 @@ async function salvarUsuario() {
   const perfil = document.getElementById("perfil").value;
   const escola = document.getElementById("escola").value.trim();
   const erroDiv = document.getElementById("erroUsuario");
+  const btnSalvar = document.getElementById("btnSalvarUsuario");
   
   if (!email) {
     erroDiv.textContent = "E-mail obrigatório";
@@ -2556,13 +2609,7 @@ async function salvarUsuario() {
   }
   erroDiv.style.display = "none";
   
-  const btnSalvar = document.getElementById("btnSalvarUsuario");
-  const btnText = btnSalvar.querySelector(".btn-text");
-  const spinner = btnSalvar.querySelector(".spinner-btn");
-  
-  btnText.style.display = "none";
-  spinner.style.display = "inline-block";
-  btnSalvar.disabled = true;
+  showButtonLoading(btnSalvar);
   
   const dados = {
     acao: "cadastrarUsuario",
@@ -2572,25 +2619,17 @@ async function salvarUsuario() {
     emailLogado: emailUsuario
   };
   
-  postSemResposta(dados, "Usuário cadastrado com sucesso!");
-  
-  btnText.textContent = "Cadastrado!";
-  spinner.style.display = "none";
-  btnText.style.display = "inline";
-  await new Promise(r => setTimeout(r, 600));
-  
-  fecharModalCadastroUsuario();
-  if (document.getElementById("modalListaUsuarios").style.display === "flex") {
-    carregarUsuarios();
-  }
-  
-  btnText.textContent = "Salvar";
-  btnSalvar.disabled = false;
+  postSemResposta(dados, "Usuário cadastrado com sucesso!", async () => {
+    hideButtonLoading(btnSalvar);
+    fecharModalCadastroUsuario();
+    if (document.getElementById("modalListaUsuarios").style.display === "flex") {
+      carregarUsuarios();
+    }
+  });
 }
 async function salvarAluno() {
   const nomeInput = document.getElementById("nomeAluno");
   const responsavelInput = document.getElementById("nomeResponsavel");
-  const telefoneInput = document.getElementById("telefoneContato");
   const edEspecialCheck = document.getElementById("alunoEdEspecial");
   const turmaSelect = document.getElementById("selectTurmaAluno");
   const dataMatriculaInput = document.getElementById("dataMatricula").value;
@@ -2603,8 +2642,6 @@ async function salvarAluno() {
   
   const erroDiv = document.getElementById("erroNome");
   const btnSalvar = document.getElementById("btnSalvarAluno");
-  const btnText = btnSalvar.querySelector(".btn-text");
-  const spinner = btnSalvar.querySelector(".spinner-btn");
 
   if (!nome) {
     if (erroDiv) erroDiv.style.display = "block";
@@ -2621,9 +2658,7 @@ async function salvarAluno() {
     return;
   }
 
-  btnText.style.display = "none";
-  spinner.style.display = "inline-block";
-  btnSalvar.disabled = true;
+  showButtonLoading(btnSalvar);
 
   const dados = {
     acao: "cadastrarAluno",
@@ -2636,12 +2671,9 @@ async function salvarAluno() {
     email: emailUsuario
   };
 
-  // Passamos uma função de callback que será executada após o envio
   postSemResposta(dados, "Aluno cadastrado com sucesso!", () => {
-    // Limpar campos e fechar modal (dentro do callback)
     if (nomeInput) nomeInput.value = "";
     if (responsavelInput) responsavelInput.value = "";
-    if (telefoneInput) telefoneInput.value = "";
     if (edEspecialCheck) edEspecialCheck.checked = false;
     document.getElementById("selectTurmaAluno").selectedIndex = 0;
     document.getElementById("dataMatricula").value = "";
@@ -2650,12 +2682,8 @@ async function salvarAluno() {
     document.getElementById("lista").style.display = "";
     document.getElementById("painel").style.display = "";
 
-    carregarAlunos(); // 🔥 Agora recarregamos APÓS o servidor confirmar
-
-    btnText.textContent = "Salvar";
-    btnText.style.display = "inline";
-    spinner.style.display = "none";
-    btnSalvar.disabled = false;
+    carregarAlunos();
+    hideButtonLoading(btnSalvar);
   });
 }
   
@@ -2933,34 +2961,38 @@ async function salvarTurma() {
   }
   
   erroDiv.style.display = "none";
-  mostrarLoading();
+  
+  const btnSalvar = document.querySelector("#modalCadastroTurma .btn-salvar");
+  showButtonLoading(btnSalvar);
   
   let sucessos = 0;
   let erros = [];
   
-  for (let turma of turmas) {
-    try {
-      await fetch(API_URL, {
-        method: "POST",
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          acao: "cadastrarTurma",
-          email: emailUsuario,
-          escola: escola,
-          turma: turma
-        })
-      });
-      sucessos++;
-    } catch (e) {
-      erros.push(`${turma}: Erro de conexão`);
+  try {
+    for (let turma of turmas) {
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            acao: "cadastrarTurma",
+            email: emailUsuario,
+            escola: escola,
+            turma: turma
+          })
+        });
+        sucessos++;
+      } catch (e) {
+        erros.push(`${turma}: Erro de conexão`);
+      }
     }
+  } finally {
+    hideButtonLoading(btnSalvar);
   }
   
-  esconderLoading();
-  
   let mensagem = "";
-  if (sucessos > 0) mensagem += `${sucessos} turma(s) cadastrada(s) com sucesso.`;
-  if (erros.length > 0) mensagem += `\nErros:\n${erros.join('\n')}`;
+  if (sucessos > 0) mensagem += `${sucessos} turma(s) cadastrada(s) com sucesso. `;
+  if (erros.length > 0) mensagem += `Erros: ${erros.join(', ')}`;
   
   if (erros.length === 0) {
     mostrarToast(mensagem, "success");
