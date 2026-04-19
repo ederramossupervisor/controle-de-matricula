@@ -2357,3 +2357,6 @@ button:has(.spinner-btn) {
   background: #b91c1c !important;
   border-color: #b91c1c !important;
 }
+.btn-pequeno i {
+  margin-right: 4px;
+}
