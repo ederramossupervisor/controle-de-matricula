@@ -2474,6 +2474,8 @@ function checkbox(label, valor, row, coluna) {
 }
 
 async function salvarAlteracoesEmLote(row) {
+  console.log("🚀 salvarAlteracoesEmLote chamada para row:", row);
+  console.log("📦 alteracoesPendentes:", alteracoesPendentes);
   const alteracoes = [];
   
   for (let chave in alteracoesPendentes) {
