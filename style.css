@@ -1207,6 +1207,16 @@ input:focus, select:focus {
   box-shadow: 0 0 0 4px var(--input-focus-shadow);
 }
 
+/* Garantir que a Secretaria tenha todos os filtros na mesma linha */
+body.perfil-secretaria .filtros-container {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+body.perfil-secretaria .filtros-container .input-icon {
+  min-width: 120px;
+}
+
 /* =========================
    TURMAS (LISTAGEM)
    ========================= */
