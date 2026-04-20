@@ -1169,23 +1169,44 @@ input:focus, select:focus {
 .perfil-secretaria { background: #dcfce7; color: #166534; }
 
 /* =========================
-   FILTROS
+   FILTROS - LINHA ÚNICA COM SCROLL (OTIMIZADO)
    ========================= */
 .filtros-container {
   display: flex;
-  gap: 12px;
+  flex-wrap: nowrap !important;      /* 🔥 NUNCA quebra linha */
+  gap: 8px;
   padding: 20px 20px 0;
   align-items: center;
-  flex-wrap: wrap;
+  overflow-x: auto;                  /* Scroll horizontal quando necessário */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 8px;               /* Espaço para a scrollbar */
 }
 
+/* Barra de rolagem estilizada (opcional, mas mantém visual limpo) */
+.filtros-container::-webkit-scrollbar {
+  height: 4px;
+}
+.filtros-container::-webkit-scrollbar-track {
+  background: var(--card-border);
+  border-radius: 10px;
+}
+.filtros-container::-webkit-scrollbar-thumb {
+  background: var(--text-muted);
+  border-radius: 10px;
+}
+
+/* Cada item de filtro (wrapper do ícone + select) */
 .filtros-container .input-icon {
-  flex: 1 1 180px;
+  flex: 0 0 auto;                    /* Não cresce, não encolhe */
+  min-width: 130px;                  /* Largura mínima padrão */
+  width: auto;
 }
 
+/* Ajuste fino para selects dentro dos filtros */
 .filtros-container select {
-  padding: 14px 16px 14px 50px;
-  font-size: 16px;
+  padding: 12px 12px 12px 38px;      /* Reduzido para caber melhor */
+  font-size: 14px;
   border: 2px solid var(--input-border);
   border-radius: 40px;
   outline: none;
@@ -1196,27 +1217,29 @@ input:focus, select:focus {
   -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 16px center;
-  background-size: 16px;
+  background-position: right 12px center;
+  background-size: 14px;
   width: 100%;
   cursor: pointer;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.filtros-container select:focus {
-  border-color: var(--btn-primary-bg);
-  box-shadow: 0 0 0 4px var(--input-focus-shadow);
+/* Ícone dentro do filtro */
+.filtros-container .input-icon .icon {
+  left: 12px;
 }
 
-/* Garantir que a Secretaria tenha todos os filtros na mesma linha */
-body.perfil-secretaria .filtros-container {
-  flex-wrap: nowrap;
-  overflow-x: auto;
+/* Campo de busca (último filho) - pode crescer para ocupar espaço restante */
+.filtros-container .input-icon:last-child {
+  min-width: 180px;
+  flex: 1 1 auto;                   /* Cresce para preencher espaço disponível */
 }
 
-body.perfil-secretaria .filtros-container .input-icon {
-  min-width: 120px;
+/* Ajuste específico para o filtro de documento (se presente) */
+#filtroDocEspecificoWrapper {
+  min-width: 130px !important;
 }
-
 /* =========================
    TURMAS (LISTAGEM)
    ========================= */
