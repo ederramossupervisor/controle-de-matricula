@@ -231,6 +231,49 @@ function getDocIconStatus(entregue, prazoFinal, nomeDoc) {
     tooltip: `${nomeDoc}\n${statusTexto}`   // 🔥 Quebra de linha explícita
   };
 }
+
+function ajustarLarguraFiltros() {
+  if (perfilUsuario !== 'SECRETARIA') return; // Só ajusta para secretaria
+
+  const container = document.querySelector('.filtros-container');
+  if (!container) return;
+
+  const itens = container.querySelectorAll('.filtro-item');
+  if (itens.length === 0) return;
+
+  // Define larguras base (pode ajustar conforme necessidade)
+  const larguras = {
+    'filtroTurmaWrapper': 130,
+    'filtroStatusWrapper': 130,
+    'filtroSituacaoWrapper': 130,
+    'filtroDocEspecificoWrapper': 130,
+    'pesquisaNome': 160  // campo de busca pode ser um pouco maior
+  };
+
+  itens.forEach(item => {
+    const id = item.id;
+    if (larguras[id]) {
+      item.style.minWidth = larguras[id] + 'px';
+      item.style.width = larguras[id] + 'px';
+      item.style.flex = '0 0 auto';
+    }
+  });
+
+  // Ajusta o último item (busca) para crescer
+  const ultimoItem = container.querySelector('.input-icon:last-child');
+  if (ultimoItem) {
+    ultimoItem.style.flex = '1 1 auto';
+    ultimoItem.style.minWidth = '150px';
+  }
+
+  // Força o container a não quebrar linha
+  container.style.flexWrap = 'nowrap';
+  container.style.overflowX = 'auto';
+}
+
+// Chamar quando os filtros forem inicializados e quando a janela mudar de tamanho
+window.addEventListener('resize', ajustarLarguraFiltros);
+
 // Abre o modal e carrega turmas para o filtro
 function abrirModalInativos() {
   document.getElementById("modalInativos").style.display = "flex";
@@ -2229,6 +2272,7 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
     document.getElementById("app").style.display = "block";
 
     ajustarInterfacePorPerfil();
+    setTimeout(ajustarLarguraFiltros, 100);
     inicializarFiltros();
     preencherSelectsProcessos();
     preencherSelectEscolasDoc();
