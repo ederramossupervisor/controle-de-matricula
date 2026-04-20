@@ -2366,3 +2366,7 @@ body.perfil-secretaria .dropdown-content .btn-header[onclick*="abrirModalCadastr
 body.perfil-secretaria #btnTurmas {
   display: none !important;
 }
+/* Esconder botão Legalização para Secretaria */
+body.perfil-secretaria #btnLegalizacao {
+  display: none !important;
+}
