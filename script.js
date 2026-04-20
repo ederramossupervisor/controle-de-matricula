@@ -1165,6 +1165,18 @@ function extrairPrimeiroTelefone(telefones) {
   return match ? match[0] : telefones.split(/[e\s]+/)[0];
 }
 
+/**
+ * Normaliza uma string removendo espaços extras e caracteres invisíveis.
+ * @param {string} str - String a ser normalizada.
+ * @returns {string} - String limpa.
+ */
+function normalizarTexto(str) {
+  if (!str) return '';
+  // Substitui qualquer sequência de espaços (incluindo não quebráveis) por um único espaço
+  // e remove espaços do início e fim.
+  return str.replace(/\s+/g, ' ').trim();
+}
+
 function processarCSV() {
   const fileInput = document.getElementById('arquivoCSV');
   const file = fileInput.files[0];
