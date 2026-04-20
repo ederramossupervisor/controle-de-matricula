@@ -2360,3 +2360,9 @@ button:has(.spinner-btn) {
 .btn-pequeno i {
   margin-right: 4px;
 }
+/* Esconder botões de administração para Secretaria */
+body.perfil-secretaria .dropdown-content .btn-header[onclick*="abrirModalListaUsuarios"],
+body.perfil-secretaria .dropdown-content .btn-header[onclick*="abrirModalCadastroUsuario"],
+body.perfil-secretaria #btnTurmas {
+  display: none !important;
+}
