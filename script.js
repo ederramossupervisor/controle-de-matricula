@@ -2468,7 +2468,7 @@ function ajustarInterfacePorPerfil() {
     if (btnTurmas) btnTurmas.style.display = "inline-block";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "block";
     if (btnModelos) btnModelos.style.display = "inline-block";
-    if (filtroDocEspecificoWrapper) filtroDocEspecificoWrapper.style.display = "block";  // 🔥 NOVO
+    if (filtroDocEspecificoWrapper) filtroDocEspecificoWrapper.style.display = "none";  // 🔥 NOVO
 
     // Regra específica para o botão Importar CSV:
     if (isSupervisorMaster) {
