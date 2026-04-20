@@ -721,7 +721,7 @@
       </div>
     
       <!-- Filtro de Turma -->
-      <div class="filtro-item input-icon"  id="filtroTurmaWrapper" style="min-width: 180px;">
+      <div class="input-icon" id="filtroTurmaWrapper" style="min-width: 180px;">
         <span class="icon"><i class="fas fa-book"></i></span>
         <select id="filtroTurma" onchange="aplicarFiltros()">
           <option value="">Todas as turmas</option>
@@ -729,7 +729,7 @@
       </div>
     
       <!-- Filtro de Status -->
-      <div class="filtro-item input-icon" id="filtroStatusWrapper" style="min-width: 160px;">
+      <div class="input-icon" id="filtroStatusWrapper" style="min-width: 160px;">
         <span class="icon"><i class="fas fa-chart-bar"></i></span>
         <select id="filtroStatus" onchange="aplicarFiltros()">
           <option value="">Todos os status</option>
@@ -737,8 +737,7 @@
           <option value="⚠️ Pendente / Vencido">⚠️ Pendente / Vencido</option>
         </select>
       </div>
-      
-      <div class="filtro-item input-icon" id="filtroSituacaoWrapper">
+      <div class="input-icon" id="filtroSituacaoWrapper">
         <span class="icon"><i class="fas fa-thumbtack"></i></span>
         <select id="filtroSituacao" onchange="aplicarFiltros()">
           <option value="">Todas as situações</option>
@@ -748,27 +747,12 @@
         </select>
       </div>
       <!-- Pesquisa por nome -->
-      <div class="filtro-item input-icon" style="flex:2; min-width: 200px;">
+      <div class="input-icon" style="flex:2; min-width: 200px;">
         <span class="icon"><i class="fas fa-search"></i></span>
         <input type="text" id="pesquisaNome" placeholder="Buscar aluno por nome...">
       </div>
     </div>
-    <!-- Pesquisa por documento -->
-    <div class="filtro-item input-icon"  id="filtroDocEspecificoWrapper" style="min-width: 180px;">
-      <span class="icon"><i class="fas fa-file-alt"></i></span>
-      <select id="filtroDocEspecifico" onchange="aplicarFiltros()">
-        <option value="">Todos os documentos</option>
-        <option value="CERTIDAO">Falta Certidão</option>
-        <option value="CPF">Falta CPF</option>
-        <option value="RG">Falta RG</option>
-        <option value="VACINA">Falta Vacina</option>
-        <option value="SUS">Falta Cartão SUS</option>
-        <option value="RESIDENCIA">Falta Comprovante Residência</option>
-        <option value="RESP_DOCS">Falta Documentos Responsável</option>
-        <option value="HISTORICO">Falta Histórico</option>
-        <option value="DECL_TRANSF">Falta Declaração Transferência</option>
-      </select>
-    </div>
+    
     <!-- PAINEL DE MÉTRICAS -->
     <div id="painel" class="painel-metricas">
       <!-- Será preenchido via JS -->
