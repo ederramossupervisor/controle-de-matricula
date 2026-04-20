@@ -1623,7 +1623,8 @@ function renderizarListaProcessos(processos) {
   const container = document.getElementById("listaProcessosContainer");
   container.innerHTML = "";
   
-  if (!processos || processos.length === 0) {
+  // 🔥 Verifica se é um array válido
+  if (!Array.isArray(processos) || processos.length === 0) {
     container.innerHTML = "<p>Nenhum processo encontrado.</p>";
     return;
   }
