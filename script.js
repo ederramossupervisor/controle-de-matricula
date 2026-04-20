@@ -231,49 +231,6 @@ function getDocIconStatus(entregue, prazoFinal, nomeDoc) {
     tooltip: `${nomeDoc}\n${statusTexto}`   // 🔥 Quebra de linha explícita
   };
 }
-
-function ajustarLarguraFiltros() {
-  if (perfilUsuario !== 'SECRETARIA') return; // Só ajusta para secretaria
-
-  const container = document.querySelector('.filtros-container');
-  if (!container) return;
-
-  const itens = container.querySelectorAll('.filtro-item');
-  if (itens.length === 0) return;
-
-  // Define larguras base (pode ajustar conforme necessidade)
-  const larguras = {
-    'filtroTurmaWrapper': 130,
-    'filtroStatusWrapper': 130,
-    'filtroSituacaoWrapper': 130,
-    'filtroDocEspecificoWrapper': 130,
-    'pesquisaNome': 160  // campo de busca pode ser um pouco maior
-  };
-
-  itens.forEach(item => {
-    const id = item.id;
-    if (larguras[id]) {
-      item.style.minWidth = larguras[id] + 'px';
-      item.style.width = larguras[id] + 'px';
-      item.style.flex = '0 0 auto';
-    }
-  });
-
-  // Ajusta o último item (busca) para crescer
-  const ultimoItem = container.querySelector('.input-icon:last-child');
-  if (ultimoItem) {
-    ultimoItem.style.flex = '1 1 auto';
-    ultimoItem.style.minWidth = '150px';
-  }
-
-  // Força o container a não quebrar linha
-  container.style.flexWrap = 'nowrap';
-  container.style.overflowX = 'auto';
-}
-
-// Chamar quando os filtros forem inicializados e quando a janela mudar de tamanho
-window.addEventListener('resize', ajustarLarguraFiltros);
-
 // Abre o modal e carrega turmas para o filtro
 function abrirModalInativos() {
   document.getElementById("modalInativos").style.display = "flex";
@@ -2216,7 +2173,6 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
   if (filtros.nome) url += `&nome=${encodeURIComponent(filtros.nome)}`;
   if (filtros.status) url += `&status=${encodeURIComponent(filtros.status)}`;
   if (filtros.situacao) url += `&situacao=${encodeURIComponent(filtros.situacao)}`;
-  if (filtros.docEspecifico) url += `&docEspecifico=${encodeURIComponent(filtros.docEspecifico)}`;
   
   jsonp(url, function(dados) {
     if (dados.erro) {
@@ -2272,7 +2228,6 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
     document.getElementById("app").style.display = "block";
 
     ajustarInterfacePorPerfil();
-    setTimeout(ajustarLarguraFiltros, 100);
     inicializarFiltros();
     preencherSelectsProcessos();
     preencherSelectEscolasDoc();
@@ -2482,9 +2437,6 @@ function ajustarInterfacePorPerfil() {
     if (btnLegalizacao) btnLegalizacao.style.display = "none";
   }
 
-  // 🔥 NOVO: controle do filtro de documento específico
-  const filtroDocEspecificoWrapper = document.getElementById("filtroDocEspecificoWrapper");
-
   if (perfilUsuario === "SECRETARIA") {
     // Secretaria
     if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "none";
@@ -2497,8 +2449,7 @@ function ajustarInterfacePorPerfil() {
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "none";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "none";
-    if (btnModelos) btnModelos.style.display = "inline-block";
-    if (filtroDocEspecificoWrapper) filtroDocEspecificoWrapper.style.display = "block";  // 🔥 NOVO
+    if (btnModelos) btnModelos.style.display = "inline-block"; // NOVO
 
   } else if (perfilUsuario === "SUPERVISOR") {
     // Supervisor: regras gerais
@@ -2511,8 +2462,7 @@ function ajustarInterfacePorPerfil() {
     if (filtrosContainer) filtrosContainer.style.display = "flex";
     if (btnTurmas) btnTurmas.style.display = "inline-block";
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "block";
-    if (btnModelos) btnModelos.style.display = "inline-block";
-    if (filtroDocEspecificoWrapper) filtroDocEspecificoWrapper.style.display = "none";  // 🔥 NOVO
+    if (btnModelos) btnModelos.style.display = "inline-block"; // NOVO
 
     // Regra específica para o botão Importar CSV:
     if (isSupervisorMaster) {
@@ -2626,8 +2576,7 @@ function aplicarFiltros(pagina = 1) {
     turma: document.getElementById("filtroTurma")?.value || "",
     status: document.getElementById("filtroStatus")?.value || "",
     situacao: document.getElementById("filtroSituacao")?.value || "",
-    nome: document.getElementById("pesquisaNome")?.value.toLowerCase() || "",
-    docEspecifico: document.getElementById("filtroDocEspecifico")?.value || ""   // 🔥 NOVA LINHA
+    nome: document.getElementById("pesquisaNome")?.value.toLowerCase() || ""
   };
   
   carregarAlunos(pagina, filtros);
