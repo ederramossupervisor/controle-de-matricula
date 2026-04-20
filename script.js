@@ -1197,7 +1197,7 @@ function processarCSV() {
             responsavel: linha['Aluno: Nome do responsável'] || '',
             telefone: extrairPrimeiroTelefone(linha['Aluno: Telefones']),
             escola: linha['Escola: Nome'] || '',
-            turma: linha['Turma: Nome'] || '',
+            turma: normalizarTexto(linha['Turma: Nome'] || ''),
             dataMatricula: dataMatricula,
             edEspecial: edEspecial,
             cpfAluno: linha['Aluno: CPF'] || '',
