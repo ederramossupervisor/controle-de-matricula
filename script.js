@@ -2189,6 +2189,9 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
     }
 
     perfilUsuario = dados.perfil;
+    document.body.classList.remove('perfil-supervisor', 'perfil-secretaria');
+    document.body.classList.add(perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria');
+    
     escolaUsuario = dados.escola;
 
     document.getElementById("escolaUsuarioDisplay").textContent = 
