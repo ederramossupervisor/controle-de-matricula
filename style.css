@@ -1357,6 +1357,28 @@ textarea:focus {
 }
 
 
+/* Estilização aprimorada para selects dentro de .input-icon */
+.input-icon select {
+  width: 100%;
+  padding: 16px 16px 16px 50px;   /* espaço para o ícone */
+  font-size: 16px;
+  border: 2px solid var(--input-border);
+  border-radius: 18px;
+  outline: none;
+  transition: all 0.2s ease;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  /* Seta personalizada */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+  cursor: pointer;
+}
+
 .input-icon select:focus {
   border-color: var(--btn-primary-bg);
   box-shadow: 0 0 0 4px var(--input-focus-shadow);
@@ -2370,37 +2392,4 @@ button:has(.spinner-btn) {
 }
 .btn-pequeno i {
   margin-right: 4px;
-}
-/* =========================
-   SECRETARIA - FILTROS COMPACTOS
-   ========================= */
-body.perfil-secretaria .filtros-container {
-  flex-wrap: nowrap !important;
-  overflow-x: auto;
-  gap: 6px;
-  padding-bottom: 8px;
-}
-
-body.perfil-secretaria .filtros-container .input-icon {
-  min-width: 115px !important;
-  flex: 0 0 auto !important;
-}
-
-body.perfil-secretaria .filtros-container select {
-  padding: 10px 8px 10px 34px !important;
-  font-size: 13px !important;
-}
-
-body.perfil-secretaria .filtros-container .input-icon .icon {
-  left: 10px !important;
-}
-
-body.perfil-secretaria #filtroDocEspecificoWrapper {
-  min-width: 115px !important;
-}
-
-/* Campo de busca pode crescer */
-body.perfil-secretaria .filtros-container .input-icon:last-child {
-  min-width: 150px !important;
-  flex: 1 1 auto !important;
 }
