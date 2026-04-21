@@ -3685,6 +3685,71 @@ document.getElementById("modalCadastroUsuario").addEventListener("click", functi
   if (e.target === this) fecharModalCadastroUsuario();
 });
 
+// =========================
+// ATALHOS DE TECLADO
+// =========================
+document.addEventListener('keydown', function(e) {
+  // Só ativa os atalhos se o sistema estiver logado (app visível)
+  const app = document.getElementById('app');
+  if (!app || app.style.display === 'none') return;
+
+  // Ignora se o usuário estiver digitando em um campo de texto/input
+  const tag = e.target.tagName.toLowerCase();
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+    // Exceto para Ctrl+F, que queremos focar no campo de busca mesmo se já estiver em outro input?
+    // Vamos permitir Ctrl+F mesmo em inputs, mas não abrir modais.
+    if (!(e.ctrlKey && e.key === 'f')) {
+      return;
+    }
+  }
+
+  // Ctrl + N: Novo Aluno
+  if (e.ctrlKey && e.key === 'n') {
+    e.preventDefault();  // Evita abrir nova janela do navegador
+    abrirNovoAluno();
+  }
+
+  // Ctrl + F: Focar no campo de busca
+  if (e.ctrlKey && e.key === 'f') {
+    e.preventDefault();  // Evita a busca do navegador
+    const inputBusca = document.getElementById('pesquisaNome');
+    if (inputBusca) {
+      inputBusca.focus();
+      inputBusca.select(); // seleciona o texto existente para facilitar a digitação
+    }
+  }
+
+  // Esc: Fechar modais abertos
+  if (e.key === 'Escape') {
+    // Lista de funções de fechamento dos modais (prioridade: do mais específico para o geral)
+    const modaisAbertos = [
+      { element: document.getElementById('modalDetalhes'), close: fecharModalDetalhes },
+      { element: document.getElementById('modalChecklistLote'), close: fecharModalChecklistLote },
+      { element: document.getElementById('modalDocumentos'), close: fecharModalDocumentos },
+      { element: document.getElementById('modalModelos'), close: fecharModalModelos },
+      { element: document.getElementById('modalInativos'), close: fecharModalInativos },
+      { element: document.getElementById('modalProcessos'), close: fecharModalProcessos },
+      { element: document.getElementById('modalLegalizacao'), close: fecharModalLegalizacao },
+      { element: document.getElementById('modalTurmas'), close: fecharModalTurmas },
+      { element: document.getElementById('modalCadastroTurma'), close: fecharModalCadastroTurma },
+      { element: document.getElementById('modalListaUsuarios'), close: fecharModalListaUsuarios },
+      { element: document.getElementById('modalCadastroUsuario'), close: fecharModalCadastroUsuario },
+      { element: document.getElementById('modalAlterarSenha'), close: fecharModalAlterarSenha },
+      { element: document.getElementById('modalImportacao'), close: fecharModalImportacao },
+      { element: document.getElementById('modalExportacao'), close: fecharModalExportacao },
+      { element: document.getElementById('novoAluno'), close: voltarApp } // modal de novo aluno usa voltarApp
+    ];
+
+    for (let modal of modaisAbertos) {
+      if (modal.element && modal.element.style.display === 'flex') {
+        e.preventDefault();
+        modal.close();
+        break; // fecha apenas o primeiro encontrado (o mais "superficial")
+      }
+    }
+  }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   // Adiciona estilo para tooltip abaixo (com !important para garantir)
   const style = document.createElement('style');
