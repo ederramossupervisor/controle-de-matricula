@@ -756,7 +756,7 @@
       <!-- Filtro de Escola (visível apenas para supervisor) -->
       <div class="input-icon" id="filtroEscolaWrapper" style="min-width: 200px;">
         <span class="icon"><i class="fas fa-school"></i></span>
-        <select id="filtroEscola" onchange="aplicarFiltros()">
+        <select id="filtroEscola" onchange="carregarTurmasParaFiltro(); aplicarFiltros();">
           <option value="">Todas as escolas</option>
         </select>
       </div>
