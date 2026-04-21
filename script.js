@@ -2506,6 +2506,14 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
 function renderLista(dados) {
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
+
+  if (modoVisualizacao === 'lista') {
+    lista.style.display = 'block';
+    lista.style.padding = '0 20px 20px';
+    renderTabela(dados, lista);
+    return;
+  }
+  
   lista.style.display = "grid";
   lista.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))";
   lista.style.gap = "12px";
@@ -2628,6 +2636,109 @@ function renderLista(dados) {
 
     lista.appendChild(div);
   });
+}
+
+function renderTabela(alunos, container) {
+  const tabela = document.createElement('table');
+  tabela.className = 'tabela-alunos';
+  tabela.style.width = '100%';
+  tabela.style.borderCollapse = 'collapse';
+  tabela.style.fontSize = '14px';
+  
+  // Cabeçalho
+  const thead = document.createElement('thead');
+  thead.innerHTML = `
+    <tr style="border-bottom: 2px solid var(--card-border);">
+      <th style="padding: 12px 8px; text-align: left;">Nome</th>
+      <th style="padding: 12px 8px; text-align: left;">Turma</th>
+      <th style="padding: 12px 8px; text-align: left;">Status</th>
+      <th style="padding: 12px 8px; text-align: left;">Docs Pendentes</th>
+      <th style="padding: 12px 8px; text-align: left;">Prazo</th>
+      <th style="padding: 12px 8px; text-align: center;">Ações</th>
+    </tr>
+  `;
+  tabela.appendChild(thead);
+  
+  // Corpo
+  const tbody = document.createElement('tbody');
+  alunos.forEach(aluno => {
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--card-border)';
+    tr.style.transition = 'background 0.1s';
+    tr.addEventListener('mouseenter', () => tr.style.background = 'var(--card-border)');
+    tr.addEventListener('mouseleave', () => tr.style.background = 'transparent');
+    
+    // Nome
+    const tdNome = document.createElement('td');
+    tdNome.style.padding = '10px 8px';
+    tdNome.textContent = aluno.ALUNO;
+    tdNome.style.maxWidth = '200px';
+    tdNome.style.overflow = 'hidden';
+    tdNome.style.textOverflow = 'ellipsis';
+    tdNome.style.whiteSpace = 'nowrap';
+    tdNome.title = aluno.ALUNO;
+    
+    // Turma
+    const tdTurma = document.createElement('td');
+    tdTurma.style.padding = '10px 8px';
+    tdTurma.textContent = aluno.TURMA || '—';
+    
+    // Status (badge)
+    const tdStatus = document.createElement('td');
+    tdStatus.style.padding = '10px 8px';
+    let statusClass = '';
+    if (aluno.STATUS.includes('✅')) statusClass = 'status-completo';
+    else if (aluno.STATUS.includes('⚠️')) statusClass = 'status-pendente';
+    else if (aluno.STATUS.includes('🔴')) statusClass = 'status-vencido';
+    tdStatus.innerHTML = `<span class="status-badge ${statusClass}" style="padding:2px 8px; border-radius:40px; font-size:12px;">${aluno.STATUS}</span>`;
+    
+    // Docs Pendentes (ícones apenas dos que faltam)
+    const tdDocs = document.createElement('td');
+    tdDocs.style.padding = '10px 8px';
+    const pendentes = [];
+    CONFIG_DOCS_CARD.forEach(doc => {
+      if (!aluno[doc.coluna]) {
+        pendentes.push(`<span class="doc-icon pendente" data-tooltip="${doc.label} - Pendente" style="margin-right:4px;"><i class="fas ${doc.icone}"></i></span>`);
+      }
+    });
+    if (aluno.ED_ESPECIAL && !aluno.ED_ESPECIAL) {
+      // Se for Ed. Especial e o laudo estiver pendente (não temos coluna separada, mas podemos inferir)
+    }
+    tdDocs.innerHTML = pendentes.join('') || '<span style="color: var(--text-muted);">—</span>';
+    
+    // Prazo
+    const tdPrazo = document.createElement('td');
+    tdPrazo.style.padding = '10px 8px';
+    let prazoTexto = '';
+    if (aluno.STATUS !== '✅ Completo' && aluno.PRAZO_FINAL) {
+      const hoje = new Date(); hoje.setHours(0,0,0,0);
+      const prazo = new Date(aluno.PRAZO_FINAL); prazo.setHours(0,0,0,0);
+      const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
+      if (diff < 0) prazoTexto = `Vencido há ${Math.abs(diff)} d`;
+      else if (diff === 0) prazoTexto = 'Vence hoje';
+      else prazoTexto = `${diff} dias`;
+    } else {
+      prazoTexto = '—';
+    }
+    tdPrazo.textContent = prazoTexto;
+    
+    // Ações (olho)
+    const tdAcoes = document.createElement('td');
+    tdAcoes.style.padding = '10px 8px';
+    tdAcoes.style.textAlign = 'center';
+    tdAcoes.innerHTML = `<button onclick="abrirAluno(${aluno._row})" class="btn-icone" data-tooltip="Abrir ficha" style="width:32px; height:32px;"><i class="fas fa-eye"></i></button>`;
+    
+    tr.appendChild(tdNome);
+    tr.appendChild(tdTurma);
+    tr.appendChild(tdStatus);
+    tr.appendChild(tdDocs);
+    tr.appendChild(tdPrazo);
+    tr.appendChild(tdAcoes);
+    tbody.appendChild(tr);
+  });
+  
+  tabela.appendChild(tbody);
+  container.appendChild(tabela);
 }
 
 function ajustarOpcoesCadastroUsuario() {
