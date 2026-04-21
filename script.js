@@ -2208,9 +2208,10 @@ async function carregarTurmasParaFiltro() {
     return;
   }
 
-  // 🔥 Salva o valor atualmente selecionado ANTES de recarregar
+  // 🔥 Salva o valor atual antes de qualquer modificação
   const valorSelecionado = selectTurma.value;
 
+  // Mostra "Carregando..."
   selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
 
   const url = `${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escolaFiltro)}`;
@@ -2227,18 +2228,23 @@ async function carregarTurmasParaFiltro() {
       selectTurma.appendChild(opt);
     });
     
-    // 🔥 Restaura a seleção anterior (inclusive se for vazia)
-    // Verifica se a opção ainda existe (pode ter sido removida da escola)
+    // 🔥 Restaura o valor sem disparar eventos
+    // Verifica se a opção ainda existe
     const existe = Array.from(selectTurma.options).some(opt => opt.value === valorSelecionado);
     if (existe) {
       selectTurma.value = valorSelecionado;
     } else {
-      // Se a opção não existe mais (ex.: turma removida), volta para "Todas as turmas"
       selectTurma.value = "";
     }
     
-    // Se o valor restaurado for diferente de vazio, aplicamos o filtro? 
-    // Não, pois isso já é feito pelo onchange. Apenas garantimos a seleção visual.
+    // 🔥🔥🔥 CRUCIAL: Remove o listener temporariamente para evitar loop
+    const originalOnChange = selectTurma.onchange;
+    selectTurma.onchange = null;
+    
+    // Aguarda um tick para o navegador processar
+    setTimeout(() => {
+      selectTurma.onchange = originalOnChange;
+    }, 50);
   });
 }
 function abrirModalTurmas() {
