@@ -2584,6 +2584,32 @@ function preencherFiltroEscolas() {
   });
 }
 
+/**
+ * Limpa todos os campos de filtro e recarrega a lista sem restrições.
+ */
+function limparFiltros() {
+  // Reseta os selects para a primeira opção (valor vazio)
+  const filtroEscola = document.getElementById('filtroEscola');
+  const filtroTurma = document.getElementById('filtroTurma');
+  const filtroStatus = document.getElementById('filtroStatus');
+  const filtroSituacao = document.getElementById('filtroSituacao');
+  const filtroDocEspecifico = document.getElementById('filtroDocEspecifico');
+  const pesquisaNome = document.getElementById('pesquisaNome');
+  
+  if (filtroEscola) filtroEscola.value = '';
+  if (filtroTurma) filtroTurma.value = '';
+  if (filtroStatus) filtroStatus.value = '';
+  if (filtroSituacao) filtroSituacao.value = '';
+  if (filtroDocEspecifico) filtroDocEspecifico.value = '';
+  if (pesquisaNome) pesquisaNome.value = '';
+  
+  // Recarrega a lista sem filtros (página 1)
+  aplicarFiltros(1);
+  
+  // Feedback visual opcional
+  mostrarToast('Filtros limpos', 'info', 1500);
+}
+
 function aplicarFiltros(pagina = 1) {
   console.log("✅ aplicarFiltros chamada com página:", pagina);
   const filtros = {
