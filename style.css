@@ -2403,3 +2403,32 @@ body.perfil-secretaria #btnLegalizacao {
   transform: translateX(24px);
   color: var(--btn-primary-bg);
 }
+#lista.modo-lista {
+  display: block !important;
+  overflow-x: auto;
+  padding: 0 20px 20px;
+}
+
+.tabela-alunos {
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  border: 1px solid var(--card-border);
+}
+
+.tabela-alunos th {
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--card-border);
+  white-space: nowrap;
+}
+
+.tabela-alunos td {
+  white-space: nowrap;
+}
+
+/* Ajuste para tooltips dentro da tabela */
+.tabela-alunos .doc-icon {
+  display: inline-block;
+  margin: 0 2px;
+}
