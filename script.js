@@ -2208,14 +2208,17 @@ async function carregarTurmasParaFiltro() {
     return;
   }
 
-  // 🔥 Salva o valor atualmente selecionado antes de recarregar
+  // 🔥 Salva o valor atualmente selecionado ANTES de recarregar
   const valorSelecionado = selectTurma.value;
 
   selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
 
   const url = `${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escolaFiltro)}`;
+  
   jsonp(url, function(turmas) {
     turmasDisponiveis = turmas;
+    
+    // Reconstroi as opções
     selectTurma.innerHTML = '<option value="">Todas as turmas</option>';
     turmas.forEach(t => {
       const opt = document.createElement("option");
@@ -2224,14 +2227,18 @@ async function carregarTurmasParaFiltro() {
       selectTurma.appendChild(opt);
     });
     
-    // 🔥 Restaura a seleção anterior, se ainda existir nas opções
-    if (valorSelecionado) {
-      // Verifica se a opção ainda existe (pode ter sido removida da escola)
-      const existe = Array.from(selectTurma.options).some(opt => opt.value === valorSelecionado);
-      if (existe) {
-        selectTurma.value = valorSelecionado;
-      }
+    // 🔥 Restaura a seleção anterior (inclusive se for vazia)
+    // Verifica se a opção ainda existe (pode ter sido removida da escola)
+    const existe = Array.from(selectTurma.options).some(opt => opt.value === valorSelecionado);
+    if (existe) {
+      selectTurma.value = valorSelecionado;
+    } else {
+      // Se a opção não existe mais (ex.: turma removida), volta para "Todas as turmas"
+      selectTurma.value = "";
     }
+    
+    // Se o valor restaurado for diferente de vazio, aplicamos o filtro? 
+    // Não, pois isso já é feito pelo onchange. Apenas garantimos a seleção visual.
   });
 }
 function abrirModalTurmas() {
