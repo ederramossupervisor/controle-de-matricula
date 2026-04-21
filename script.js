@@ -2972,23 +2972,42 @@ function checkbox(label, valor, row, coluna) {
 }
 
 async function salvarAlteracoesEmLote(row) {
-  console.log("🚀 salvarAlteracoesEmLote chamada para row:", row);
-  console.log("📦 alteracoesPendentes:", alteracoesPendentes);
-  const alteracoes = [];
+  if (!dadosAlunoAtual || dadosAlunoAtual._row != row) return;
   
+  // 1. Capturar alterações de documentos (checkboxes)
+  const alteracoesDocs = [];
   for (let chave in alteracoesPendentes) {
     const [linha, coluna] = chave.split('_').map(Number);
     if (linha === row) {
-      alteracoes.push({
+      alteracoesDocs.push({
         row: linha,
         coluna: coluna,
         valor: alteracoesPendentes[chave],
-        escola: dadosAlunoAtual.ESCOLA   // 🔥 ADICIONE ESTA LINHA
+        escola: dadosAlunoAtual.ESCOLA
       });
     }
   }
   
-  if (alteracoes.length === 0) {
+  // 2. Capturar valores atuais dos campos editáveis
+  const nome = document.getElementById("editNomeAluno").value.trim();
+  const responsavel = document.getElementById("editResponsavel").value.trim();
+  const telefone = coletarTelefonesEdicao();
+  const turma = document.getElementById("editTurma").value;
+  const edEspecial = document.getElementById("editEdEspecial").checked;
+  const observacoes = document.getElementById("observacoesAluno")?.value || "";
+  
+  // 3. Verificar se houve alteração nos dados básicos
+  const dadosBasicosAlterados = (
+    nome !== dadosAlunoAtual.ALUNO ||
+    responsavel !== dadosAlunoAtual.RESPONSAVEL ||
+    telefone !== dadosAlunoAtual.TELEFONE ||
+    turma !== dadosAlunoAtual.TURMA ||
+    edEspecial !== dadosAlunoAtual.ED_ESPECIAL ||
+    observacoes !== (dadosAlunoAtual.OBSERVACOES || "")
+  );
+  
+  // 4. Se nada foi alterado, avisa e sai
+  if (alteracoesDocs.length === 0 && !dadosBasicosAlterados) {
     mostrarToast("Nenhuma alteração para salvar.", "warning");
     return;
   }
@@ -2996,22 +3015,66 @@ async function salvarAlteracoesEmLote(row) {
   const btn = document.getElementById("btnSalvarDetalhes");
   showButtonLoading(btn);
   
-  const dados = {
-    acao: "atualizarDocumentosEmLote",
-    alteracoes: alteracoes,
-    email: emailUsuario
-  };
-  
-  postSemResposta(dados, "Documentos atualizados com sucesso!", () => {
-    for (let chave in alteracoesPendentes) {
-      const [linha] = chave.split('_').map(Number);
-      if (linha === row) delete alteracoesPendentes[chave];
+  try {
+    // 5. Salvar dados básicos (se houver alteração)
+    if (dadosBasicosAlterados) {
+      const dadosBasicos = {
+        acao: "atualizarDadosAluno",
+        row: row,
+        escola: dadosAlunoAtual.ESCOLA,
+        nome: nome,
+        responsavel: responsavel,
+        telefone: telefone,
+        turma: turma,
+        edEspecial: edEspecial,
+        observacoes: observacoes,
+        email: emailUsuario
+      };
+      
+      // Envia e aguarda (usando Promise para sincronizar)
+      await new Promise((resolve, reject) => {
+        postSemResposta(dadosBasicos, "", () => resolve());
+      });
+      
+      // Atualiza objeto local
+      dadosAlunoAtual.ALUNO = nome;
+      dadosAlunoAtual.RESPONSAVEL = responsavel;
+      dadosAlunoAtual.TELEFONE = telefone;
+      dadosAlunoAtual.TURMA = turma;
+      dadosAlunoAtual.ED_ESPECIAL = edEspecial;
+      dadosAlunoAtual.OBSERVACOES = observacoes;
+      document.getElementById("detalhesTitulo").textContent = nome;
     }
     
-    hideButtonLoading(btn);
+    // 6. Salvar documentos (se houver alteração)
+    if (alteracoesDocs.length > 0) {
+      const dadosLote = {
+        acao: "atualizarDocumentosEmLote",
+        alteracoes: alteracoesDocs,
+        email: emailUsuario
+      };
+      
+      await new Promise((resolve, reject) => {
+        postSemResposta(dadosLote, "", () => resolve());
+      });
+      
+      // Limpa pendências dos documentos salvos
+      for (let chave in alteracoesPendentes) {
+        const [linha] = chave.split('_').map(Number);
+        if (linha === row) delete alteracoesPendentes[chave];
+      }
+    }
+    
+    mostrarToast("Alterações salvas com sucesso!", "success");
     fecharModalDetalhes();
-    carregarAlunos();
-  });
+    carregarAlunos(); // recarrega lista principal
+    
+  } catch (error) {
+    console.error("Erro ao salvar:", error);
+    mostrarToast("Erro ao salvar. Tente novamente.", "error");
+  } finally {
+    hideButtonLoading(btn);
+  }
 }
 // =========================
 // ATUALIZAR
