@@ -2596,33 +2596,26 @@ function preencherFiltroEscolas() {
  * Limpa todos os campos de filtro e recarrega a lista sem restrições.
  */
 function limparFiltros() {
-  // Lista dos selects de filtro (IDs confirmados no HTML)
-  const selects = [
-    'filtroEscola',
-    'filtroTurma',
-    'filtroStatus',
-    'filtroSituacao'
-  ];
+  // IDs dos selects
+  const ids = ['filtroEscola', 'filtroTurma', 'filtroStatus', 'filtroSituacao'];
   
-  // Reseta cada select para a opção padrão (value = "")
-  selects.forEach(id => {
+  ids.forEach(id => {
     const select = document.getElementById(id);
     if (select) {
-      select.value = "";
-      // Se houver listeners de change, eles serão acionados
+      select.value = '';
+      // Dispara evento change para que qualquer lógica vinculada seja executada
+      select.dispatchEvent(new Event('change', { bubbles: true }));
     }
   });
   
-  // Limpa o campo de busca
   const inputNome = document.getElementById('pesquisaNome');
   if (inputNome) {
-    inputNome.value = "";
+    inputNome.value = '';
+    inputNome.dispatchEvent(new Event('input', { bubbles: true }));
   }
   
-  // Recarrega a lista SEM filtros (página 1)
   aplicarFiltros(1);
-  
-  mostrarToast('Todos os filtros foram limpos', 'info', 1500);
+  mostrarToast('Filtros limpos', 'info', 1500);
 }
 function aplicarFiltros(pagina = 1) {
   console.log("✅ aplicarFiltros chamada com página:", pagina);
