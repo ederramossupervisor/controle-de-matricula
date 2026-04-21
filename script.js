@@ -2435,7 +2435,7 @@ function abrirModalDetalhes(aluno) {
   
   html += `</div>`; // fecha checkboxes-container
 
-  // 🔥 CAMPO DE OBSERVAÇÕES
+  // Campo de observações
   const observacoesEscapadas = (aluno.OBSERVACOES || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   html += `
     <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
@@ -2453,9 +2453,32 @@ function abrirModalDetalhes(aluno) {
   preencherCamposTelefoneEdicao(aluno.TELEFONE || "");
   document.getElementById("editEdEspecial").checked = aluno.ED_ESPECIAL === true;
   
+  // Adicionar campo CPF se não existir no DOM (criar dinamicamente)
+  let cpfInput = document.getElementById("editCpfNumero");
+  if (!cpfInput) {
+    // Se o campo não existir, adicionar na seção de informações (você pode adicionar via JS ou deixar no HTML)
+    const infoDiv = document.querySelector("#modalDetalhes .modal-body .input-icon:first-child")?.parentElement;
+    if (infoDiv) {
+      const cpfField = document.createElement('div');
+      cpfField.className = 'input-icon';
+      cpfField.innerHTML = `
+        <span class="icon"><i class="fas fa-id-card"></i></span>
+        <input type="text" id="editCpfNumero" placeholder="CPF" value="${aluno.CPF_NUMERO || ''}" oninput="aplicarMascaraCPF(this)">
+      `;
+      // Inserir após o campo de responsável (você pode ajustar)
+      const respField = document.getElementById("editResponsavel")?.closest('.input-icon');
+      if (respField && respField.parentNode) {
+        respField.parentNode.insertBefore(cpfField, respField.nextSibling);
+      }
+    }
+  } else {
+    cpfInput.value = aluno.CPF_NUMERO || '';
+  }
+  
   carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
   document.getElementById("modalDetalhes").style.display = "flex";
 }
+
 function toggleTodosDocumentos() {
   const container = document.querySelector('#modalDetalhes .checkboxes-container');
   if (!container) return;
@@ -2987,7 +3010,7 @@ function checkbox(label, valor, row, coluna) {
 async function salvarAlteracoesEmLote(row) {
   if (!dadosAlunoAtual || dadosAlunoAtual._row != row) return;
   
-  // 1. Capturar alterações de documentos (checkboxes)
+  // 1. Capturar alterações de documentos
   const alteracoesDocs = [];
   for (let chave in alteracoesPendentes) {
     const [linha, coluna] = chave.split('_').map(Number);
@@ -3008,6 +3031,7 @@ async function salvarAlteracoesEmLote(row) {
   const turma = document.getElementById("editTurma").value;
   const edEspecial = document.getElementById("editEdEspecial").checked;
   const observacoes = document.getElementById("observacoesAluno")?.value || "";
+  const cpfNumero = document.getElementById("editCpfNumero")?.value.trim() || "";
   
   // 3. Verificar se houve alteração nos dados básicos
   const dadosBasicosAlterados = (
@@ -3016,7 +3040,8 @@ async function salvarAlteracoesEmLote(row) {
     telefone !== dadosAlunoAtual.TELEFONE ||
     turma !== dadosAlunoAtual.TURMA ||
     edEspecial !== dadosAlunoAtual.ED_ESPECIAL ||
-    observacoes !== (dadosAlunoAtual.OBSERVACOES || "")
+    observacoes !== (dadosAlunoAtual.OBSERVACOES || "") ||
+    cpfNumero !== (dadosAlunoAtual.CPF_NUMERO || "")
   );
   
   // 4. Se nada foi alterado, avisa e sai
@@ -3041,10 +3066,10 @@ async function salvarAlteracoesEmLote(row) {
         turma: turma,
         edEspecial: edEspecial,
         observacoes: observacoes,
+        cpfNumero: cpfNumero,
         email: emailUsuario
       };
       
-      // Envia e aguarda (usando Promise para sincronizar)
       await new Promise((resolve, reject) => {
         postSemResposta(dadosBasicos, "", () => resolve());
       });
@@ -3056,6 +3081,7 @@ async function salvarAlteracoesEmLote(row) {
       dadosAlunoAtual.TURMA = turma;
       dadosAlunoAtual.ED_ESPECIAL = edEspecial;
       dadosAlunoAtual.OBSERVACOES = observacoes;
+      dadosAlunoAtual.CPF_NUMERO = cpfNumero;
       document.getElementById("detalhesTitulo").textContent = nome;
     }
     
@@ -3080,7 +3106,7 @@ async function salvarAlteracoesEmLote(row) {
     
     mostrarToast("Alterações salvas com sucesso!", "success");
     fecharModalDetalhes();
-    carregarAlunos(); // recarrega lista principal
+    carregarAlunos();
     
   } catch (error) {
     console.error("Erro ao salvar:", error);
@@ -3089,6 +3115,7 @@ async function salvarAlteracoesEmLote(row) {
     hideButtonLoading(btn);
   }
 }
+
 // =========================
 // ATUALIZAR
 // =========================
@@ -3307,6 +3334,7 @@ async function salvarUsuario() {
     }
   });
 }
+
 async function salvarAluno() {
   const nomeInput = document.getElementById("nomeAluno");
   const responsavelInput = document.getElementById("nomeResponsavel");
@@ -3314,6 +3342,7 @@ async function salvarAluno() {
   const turmaSelect = document.getElementById("selectTurmaAluno");
   const dataMatriculaInput = document.getElementById("dataMatricula").value;
   const observacoes = document.getElementById("observacoesNovoAluno")?.value || "";
+  const cpfNumero = document.getElementById("cpfNumero")?.value || "";
 
   const nome = nomeInput ? nomeInput.value.trim() : "";
   const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
@@ -3349,7 +3378,8 @@ async function salvarAluno() {
     turma: turma,
     dataMatricula: dataMatriculaInput,
     edEspecial: edEspecial,
-    observacoes: observacoes,   // 🔥 ENVIA OBSERVAÇÕES
+    observacoes: observacoes,
+    cpfNumero: cpfNumero,
     email: emailUsuario
   };
 
@@ -3361,6 +3391,8 @@ async function salvarAluno() {
     document.getElementById("dataMatricula").value = "";
     const obsField = document.getElementById("observacoesNovoAluno");
     if (obsField) obsField.value = "";
+    const cpfField = document.getElementById("cpfNumero");
+    if (cpfField) cpfField.value = "";
 
     document.getElementById("novoAluno").style.display = "none";
     document.getElementById("lista").style.display = "";
