@@ -231,6 +231,92 @@ function getDocIconStatus(entregue, prazoFinal, nomeDoc) {
     tooltip: `${nomeDoc}\n${statusTexto}`   // 🔥 Quebra de linha explícita
   };
 }
+
+async function exportarRelatorio() {
+  mostrarLoading();
+  
+  // Obtém os filtros atuais da interface
+  const filtros = {
+    escola: document.getElementById('filtroEscola')?.value || '',
+    turma: document.getElementById('filtroTurma')?.value || '',
+    status: document.getElementById('filtroStatus')?.value || '',
+    situacao: document.getElementById('filtroSituacao')?.value || '',
+    nome: document.getElementById('pesquisaNome')?.value || ''
+  };
+  
+  // Monta URL para buscar TODOS os alunos com esses filtros (limite alto)
+  let url = `${API_URL}?email=${emailUsuario}&limite=9999`;
+  if (filtros.escola) url += `&escola=${encodeURIComponent(filtros.escola)}`;
+  if (filtros.turma) url += `&turma=${encodeURIComponent(filtros.turma)}`;
+  if (filtros.nome) url += `&nome=${encodeURIComponent(filtros.nome)}`;
+  if (filtros.status) url += `&status=${encodeURIComponent(filtros.status)}`;
+  if (filtros.situacao) url += `&situacao=${encodeURIComponent(filtros.situacao)}`;
+  
+  jsonp(url, function(dados) {
+    esconderLoading();
+    
+    if (!dados.alunos || dados.alunos.length === 0) {
+      mostrarToast('Nenhum aluno encontrado para exportar.', 'warning');
+      return;
+    }
+    
+    const alunos = dados.alunos;
+    
+    // Define as colunas do CSV
+    const headers = [
+      'Nome',
+      'Turma',
+      'Status',
+      'Documentos Pendentes',
+      'Responsável',
+      'Telefone'
+    ];
+    
+    // Constrói as linhas
+    const linhas = alunos.map(aluno => {
+      const docsPendentes = [];
+      CONFIG_DOCS_CARD.forEach(doc => {
+        if (!aluno[doc.coluna]) {
+          docsPendentes.push(doc.label);
+        }
+      });
+      if (aluno.ED_ESPECIAL && !aluno.ED_ESPECIAL) { // verifica se o campo ED_ESPECIAL é booleano
+        // Na verdade, o campo ED_ESPECIAL indica se é público, e o documento extra é o laudo
+        // Vamos verificar se há um campo específico para o laudo? Não temos coluna separada.
+        // Podemos adicionar "Laudo Ed. Especial" se aluno.ED_ESPECIAL === true e não estiver entregue?
+        // Mas o backend não tem coluna para o laudo. Apenas o status.
+      }
+      
+      return [
+        aluno.ALUNO,
+        aluno.TURMA,
+        aluno.STATUS,
+        docsPendentes.join('; ') || 'Nenhum',
+        aluno.RESPONSAVEL,
+        aluno.TELEFONE
+      ];
+    });
+    
+    // Gera o conteúdo CSV
+    let csvContent = headers.join(';') + '\n';
+    linhas.forEach(linha => {
+      csvContent += linha.map(cell => `"${cell.replace(/"/g, '""')}"`).join(';') + '\n';
+    });
+    
+    // Cria blob e faz download
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `relatorio_pendencias_${new Date().toISOString().slice(0,16).replace(/[-:T]/g,'')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    mostrarToast(`Relatório gerado com ${alunos.length} alunos.`, 'success');
+  });
+}
+
 // Abre o modal e carrega turmas para o filtro
 function abrirModalInativos() {
   document.getElementById("modalInativos").style.display = "flex";
