@@ -3342,7 +3342,7 @@ async function salvarAluno() {
   const turmaSelect = document.getElementById("selectTurmaAluno");
   const dataMatriculaInput = document.getElementById("dataMatricula").value;
   const observacoes = document.getElementById("observacoesNovoAluno")?.value || "";
-  const cpfNumero = document.getElementById("cpfNumero")?.value || "";
+  const cpfNumero = document.getElementById("cpfNumeroCadastro")?.value || "";
 
   const nome = nomeInput ? nomeInput.value.trim() : "";
   const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
