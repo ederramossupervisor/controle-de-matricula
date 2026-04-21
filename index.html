@@ -305,6 +305,46 @@
         </div>
       </div>
     </div>
+
+   <!-- MODAL DE EXPORTAÇÃO DE RELATÓRIO -->
+    <div id="modalExportacao" class="modal-overlay" style="display:none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2><i class="fas fa-file-export"></i> Exportar Relatório</h2>
+          <button class="close-btn" onclick="fecharModalExportacao()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-top:0; color: var(--text-muted);">
+            Selecione os filtros para o relatório. Se deixar em branco, serão considerados todos.
+          </p>
+          
+          <!-- Filtro de Turma -->
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-book"></i></span>
+            <select id="exportTurma">
+              <option value="">Todas as turmas</option>
+            </select>
+          </div>
+          
+          <!-- Filtro de Status -->
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-chart-bar"></i></span>
+            <select id="exportStatus">
+              <option value="">Todos os status</option>
+              <option value="✅ Completo">✅ Completo</option>
+              <option value="⚠️ Pendente / Vencido">⚠️ Pendente / Vencido</option>
+            </select>
+          </div>
+          
+          <div class="modal-actions">
+            <button class="btn-salvar" onclick="executarExportacao()">
+              <i class="fas fa-download"></i> Exportar CSV
+            </button>
+            <button class="btn-cancelar" onclick="fecharModalExportacao()">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <!-- 📂 MODAL DE DOCUMENTOS -->
     <div id="modalDocumentos" class="modal-overlay" style="display:none;">
