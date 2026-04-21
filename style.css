@@ -2370,3 +2370,36 @@ body.perfil-secretaria #btnTurmas {
 body.perfil-secretaria #btnLegalizacao {
   display: none !important;
 }
+.toggle-switch {
+  background: var(--card-border);
+  border: none;
+  border-radius: 30px;
+  width: 48px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2px;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: var(--text-muted);
+}
+
+.toggle-switch i {
+  background: white;
+  border-radius: 50%;
+  padding: 4px;
+  font-size: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.toggle-switch.ativo {
+  background: var(--btn-primary-bg);
+  justify-content: flex-end;
+}
+
+.toggle-switch.ativo i {
+  transform: translateX(24px);
+  color: var(--btn-primary-bg);
+}
