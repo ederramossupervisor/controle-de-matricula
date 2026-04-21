@@ -1987,17 +1987,15 @@ async function carregarTurmasParaFiltro() {
     return;
   }
 
-  // Salva o valor atualmente selecionado (normalizado)
+  // 🔥 Salva o valor atualmente selecionado antes de recarregar
   const valorSelecionado = selectTurma.value;
 
   selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
 
   const url = `${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escolaFiltro)}`;
-  
   jsonp(url, function(turmas) {
     turmasDisponiveis = turmas;
     selectTurma.innerHTML = '<option value="">Todas as turmas</option>';
-    
     turmas.forEach(t => {
       const opt = document.createElement("option");
       opt.value = t.turma;
@@ -2005,18 +2003,12 @@ async function carregarTurmasParaFiltro() {
       selectTurma.appendChild(opt);
     });
     
-    // Restaura a seleção anterior, se existir
+    // 🔥 Restaura a seleção anterior, se ainda existir nas opções
     if (valorSelecionado) {
-      // Normaliza para comparar (trim e case-insensitive)
-      const valorNorm = valorSelecionado.trim().toLowerCase();
-      const existe = Array.from(selectTurma.options).some(opt => 
-        opt.value.trim().toLowerCase() === valorNorm
-      );
+      // Verifica se a opção ainda existe (pode ter sido removida da escola)
+      const existe = Array.from(selectTurma.options).some(opt => opt.value === valorSelecionado);
       if (existe) {
         selectTurma.value = valorSelecionado;
-      } else {
-        // Se não encontrou, deixa "Todas as turmas"
-        selectTurma.value = "";
       }
     }
   });
@@ -2592,31 +2584,6 @@ function preencherFiltroEscolas() {
   });
 }
 
-/**
- * Limpa todos os campos de filtro e recarrega a lista sem restrições.
- */
-function limparFiltros() {
-  // IDs dos selects
-  const ids = ['filtroEscola', 'filtroTurma', 'filtroStatus', 'filtroSituacao'];
-  
-  ids.forEach(id => {
-    const select = document.getElementById(id);
-    if (select) {
-      select.value = '';
-      // Dispara evento change para que qualquer lógica vinculada seja executada
-      select.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  });
-  
-  const inputNome = document.getElementById('pesquisaNome');
-  if (inputNome) {
-    inputNome.value = '';
-    inputNome.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-  
-  aplicarFiltros(1);
-  mostrarToast('Filtros limpos', 'info', 1500);
-}
 function aplicarFiltros(pagina = 1) {
   console.log("✅ aplicarFiltros chamada com página:", pagina);
   const filtros = {
