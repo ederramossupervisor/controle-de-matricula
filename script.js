@@ -316,7 +316,119 @@ async function exportarRelatorio() {
     mostrarToast(`Relatório gerado com ${alunos.length} alunos.`, 'success');
   });
 }
+function abrirModalExportacao() {
+  // Preenche o select de turmas com as turmas disponíveis para a escola do usuário
+  const selectTurma = document.getElementById('exportTurma');
+  selectTurma.innerHTML = '<option value="">Todas as turmas</option>';
+  
+  // Se for secretaria, usa turmasDisponiveis; se for supervisor, carrega todas as supervisionadas
+  if (perfilUsuario === 'SECRETARIA') {
+    const turmasFiltradas = turmasDisponiveis.filter(t => t.escola === escolaUsuario);
+    turmasFiltradas.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.turma;
+      opt.textContent = t.turma;
+      selectTurma.appendChild(opt);
+    });
+  } else {
+    // Supervisor: carregar turmas de todas as escolas supervisionadas
+    mostrarLoading();
+    const url = `${API_URL}?tipo=turmas&email=${emailUsuario}`;
+    jsonp(url, function(turmas) {
+      turmasDisponiveis = turmas;
+      turmas.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.turma;
+        opt.textContent = t.turma;
+        selectTurma.appendChild(opt);
+      });
+      esconderLoading();
+    });
+  }
+  
+  document.getElementById('exportStatus').value = '';
+  document.getElementById('modalExportacao').style.display = 'flex';
+}
 
+function fecharModalExportacao() {
+  document.getElementById('modalExportacao').style.display = 'none';
+}
+
+async function executarExportacao() {
+  const turma = document.getElementById('exportTurma').value;
+  const status = document.getElementById('exportStatus').value;
+  
+  mostrarLoading();
+  
+  // Monta URL para buscar TODOS os alunos com os filtros escolhidos
+  let url = `${API_URL}?email=${emailUsuario}&limite=9999`;
+  if (turma) url += `&turma=${encodeURIComponent(turma)}`;
+  if (status) url += `&status=${encodeURIComponent(status)}`;
+  // Para supervisor, podemos querer filtrar por escola? O backend já limita pelas supervisionadas.
+  
+  jsonp(url, function(dados) {
+    esconderLoading();
+    
+    if (!dados.alunos || dados.alunos.length === 0) {
+      mostrarToast('Nenhum aluno encontrado para os filtros selecionados.', 'warning');
+      return;
+    }
+    
+    const alunos = dados.alunos;
+    
+    // Define as colunas do CSV
+    const headers = [
+      'Nome',
+      'Turma',
+      'Escola',
+      'Status',
+      'Documentos Pendentes',
+      'Responsável',
+      'Telefone'
+    ];
+    
+    // Constrói as linhas
+    const linhas = alunos.map(aluno => {
+      const docsPendentes = [];
+      CONFIG_DOCS_CARD.forEach(doc => {
+        if (!aluno[doc.coluna]) {
+          docsPendentes.push(doc.label);
+        }
+      });
+      // Se for Ed. Especial e o campo ED_ESPECIAL for true, consideramos que o laudo é um documento pendente? 
+      // Vamos simplificar e não incluir no CSV para não complicar.
+      
+      return [
+        aluno.ALUNO,
+        aluno.TURMA,
+        aluno.ESCOLA,
+        aluno.STATUS,
+        docsPendentes.join('; ') || 'Nenhum',
+        aluno.RESPONSAVEL,
+        aluno.TELEFONE
+      ];
+    });
+    
+    // Gera o conteúdo CSV
+    let csvContent = headers.join(';') + '\n';
+    linhas.forEach(linha => {
+      csvContent += linha.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';') + '\n';
+    });
+    
+    // Cria blob e faz download
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const urlBlob = URL.createObjectURL(blob);
+    link.setAttribute('href', urlBlob);
+    link.setAttribute('download', `relatorio_${new Date().toISOString().slice(0,16).replace(/[-:T]/g,'')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    mostrarToast(`Relatório gerado com ${alunos.length} alunos.`, 'success');
+    fecharModalExportacao();
+  });
+}
 // Abre o modal e carrega turmas para o filtro
 function abrirModalInativos() {
   document.getElementById("modalInativos").style.display = "flex";
