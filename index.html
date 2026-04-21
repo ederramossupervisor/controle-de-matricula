@@ -174,7 +174,10 @@
             <button type="button" class="btn-pequeno" onclick="adicionarCampoTelefoneEdicao()" style="margin-bottom: 16px;">
               <i class="fas fa-plus"></i> Adicionar outro telefone
             </button>
-            
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-id-card"></i></span>
+              <input type="text" id="cpfNumero" placeholder="CPF" oninput="aplicarMascaraCPF(this)">
+            </div>
             <div class="input-icon">
               <span class="icon"><i class="fas fa-book"></i></span>
               <select id="editTurma" style="padding-left: 50px;">
