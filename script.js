@@ -205,7 +205,55 @@ let totalPaginasInativos = 1;
 let alunosPorPaginaInativos = 20;
 let filtrosInativosAtuais = {};
 let modoVisualizacao = 'cards'; // 'cards' ou 'lista'
+// =========================
+// CACHE LOCAL (localStorage)
+// =========================
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutos
 
+function salvarCache(chave, dados) {
+  try {
+    const item = {
+      dados: dados,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(chave, JSON.stringify(item));
+    return true;
+  } catch (e) {
+    console.warn('Erro ao salvar cache:', e);
+    return false;
+  }
+}
+
+function lerCache(chave) {
+  const raw = localStorage.getItem(chave);
+  if (!raw) return null;
+  try {
+    const item = JSON.parse(raw);
+    if (Date.now() - item.timestamp > CACHE_TTL) {
+      localStorage.removeItem(chave);
+      return null;
+    }
+    return item.dados;
+  } catch (e) {
+    return null;
+  }
+}
+
+function limparCacheTurmas(escola = null) {
+  if (escola) {
+    const chave = `cache_turmas_${escola}`;
+    localStorage.removeItem(chave);
+  } else {
+    // Remove todas as chaves de cache de turmas
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('cache_turmas_')) localStorage.removeItem(key);
+    });
+  }
+}
+
+function getChaveTurmasCache(escola) {
+  return `cache_turmas_${escola || 'todas'}`;
+}
 function alternarVisualizacao() {
   const btn = document.getElementById('toggleVisualizacao');
   const lista = document.getElementById('lista');
@@ -1917,10 +1965,33 @@ function mostrarLoading() {
 
 async function carregarTurmasParaEdicao(escola, turmaAtual) {
   const select = document.getElementById("editTurma");
+  if (!escola) {
+    select.innerHTML = '<option value="">Selecione a escola primeiro</option>';
+    return;
+  }
+
+  // Tenta cache
+  const chaveCache = getChaveTurmasCache(escola);
+  const turmasCache = lerCache(chaveCache);
+
+  if (turmasCache && turmasCache.length > 0) {
+    select.innerHTML = '<option value="">Selecione a turma</option>';
+    turmasCache.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.turma;
+      opt.textContent = t.turma;
+      if (t.turma === turmaAtual) opt.selected = true;
+      select.appendChild(opt);
+    });
+    return;
+  }
+
+  // Busca na API
   select.innerHTML = '<option value="">Carregando turmas...</option>';
   const url = `${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`;
-  
+
   jsonp(url, function(turmas) {
+    salvarCache(chaveCache, turmas);
     select.innerHTML = '<option value="">Selecione a turma</option>';
     turmas.forEach(t => {
       const opt = document.createElement("option");
@@ -2181,17 +2252,30 @@ function inicializarFiltros() {
 // Carrega turmas para o select de filtro (baseado na escola selecionada ou perfil)
 async function carregarTurmas(escola = "") {
   mostrarLoading();
+  
+  // Tenta cache (se escola for vazia, considera "todas")
+  const chaveCache = getChaveTurmasCache(escola || "todas");
+  const turmasCache = lerCache(chaveCache);
+  
+  if (turmasCache && turmasCache.length > 0) {
+    turmasGlobais = turmasCache;
+    renderListaTurmas(turmasCache);
+    preencherSelectEscolasTurma();
+    esconderLoading();
+    return;
+  }
+
   let url = `${API_URL}?tipo=turmas&email=${emailUsuario}`;
   if (escola) url += `&escola=${encodeURIComponent(escola)}`;
   
   jsonp(url, function(turmas) {
     turmasGlobais = turmas;
+    salvarCache(chaveCache, turmas);
     renderListaTurmas(turmas);
     preencherSelectEscolasTurma();
     esconderLoading();
   });
 }
-
 let bloqueiaChangeTurma = false; // flag global para evitar loop de eventos
 
 async function carregarTurmasParaFiltro() {
@@ -2210,10 +2294,29 @@ async function carregarTurmasParaFiltro() {
     return;
   }
 
-  // 🔥 Salva o valor atualmente selecionado ANTES de recarregar
-  const valorSelecionado = selectTurma.value;
+  // Tenta ler do cache
+  const chaveCache = getChaveTurmasCache(escolaFiltro);
+  const turmasCache = lerCache(chaveCache);
 
-  // Exibe "Carregando..." sem disparar eventos
+  if (turmasCache && turmasCache.length > 0) {
+    turmasDisponiveis = turmasCache;
+    bloqueiaChangeTurma = true;
+    const valorAnterior = selectTurma.getAttribute('data-valor-anterior') || "";
+    selectTurma.innerHTML = '<option value="">Todas as turmas</option>';
+    turmasCache.forEach(t => {
+      const opt = document.createElement("option");
+      opt.value = t.turma;
+      opt.textContent = t.turma;
+      selectTurma.appendChild(opt);
+    });
+    if (valorAnterior && Array.from(selectTurma.options).some(opt => opt.value === valorAnterior)) {
+      selectTurma.value = valorAnterior;
+    }
+    setTimeout(() => { bloqueiaChangeTurma = false; }, 100);
+    return;
+  }
+
+  // Cache não encontrado ou expirado – busca na API
   bloqueiaChangeTurma = true;
   selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
   bloqueiaChangeTurma = false;
@@ -2222,9 +2325,10 @@ async function carregarTurmasParaFiltro() {
 
   jsonp(url, function(turmas) {
     turmasDisponiveis = turmas;
+    salvarCache(chaveCache, turmas); // salva no cache
 
-    // Reconstroi as opções
     bloqueiaChangeTurma = true;
+    const valorAnterior = selectTurma.getAttribute('data-valor-anterior') || "";
     selectTurma.innerHTML = '<option value="">Todas as turmas</option>';
     turmas.forEach(t => {
       const opt = document.createElement("option");
@@ -2232,17 +2336,13 @@ async function carregarTurmasParaFiltro() {
       opt.textContent = t.turma;
       selectTurma.appendChild(opt);
     });
-
-    // Restaura o valor, se ainda existir
-    const existe = Array.from(selectTurma.options).some(opt => opt.value === valorSelecionado);
-    selectTurma.value = existe ? valorSelecionado : "";
-
-    // Libera o bloqueio após um tempo suficiente para o navegador processar
-    setTimeout(() => {
-      bloqueiaChangeTurma = false;
-    }, 100);
+    if (valorAnterior && Array.from(selectTurma.options).some(opt => opt.value === valorAnterior)) {
+      selectTurma.value = valorAnterior;
+    }
+    setTimeout(() => { bloqueiaChangeTurma = false; }, 100);
   });
 }
+
 function abrirModalTurmas() {
   document.getElementById("modalTurmas").style.display = "flex";
   carregarTurmas();
@@ -3349,19 +3449,18 @@ function gerarCoresPorEscola(escolas) {
 function logout() {
   if (!confirm("Deseja sair do sistema?")) return;
 
+  // Limpa cache de turmas
+  limparCacheTurmas(); // sem argumento limpa todas as chaves
+
   emailUsuario = "";
   localStorage.removeItem("emailUsuario");
 
-  // Esconde o app
   document.getElementById("app").style.display = "none";
-
   document.body.style.backgroundImage = "";
   document.body.classList.remove("fundo-personalizado");
   
-  // Mostra o login removendo qualquer estilo inline para que o CSS (flex) funcione
   const loginEl = document.getElementById("login");
-  loginEl.style.display = "";   // ✅ remove display inline, volta ao padrão CSS
-
+  loginEl.style.display = "";
   document.getElementById("email").value = "";
   dadosGlobais = [];
 }
@@ -3632,6 +3731,10 @@ async function salvarTurma() {
   
   if (erros.length === 0) {
     mostrarToast(mensagem, "success");
+    // 🔥 Invalida o cache da escola específica
+    limparCacheTurmas(escola);
+    // Também invalida o cache "todas" para forçar recarga geral
+    limparCacheTurmas("todas");
   } else {
     mostrarToast(mensagem, "error", 8000);
   }
@@ -3641,6 +3744,7 @@ async function salvarTurma() {
     carregarTurmas(document.getElementById("filtroEscolaTurma").value);
   }
 }
+
 // Listener para filtro de turmas (pode ficar aqui)
 document.addEventListener("DOMContentLoaded", function() {
   const filtro = document.getElementById("filtroEscolaTurma");
@@ -3684,7 +3788,12 @@ document.getElementById("modalListaUsuarios").addEventListener("click", function
 document.getElementById("modalCadastroUsuario").addEventListener("click", function(e) {
   if (e.target === this) fecharModalCadastroUsuario();
 });
-
+const selectTurma = document.getElementById("filtroTurma");
+if (selectTurma) {
+  selectTurma.addEventListener('change', function() {
+    this.setAttribute('data-valor-anterior', this.value);
+  });
+}
 // =========================
 // ATALHOS DE TECLADO
 // =========================
