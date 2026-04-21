@@ -2374,34 +2374,40 @@ body.perfil-secretaria #btnLegalizacao {
   background: var(--card-border);
   border: none;
   border-radius: 30px;
-  width: 48px;
-  height: 24px;
+  width: 52px;               /* ligeiramente maior para dar espaço */
+  height: 26px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   padding: 2px;
   cursor: pointer;
   transition: background 0.2s;
   color: var(--text-muted);
+  position: relative;          /* para referência de posicionamento */
 }
 
 .toggle-switch i {
   background: white;
   border-radius: 50%;
-  padding: 4px;
+  width: 22px;                 /* tamanho fixo */
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+  transition: transform 0.2s ease;
+  position: absolute;
+  left: 2px;                   /* posição inicial */
+  transform: translateX(0);
 }
 
+/* Estado ativo (modo lista) */
 .toggle-switch.ativo {
   background: var(--btn-primary-bg);
-  justify-content: flex-end;
 }
 
 .toggle-switch.ativo i {
-  transform: translateX(24px);
-  color: var(--btn-primary-bg);
+  transform: translateX(26px);  /* move 26px para a direita (52 - 22 - 2 - 2) */
 }
 #lista.modo-lista {
   display: block !important;
