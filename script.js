@@ -2011,6 +2011,7 @@ async function salvarDadosAluno() {
   const telefone = coletarTelefonesEdicao();
   const turma = document.getElementById("editTurma").value;
   const edEspecial = document.getElementById("editEdEspecial").checked;
+  const observacoes = document.getElementById("observacoesAluno")?.value || "";
   
   if (!nome) {
     mostrarToast("Nome do aluno é obrigatório.", "warning");
@@ -2035,6 +2036,7 @@ async function salvarDadosAluno() {
     telefone: telefone,
     turma: turma,
     edEspecial: edEspecial,
+    observacoes: observacoes,   // 🔥 ENVIA OBSERVAÇÕES
     email: emailUsuario
   };
   
@@ -2044,6 +2046,7 @@ async function salvarDadosAluno() {
     dadosAlunoAtual.TELEFONE = telefone;
     dadosAlunoAtual.TURMA = turma;
     dadosAlunoAtual.ED_ESPECIAL = edEspecial;
+    dadosAlunoAtual.OBSERVACOES = observacoes;  // 🔥 ATUALIZA OBJETO LOCAL
     
     document.getElementById("detalhesTitulo").textContent = nome;
     
@@ -2417,7 +2420,19 @@ function abrirModalDetalhes(aluno) {
     `;
   }
   
-  html += `</div>`;
+  html += `</div>`; // fecha checkboxes-container
+
+  // 🔥 CAMPO DE OBSERVAÇÕES
+  const observacoesEscapadas = (aluno.OBSERVACOES || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  html += `
+    <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
+      <label for="observacoesAluno" style="font-weight: 500; display: block; margin-bottom: 8px;">
+        <i class="fas fa-pencil-alt"></i> Observações internas:
+      </label>
+      <textarea id="observacoesAluno" rows="3" style="width: 100%; padding: 8px; border-radius: 12px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-primary); font-family: inherit;">${observacoesEscapadas}</textarea>
+      <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Campo interno – não aparece em relatórios.</p>
+    </div>
+  `;
   
   document.getElementById("detalhesConteudo").innerHTML = html;
   document.getElementById("editNomeAluno").value = aluno.ALUNO || "";
@@ -2428,7 +2443,6 @@ function abrirModalDetalhes(aluno) {
   carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
   document.getElementById("modalDetalhes").style.display = "flex";
 }
-
 function toggleTodosDocumentos() {
   const container = document.querySelector('#modalDetalhes .checkboxes-container');
   if (!container) return;
@@ -3223,6 +3237,7 @@ async function salvarAluno() {
   const edEspecialCheck = document.getElementById("alunoEdEspecial");
   const turmaSelect = document.getElementById("selectTurmaAluno");
   const dataMatriculaInput = document.getElementById("dataMatricula").value;
+  const observacoes = document.getElementById("observacoesNovoAluno")?.value || "";
 
   const nome = nomeInput ? nomeInput.value.trim() : "";
   const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
@@ -3258,6 +3273,7 @@ async function salvarAluno() {
     turma: turma,
     dataMatricula: dataMatriculaInput,
     edEspecial: edEspecial,
+    observacoes: observacoes,   // 🔥 ENVIA OBSERVAÇÕES
     email: emailUsuario
   };
 
@@ -3267,6 +3283,8 @@ async function salvarAluno() {
     if (edEspecialCheck) edEspecialCheck.checked = false;
     document.getElementById("selectTurmaAluno").selectedIndex = 0;
     document.getElementById("dataMatricula").value = "";
+    const obsField = document.getElementById("observacoesNovoAluno");
+    if (obsField) obsField.value = "";
 
     document.getElementById("novoAluno").style.display = "none";
     document.getElementById("lista").style.display = "";
