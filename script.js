@@ -2025,6 +2025,7 @@ async function salvarDadosAluno() {
   const turma = document.getElementById("editTurma").value;
   const edEspecial = document.getElementById("editEdEspecial").checked;
   const observacoes = document.getElementById("observacoesAluno")?.value || "";
+  const cpfNumero = document.getElementById("editCpfNumero")?.value.trim() || "";
   
   if (!nome) {
     mostrarToast("Nome do aluno é obrigatório.", "warning");
@@ -2049,7 +2050,8 @@ async function salvarDadosAluno() {
     telefone: telefone,
     turma: turma,
     edEspecial: edEspecial,
-    observacoes: observacoes,   // 🔥 ENVIA OBSERVAÇÕES
+    observacoes: observacoes,
+    cpfNumero: cpfNumero,
     email: emailUsuario
   };
   
@@ -2452,28 +2454,9 @@ function abrirModalDetalhes(aluno) {
   document.getElementById("editResponsavel").value = aluno.RESPONSAVEL || "";
   preencherCamposTelefoneEdicao(aluno.TELEFONE || "");
   document.getElementById("editEdEspecial").checked = aluno.ED_ESPECIAL === true;
+  document.getElementById("editCpfNumero").value = aluno.CPF_NUMERO || '';
+
   
-  // Adicionar campo CPF se não existir no DOM (criar dinamicamente)
-  let cpfInput = document.getElementById("editCpfNumero");
-  if (!cpfInput) {
-    // Se o campo não existir, adicionar na seção de informações (você pode adicionar via JS ou deixar no HTML)
-    const infoDiv = document.querySelector("#modalDetalhes .modal-body .input-icon:first-child")?.parentElement;
-    if (infoDiv) {
-      const cpfField = document.createElement('div');
-      cpfField.className = 'input-icon';
-      cpfField.innerHTML = `
-        <span class="icon"><i class="fas fa-id-card"></i></span>
-        <input type="text" id="editCpfNumero" placeholder="CPF" value="${aluno.CPF_NUMERO || ''}" oninput="aplicarMascaraCPF(this)">
-      `;
-      // Inserir após o campo de responsável (você pode ajustar)
-      const respField = document.getElementById("editResponsavel")?.closest('.input-icon');
-      if (respField && respField.parentNode) {
-        respField.parentNode.insertBefore(cpfField, respField.nextSibling);
-      }
-    }
-  } else {
-    cpfInput.value = aluno.CPF_NUMERO || '';
-  }
   
   carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
   document.getElementById("modalDetalhes").style.display = "flex";
