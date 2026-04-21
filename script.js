@@ -204,6 +204,29 @@ let paginaAtualInativos = 1;
 let totalPaginasInativos = 1;
 let alunosPorPaginaInativos = 20;
 let filtrosInativosAtuais = {};
+let modoVisualizacao = 'cards'; // 'cards' ou 'lista'
+
+function alternarVisualizacao() {
+  const btn = document.getElementById('toggleVisualizacao');
+  const lista = document.getElementById('lista');
+  
+  if (modoVisualizacao === 'cards') {
+    modoVisualizacao = 'lista';
+    btn.classList.add('ativo');
+    btn.innerHTML = '<i class="fas fa-list"></i>';
+    lista.classList.add('modo-lista');
+  } else {
+    modoVisualizacao = 'cards';
+    btn.classList.remove('ativo');
+    btn.innerHTML = '<i class="fas fa-th-large"></i>';
+    lista.classList.remove('modo-lista');
+  }
+  
+  // Re-renderiza a lista com o novo modo
+  const inicio = (paginaAtual - 1) * alunosPorPagina;
+  const alunosPagina = dadosFiltradosGlobais.slice(inicio, inicio + alunosPorPagina);
+  renderLista(alunosPagina);
+}
 
 function getDocIconStatus(entregue, prazoFinal, nomeDoc) {
   let statusTexto;
