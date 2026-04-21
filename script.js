@@ -2588,28 +2588,34 @@ function preencherFiltroEscolas() {
  * Limpa todos os campos de filtro e recarrega a lista sem restrições.
  */
 function limparFiltros() {
-  // Reseta os selects para a primeira opção (valor vazio)
-  const filtroEscola = document.getElementById('filtroEscola');
-  const filtroTurma = document.getElementById('filtroTurma');
-  const filtroStatus = document.getElementById('filtroStatus');
-  const filtroSituacao = document.getElementById('filtroSituacao');
-  const filtroDocEspecifico = document.getElementById('filtroDocEspecifico');
-  const pesquisaNome = document.getElementById('pesquisaNome');
+  // Lista dos selects de filtro (IDs confirmados no HTML)
+  const selects = [
+    'filtroEscola',
+    'filtroTurma',
+    'filtroStatus',
+    'filtroSituacao'
+  ];
   
-  if (filtroEscola) filtroEscola.value = '';
-  if (filtroTurma) filtroTurma.value = '';
-  if (filtroStatus) filtroStatus.value = '';
-  if (filtroSituacao) filtroSituacao.value = '';
-  if (filtroDocEspecifico) filtroDocEspecifico.value = '';
-  if (pesquisaNome) pesquisaNome.value = '';
+  // Reseta cada select para a opção padrão (value = "")
+  selects.forEach(id => {
+    const select = document.getElementById(id);
+    if (select) {
+      select.value = "";
+      // Se houver listeners de change, eles serão acionados
+    }
+  });
   
-  // Recarrega a lista sem filtros (página 1)
+  // Limpa o campo de busca
+  const inputNome = document.getElementById('pesquisaNome');
+  if (inputNome) {
+    inputNome.value = "";
+  }
+  
+  // Recarrega a lista SEM filtros (página 1)
   aplicarFiltros(1);
   
-  // Feedback visual opcional
-  mostrarToast('Filtros limpos', 'info', 1500);
+  mostrarToast('Todos os filtros foram limpos', 'info', 1500);
 }
-
 function aplicarFiltros(pagina = 1) {
   console.log("✅ aplicarFiltros chamada com página:", pagina);
   const filtros = {
