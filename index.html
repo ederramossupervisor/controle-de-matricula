@@ -798,6 +798,20 @@
     <div id="painel" class="painel-metricas">
       <!-- Será preenchido via JS -->
     </div>
+
+    <!-- Barra de controle: Título + Toggle -->
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin-bottom: 8px;">
+      <h3 style="margin: 0; font-size: 18px; color: var(--text-primary);">
+        <i class="fas fa-users"></i> Alunos
+      </h3>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 14px; color: var(--text-muted);">Cards</span>
+        <button id="toggleVisualizacao" class="toggle-switch" onclick="alternarVisualizacao()">
+          <i class="fas fa-th-large"></i>
+        </button>
+        <span style="font-size: 14px; color: var(--text-muted);">Lista</span>
+      </div>
+    </div>
     
     <!-- LISTA DE ALUNOS -->
     <div id="lista"></div>
