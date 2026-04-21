@@ -3685,11 +3685,6 @@ document.getElementById("modalCadastroUsuario").addEventListener("click", functi
   if (e.target === this) fecharModalCadastroUsuario();
 });
 
-document.getElementById("filtroEscola")?.addEventListener("change", function() {
-  carregarTurmasParaFiltro();
-  aplicarFiltros();
-});
-
 document.addEventListener('DOMContentLoaded', function() {
   // Adiciona estilo para tooltip abaixo (com !important para garantir)
   const style = document.createElement('style');
