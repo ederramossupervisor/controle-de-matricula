@@ -2192,6 +2192,8 @@ async function carregarTurmas(escola = "") {
   });
 }
 
+let bloqueiaChangeTurma = false; // flag global para evitar loop de eventos
+
 async function carregarTurmasParaFiltro() {
   const selectTurma = document.getElementById("filtroTurma");
   if (!selectTurma) return;
@@ -2208,18 +2210,21 @@ async function carregarTurmasParaFiltro() {
     return;
   }
 
-  // 🔥 Salva o valor atual antes de qualquer modificação
+  // 🔥 Salva o valor atualmente selecionado ANTES de recarregar
   const valorSelecionado = selectTurma.value;
 
-  // Mostra "Carregando..."
+  // Exibe "Carregando..." sem disparar eventos
+  bloqueiaChangeTurma = true;
   selectTurma.innerHTML = '<option value="">Carregando turmas...</option>';
+  bloqueiaChangeTurma = false;
 
   const url = `${API_URL}?tipo=turmas&email=${emailUsuario}&escola=${encodeURIComponent(escolaFiltro)}`;
-  
+
   jsonp(url, function(turmas) {
     turmasDisponiveis = turmas;
-    
+
     // Reconstroi as opções
+    bloqueiaChangeTurma = true;
     selectTurma.innerHTML = '<option value="">Todas as turmas</option>';
     turmas.forEach(t => {
       const opt = document.createElement("option");
@@ -2227,24 +2232,15 @@ async function carregarTurmasParaFiltro() {
       opt.textContent = t.turma;
       selectTurma.appendChild(opt);
     });
-    
-    // 🔥 Restaura o valor sem disparar eventos
-    // Verifica se a opção ainda existe
+
+    // Restaura o valor, se ainda existir
     const existe = Array.from(selectTurma.options).some(opt => opt.value === valorSelecionado);
-    if (existe) {
-      selectTurma.value = valorSelecionado;
-    } else {
-      selectTurma.value = "";
-    }
-    
-    // 🔥🔥🔥 CRUCIAL: Remove o listener temporariamente para evitar loop
-    const originalOnChange = selectTurma.onchange;
-    selectTurma.onchange = null;
-    
-    // Aguarda um tick para o navegador processar
+    selectTurma.value = existe ? valorSelecionado : "";
+
+    // Libera o bloqueio após um tempo suficiente para o navegador processar
     setTimeout(() => {
-      selectTurma.onchange = originalOnChange;
-    }, 50);
+      bloqueiaChangeTurma = false;
+    }, 100);
   });
 }
 function abrirModalTurmas() {
@@ -2930,6 +2926,9 @@ function preencherFiltroEscolas() {
 }
 
 function aplicarFiltros(pagina = 1) {
+  // 🔥 Ignora chamadas enquanto o select de turma está sendo reconstruído
+  if (bloqueiaChangeTurma) return;
+
   console.log("✅ aplicarFiltros chamada com página:", pagina);
   const filtros = {
     escola: document.getElementById("filtroEscola")?.value || "",
@@ -2938,7 +2937,7 @@ function aplicarFiltros(pagina = 1) {
     situacao: document.getElementById("filtroSituacao")?.value || "",
     nome: document.getElementById("pesquisaNome")?.value.toLowerCase() || ""
   };
-  
+
   carregarAlunos(pagina, filtros);
 }
    
