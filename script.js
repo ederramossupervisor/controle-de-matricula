@@ -1,4 +1,4 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbx8ge9rr3ikTG0dCljWNVeNtfIR6iv3wCgtZIFEX-WFb8kw-FzxbYGMtlNm7MEHi1t1fg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzonYYSmXmy1UkmnZGou6bRfdJOoLUmrnw5fFfp1EU4cyB-EkGOmxzfxTA6LfDdc56_FA/exec";
 
 let dadosGlobais = [];
 let emailUsuario = "";
