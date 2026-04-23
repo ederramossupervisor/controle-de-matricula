@@ -906,8 +906,7 @@ function preencherSelectTipoModelo() {
 
 function carregarModelos() {
   mostrarLoading();
-  const url = `${API_URL}?tipo=modelos&email=${emailUsuario}`;
-  
+  const url = `${API_URL}?tipo=modelos&email=${emailUsuario}&_=${new Date().getTime()}`;
   jsonp(url, function(modelos) {
     const container = document.getElementById("listaModelosContainer");
     container.innerHTML = "";
