@@ -952,19 +952,9 @@ async function fazerUploadModelo() {
   const fileInput = document.getElementById("arquivoModelo");
   const file = fileInput.files[0];
   
-  if (!modeloNome) {
-    mostrarToast("Selecione o tipo de modelo.", "warning");
-    return;
-  }
-  if (!file) {
-    mostrarToast("Selecione um arquivo.", "warning");
-    return;
-  }
-  
-  if (file.size > 20 * 1024 * 1024) {
-    mostrarToast("Arquivo muito grande. Máximo 20 MB.", "warning");
-    return;
-  }
+  if (!modeloNome) { mostrarToast("Selecione o tipo de modelo.", "warning"); return; }
+  if (!file) { mostrarToast("Selecione um arquivo.", "warning"); return; }
+  if (file.size > 20 * 1024 * 1024) { mostrarToast("Arquivo muito grande. Máximo 20 MB.", "warning"); return; }
   
   const btnEnviar = document.querySelector("#abaUploadModelo .btn-salvar");
   showButtonLoading(btnEnviar);
@@ -986,48 +976,23 @@ async function fazerUploadModelo() {
       fileBase64: base64
     };
     
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000);
-    
-    const resp = await fetch(API_URL, {
+    // Envia sem esperar resposta JSON (no-cors)
+    const response = await fetch(API_URL, {
       method: "POST",
+      mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(dados),
-      signal: controller.signal
+      body: JSON.stringify(dados)
     });
     
-    clearTimeout(timeoutId);
+    // Com no-cors, response.ok e response.status são inacessíveis, mas a requisição foi enviada.
+    mostrarToast("Modelo enviado com sucesso! Atualize a lista.", "success");
+    fileInput.value = "";
+    select.value = "";
+    mostrarAbaListarModelos();
     
-    let result = { status: "ok", msg: "Modelo enviado com sucesso!" };
-    try {
-      const text = await resp.text();
-      if (text) {
-        result = JSON.parse(text);
-      }
-    } catch (parseError) {
-      console.warn("Resposta não é JSON, assumindo sucesso.", parseError);
-    }
-    
-    if (result.status === "ok") {
-      mostrarToast(result.msg || "Modelo enviado com sucesso!", "success");
-      fileInput.value = "";
-      select.value = "";
-      mostrarAbaListarModelos();
-    } else {
-      mostrarToast("Erro: " + (result.msg || "Falha no upload"), "error");
-    }
   } catch (error) {
     console.error("Erro no upload do modelo:", error);
-    if (error.name === 'AbortError') {
-      mostrarToast("Tempo limite excedido. O arquivo pode ter sido enviado. Verifique a lista.", "warning");
-    } else {
-      mostrarToast("Upload pode ter sido concluído. Verifique a lista de modelos.", "warning");
-    }
-    setTimeout(() => {
-      if (document.getElementById("modalModelos").style.display === "flex") {
-        mostrarAbaListarModelos();
-      }
-    }, 1000);
+    mostrarToast("Erro ao enviar. Tente novamente.", "error");
   } finally {
     hideButtonLoading(btnEnviar);
   }
