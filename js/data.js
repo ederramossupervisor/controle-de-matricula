@@ -12,6 +12,10 @@ let ordenacaoAtual = { campo: null, direcao: 'asc' }; // 'asc' ou 'desc'
 // ------ ALUNOS ------
 // ------ ALUNOS ------
 async function carregarAlunos(pagina = 1, filtros = {}) {
+  continuarCarregamentoAlunos(pagina, filtros);
+}
+
+function continuarCarregamentoAlunos(pagina, filtros) {
   mostrarLoading();
   
   let url = `${API_URL}?email=${emailUsuario}&pagina=${pagina}&limite=${alunosPorPagina}`;
@@ -22,6 +26,31 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
   if (filtros.situacao) url += `&situacao=${encodeURIComponent(filtros.situacao)}`;
   
   jsonp(url, function(dados) {
+    esconderLoading();
+
+    // 🔒 Tratamento do erro de termo (mantém na tela de login)
+    // 🔒 Tratamento do erro de termo (vindo do backend)
+    if (dados.erro === "termo_pendente") {
+      // Garante que estamos na tela de login e o app escondido
+      document.getElementById('app').style.display = 'none';
+      document.getElementById('login').style.display = '';
+
+      if (dados.status === 'pendente' || dados.status === 'recusado') {
+        // Já enviou o termo: mostra aviso na tela de login
+        const mensagem = dados.status === 'pendente'
+          ? 'Seu termo de compromisso ainda não foi aprovado. Você receberá um e‑mail quando o acesso for liberado.'
+          : 'Seu termo de compromisso foi recusado. Entre em contato com a SRE.';
+        exibirMensagemLogin(mensagem);
+      } else {
+        // Termo não enviado: mostra o modal de consentimento (como antes)
+        document.getElementById('modalConsentimento').style.display = 'flex';
+        document.getElementById('arquivoTermo').value = '';
+        document.getElementById('statusUploadTermo').innerHTML = '';
+        if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
+      }
+      return;
+    }
+
     if (dados.erro) {
       mostrarToast("Acesso não autorizado", "error");
       esconderLoading();
@@ -79,7 +108,6 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
     }
 
     // ---- INDICADOR DE ÚLTIMA ATUALIZAÇÃO ----
-    // ---- INDICADOR DE ÚLTIMA ATUALIZAÇÃO ----
     if (dados.ultimaAtualizacao) {
       const data = new Date(dados.ultimaAtualizacao);
       const textoData = data.toLocaleString('pt-BR');
@@ -89,7 +117,7 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
       document.getElementById('textoUltimaAtualizacao').textContent = 'Nenhuma atualização recente';
     }
 
-    // ---- MÉTRICAS GLOBAIS (preservação das originais) ----
+    // ---- MÉTRICAS GLOBAIS ----
     const statusAtual = document.getElementById('filtroStatus')?.value || '';
 
     if (dados.metricas) {
@@ -125,6 +153,12 @@ async function carregarAlunos(pagina = 1, filtros = {}) {
     const btnProcessos = document.getElementById("btnProcessos");
     if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
       if (btnProcessos) btnProcessos.style.display = "inline-block";
+    }
+
+    const btnAprovacao = document.getElementById("btnAprovacaoTermos");
+    if (btnAprovacao) {
+      // Exibe APENAS para o supervisor master; esconde para qualquer outro
+      btnAprovacao.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'block' : 'none';
     }
 
     esconderLoading();
@@ -1228,36 +1262,61 @@ function login() {
   }
 
   mostrarLoading();
-
   const url = `${API_URL}?tipo=auth&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`;
 
   jsonp(url, function(resultado) {
     esconderLoading();
 
     if (resultado.autorizado) {
+      emailUsuario = email;
+      localStorage.setItem("emailUsuario", email);
+
       if (resultado.primeiroAcesso) {
-        // Primeiro acesso: armazena o email e força a alteração de senha
-        emailUsuario = email;
-        localStorage.setItem("emailUsuario", email);
         abrirModalAlterarSenhaObrigatorio();
-      } else {
-        // Acesso normal: carrega o sistema
-        emailUsuario = email;
-        localStorage.setItem("emailUsuario", email);
-        carregarAlunos();
+        return;
       }
+
+      // Simplesmente tenta carregar os alunos – o backend decide
+      carregarAlunos();
+
     } else {
       mostrarToast(resultado.msg || "Credenciais inválidas.", "error");
     }
   });
 }
 
+function removerStatusLogin() {
+  const statusEl = document.getElementById('statusVerificacaoLogin');
+  if (statusEl) statusEl.remove();
+  document.getElementById("email").disabled = false;
+  document.getElementById("senha").disabled = false;
+  const btnLogin = document.querySelector('#login button');
+  if (btnLogin) btnLogin.disabled = false;
+}
+
+function exibirMensagemLogin(mensagem) {
+  const antiga = document.getElementById('mensagemLoginErro');
+  if (antiga) antiga.remove();
+
+  const div = document.createElement('div');
+  div.id = 'mensagemLoginErro';
+  div.style.cssText = 'margin-top:20px; padding:16px; background:#fff3cd; border:1px solid #ffc107; border-radius:12px; color:#856404; text-align:center;';
+  div.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${mensagem}
+    <br><button onclick="logout()" style="margin-top:12px;" class="btn-pequeno">Sair</button>`;
+  document.getElementById('login').appendChild(div);
+}
+
 function logout() {
   if (!confirm("Deseja sair do sistema?")) return;
 
+  if (window._pollingTermo) {
+    clearInterval(window._pollingTermo);
+    window._pollingTermo = null;
+  }
+
   limparCacheTurmas();
   pararPollingNotificacoes();
-  // Limpar a foto ao sair
+  
   const img = document.getElementById('fotoPerfilImg');
   if (img) img.src = '';
   const iniciais = document.getElementById('fotoPerfilIniciais');
@@ -1270,6 +1329,16 @@ function logout() {
   document.body.style.backgroundImage = "";
   document.body.classList.remove("fundo-personalizado");
   
+  // Limpa mensagens de erro no login
+  const msgErro = document.getElementById('mensagemLoginErro');
+  if (msgErro) msgErro.remove();
+  const statusVer = document.getElementById('statusVerificacaoLogin');
+  if (statusVer) statusVer.remove();
+  document.getElementById("email").disabled = false;
+  document.getElementById("senha").disabled = false;
+  const btnLogin = document.querySelector('#login button');
+  if (btnLogin) btnLogin.disabled = false;
+
   const loginEl = document.getElementById("login");
   loginEl.style.display = "";
   document.getElementById("email").value = "";
@@ -1623,4 +1692,106 @@ function carregarTurmasExportacao(escolaFiltro) {
 }
 function registrarUltimaAcao(descricao) {
   ultimaAcao = descricao;
+}
+function lerArquivoBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+// ---- CONSENTIMENTO LGPD ----
+
+function verificarConsentimentoUsuario() {
+  mostrarLoading();
+  // Verifica consentimento LGPD
+  jsonp(`${API_URL}?tipo=verificarConsentimento&email=${encodeURIComponent(emailUsuario)}`, function(res) {
+    if (res && res.consentiu === false) {
+      esconderLoading();
+      // Mostra modal de consentimento + termo
+      document.getElementById('modalConsentimento').style.display = 'flex';
+      document.getElementById('arquivoTermo').value = '';
+      document.getElementById('statusUploadTermo').innerHTML = '';
+      if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
+    } else {
+      // Já consentiu – verifica termo
+      verificarStatusTermoEAcessar();
+    }
+  });
+}
+
+function verificarStatusTermoEAcessar() {
+  // EXIBE A TELA DE ESPERA IMEDIATAMENTE para evitar que a interface principal apareça
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  // Esconde os componentes principais (modais continuam ocultos por padrão)
+  const idsParaOcultar = ['painel', 'lista', 'paginacao', 'muralComunicados'];
+  idsParaOcultar.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  const barraTitulo = document.querySelector('#app > div[style*="justify-content: space-between"]');
+  if (barraTitulo) barraTitulo.style.display = 'none';
+  // Cria mensagem de espera enquanto carrega
+  let msg = document.getElementById('mensagemEspera');
+  if (!msg) {
+    msg = document.createElement('div');
+    msg.id = 'mensagemEspera';
+    msg.style.cssText = 'text-align:center; padding:60px 20px; color: var(--text-primary);';
+    document.getElementById('app').appendChild(msg);
+  }
+  msg.style.display = 'block';
+  msg.innerHTML = `<h2><i class="fas fa-spinner fa-pulse"></i> Verificando autorização...</h2>`;
+
+  // Agora faz a requisição
+  jsonp(`${API_URL}?tipo=statusTermo&email=${encodeURIComponent(emailUsuario)}`, function(res) {
+    // Se chegou aqui, a chamada funcionou
+    if (res && res.enviado && res.status === 'aprovado') {
+      // Aprovado: remove espera e carrega sistema
+      removerTelaEspera();
+      carregarAlunos();
+    } else if (res && res.enviado && res.status === 'pendente') {
+      // Pendente: exibe tela de espera completa
+      exibirTelaEsperaAprovacao();
+    } else if (res && res.enviado && res.status === 'recusado') {
+      exibirTelaRecusado(res.obs || '');
+    } else {
+      // Qualquer outro caso (não enviado, erro, etc.) mostra consentimento
+      document.getElementById('modalConsentimento').style.display = 'flex';
+      document.getElementById('arquivoTermo').value = '';
+      document.getElementById('statusUploadTermo').innerHTML = '';
+      if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
+    }
+  }, function() {
+    // ERRO na requisição: mostra tela de espera (não libera!)
+    exibirTelaEsperaAprovacao();
+  });
+}
+
+async function aceitarConsentimento() {
+  if (!document.getElementById('aceiteLgpd').checked) {
+    mostrarToast('Você precisa marcar o aceite para continuar.', 'warning');
+    return;
+  }
+
+  // Obtém o IP do usuário (via serviço público)
+  let ip = 'N/A';
+  try {
+    const ipRes = await fetch('https://api.ipify.org?format=json');
+    const ipData = await ipRes.json();
+    ip = ipData.ip;
+  } catch(e) {}
+
+  const dados = {
+    acao: 'registrarConsentimento',
+    email: emailUsuario,
+    versao: '1.0',
+    ip: ip
+  };
+
+  postSemResposta(dados, 'Consentimento registrado!', () => {
+    document.getElementById('modalConsentimento').style.display = 'none';
+    carregarAlunos();
+  });
 }
