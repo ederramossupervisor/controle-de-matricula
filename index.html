@@ -593,6 +593,7 @@
               <button onclick="abrirModalAlterarSenha()" class="btn-header" id="btnAlterarSenha"><i class="fas fa-key"></i> Alterar Senha</button>
               <button onclick="abrirModalExportacao()" class="btn-header"><i class="fas fa-file-pdf"></i> Exportar Relatório </button>
               <button onclick="abrirModalLegislacao()" id="btnLegislacao" class="btn-header"><i class="fas fa-balance-scale"></i> Legislação</button>
+              <button onclick="abrirModalAprovacaoTermos()" id="btnAprovacaoTermos" class="btn-header" style="display:none;"><i class="fas fa-file-signature"></i> Aprovar Termos</button>
             </div>
           </div>
         </div>
@@ -637,6 +638,10 @@
 
           <button id="btnDashboard" class="btn-icone" onclick="abrirModalDashboard()" data-tooltip="Dashboard" style="background: transparent; border: none; color: #10b981;">
             <i class="fas fa-chart-pie"></i>
+          </button>
+
+          <button id="btnHistorico" class="btn-icone" onclick="abrirModalHistorico()" data-tooltip="Histórico de ações" style="background: transparent; border: none; color: #8b5cf6;">
+            <i class="fas fa-history"></i>
           </button>
 
           <button id="darkModeToggle" class="btn-icone" onclick="toggleDarkMode()" data-tooltip="Modo escuro" style="background: transparent !important; border: none !important; color: #eab308;">
@@ -1495,6 +1500,114 @@
         </div>
       </div>
     </div>
+    <!-- 🔐 MODAL DE CONSENTIMENTO LGPD + TERMO DE COMPROMISSO -->
+    <div id="modalConsentimento" class="modal-overlay" style="display:none;">
+      <div class="modal-card modal-card--grande">
+        <div class="modal-header">
+          <h2><i class="fas fa-shield-halved"></i> Consentimento e Termo de Compromisso</h2>
+          <button class="close-btn" onclick="logout()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <!-- Texto LGPD -->
+          <div style="max-height: 30vh; overflow-y: auto; padding-right: 8px; margin-bottom: 16px; border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; background: var(--card-bg);">
+            <h3>Política de Privacidade e Termos de Uso</h3>
+            <p>Bem-vindo(a) ao sistema de Controle de Matrículas da SRE Afonso Cláudio. Para utilizar o sistema, você precisa concordar com nossos termos.</p>
+            <p>Coletamos seu nome, e-mail e telefone única e exclusivamente para fins de controle de matrícula escolar, em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).</p>
+            
+            <h4>🔒 Confidencialidade e Responsabilidade do Usuário</h4>
+            <p>Os dados armazenados neste sistema são de uso exclusivo da Superintendência Regional de Educação de Afonso Cláudio. É <strong>estritamente proibido</strong> compartilhar, copiar, distribuir ou divulgar qualquer informação contida neste sistema para pessoas não autorizadas, seja por e-mail, redes sociais, aplicativos de mensagens ou qualquer outro meio.</p>
+            
+            <p style="font-weight: 500;">O usuário se compromete a manter sigilo de todos os dados, informações técnicas e administrativas, obtidas ou não com sua participação, zelando pela privacidade dos indivíduos relacionados/listados nas pesquisas/consultas, mediante o compromisso de manter sigilo absoluto dessas informações, nos termos do inciso X do art. 5º da Constituição Federal; do art. 4º da Lei nº 8.159/1991; da Lei n° 13.709/2018 (LGPD) e do Decreto Estadual nº 4922-R, de 09 de julho de 2021, que institui a Política Estadual de Proteção de Dados Pessoais e da Privacidade do Poder Executivo Estadual em consonância com a Lei Federal nº 13.709, de 14 de agosto de 2018 (Lei Geral de Proteção de Dados Pessoais).</p>
+
+            <p>O usuário também se compromete a:</p>
+            <ul>
+              <li>Manter sua senha em sigilo absoluto, não a compartilhando com terceiros;</li>
+              <li>Não deixar o sistema aberto em computadores desbloqueados ou de acesso público;</li>
+              <li>Comunicar imediatamente à SRE qualquer suspeita de acesso indevido ou violação de dados;</li>
+              <li>Utilizar os dados exclusivamente para as finalidades de gestão escolar previstas pela SEDU/ES.</li>
+            </ul>
+            <p>O descumprimento destas obrigações poderá acarretar responsabilização administrativa, civil e criminal, nos termos da legislação vigente.</p>
+            <p>Seus dados não serão compartilhados com terceiros e você pode solicitar sua exclusão a qualquer momento entrando em contato com nosso Encarregado de Proteção de Dados pelo e-mail <strong>ecramos@sedu.es.gov.br</strong>.</p>
+          </div>
+
+          <!-- ⬇️ TERMO DE COMPROMISSO -->
+          <div style="border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; margin-bottom: 16px; background: var(--card-bg);">
+            <h4><i class="fas fa-file-signature"></i> Termo de Sigilo e Confidencialidade</h4>
+            <p style="font-size:14px; color: var(--text-muted);">
+              É obrigatório o envio do <strong>Termo de Sigilo, Compromisso e Confidencialidade</strong> preenchido e assinado.
+            </p>
+            <!-- Link para download do modelo editável (substitua SEU_ID_AQUI pelo ID real do arquivo) -->
+            <a href="https://docs.google.com/document/d/1UAyD8g2QAssDfkeZu1EL29v7TMu2ZFZLWa1G2G5f_88/export?format=docx" target="_blank" class="btn-pequeno" style="margin-bottom: 12px;">
+              <i class="fas fa-download"></i> Baixar modelo editável
+            </a>
+
+            <div class="input-icon" style="margin-top: 8px;">
+              <span class="icon"><i class="fas fa-upload"></i></span>
+              <input type="file" id="arquivoTermo" accept=".pdf" onchange="validarArquivoTermo(this)">
+            </div>
+            <p id="statusUploadTermo" style="font-size:13px; color: var(--text-muted); margin-top: 8px;"></p>
+          </div>
+
+          <!-- Checkboxes -->
+          <div class="checkbox-moderno">
+            <input type="checkbox" id="aceiteLgpd">
+            <label for="aceiteLgpd">Declaro que li e aceito a Política de Privacidade e os Termos de Uso.</label>
+          </div>
+          <div class="checkbox-moderno">
+            <input type="checkbox" id="aceiteTermo">
+            <label for="aceiteTermo">Confirmo que li e aceito o Termo de Sigilo e Confidencialidade.</label>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 16px;">
+            <button class="btn-salvar" id="btnEnviarConsentimento" onclick="enviarConsentimentoETermo()">
+              <i class="fas fa-check-circle"></i> Enviar e Aceitar
+            </button>
+            <button class="btn-cancelar" onclick="logout()">Recusar e Sair</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- 📜 MODAL DE HISTÓRICO DE AÇÕES -->
+    <div id="modalHistorico" class="modal-overlay" style="display:none;">
+      <div class="modal-card modal-card--grande modal-card--historico">
+        <div class="modal-header">
+          <h2><i class="fas fa-history"></i> Histórico de Ações</h2>
+          <button class="close-btn" onclick="fecharModalHistorico()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <!-- Barra de busca -->
+          <div class="input-icon" style="margin-bottom: 16px;">
+            <span class="icon"><i class="fas fa-search"></i></span>
+            <input type="text" id="buscaHistorico" placeholder="Filtrar ações..." oninput="filtrarLogs()">
+          </div>
+
+          <!-- Tabela de logs -->
+          <div id="conteudoLog" style="max-height: 60vh; overflow-y: auto;">
+            <p style="text-align:center; color: var(--text-muted);">Carregando...</p>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 16px;">
+            <button class="btn-cancelar" onclick="fecharModalHistorico()">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 👥 MODAL DE APROVAÇÃO DE TERMOS (somente master) -->
+    <div id="modalAprovacaoTermos" class="modal-overlay" style="display:none;">
+      <div class="modal-card modal-card--grande">
+        <div class="modal-header">
+          <h2><i class="fas fa-file-signature"></i> Aprovação de Termos de Compromisso</h2>
+          <button class="close-btn" onclick="fecharModalAprovacaoTermos()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div id="listaTermosContainer" style="max-height: 60vh; overflow-y: auto;"></div>
+          <div class="modal-actions">
+            <button class="btn-cancelar" onclick="fecharModalAprovacaoTermos()">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- SCRIPTS MODULARIZADOS - ORDEM IMPORTANTE -->
     <script src="js/config.js"></script>
@@ -1508,6 +1621,8 @@
     <script src="js/perfil.js"></script>
     <script src="js/agenda.js"></script>
     <script src="js/dashboard.js"></script>
+    <script src="js/log.js"></script>
+    <script src="js/termo.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js')
