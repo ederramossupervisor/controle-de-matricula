@@ -140,7 +140,8 @@ document.addEventListener('DOMContentLoaded', function() {
     { element: document.getElementById('modalEditarLegislacao'), close: fecharEdicaoLegislacao },
     { element: document.getElementById('modalLegislacao'), close: fecharModalLegislacao },
     { element: document.getElementById('modalAtualizarMatriculados'), close: fecharModalAtualizarMatriculados },
-    { element: document.getElementById('modalComunicado'), close: fecharModalComunicado }
+    { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
+    { element: document.getElementById('modalConsentimento'), close: logout }
   ];
 
   let modalFechado = false;
