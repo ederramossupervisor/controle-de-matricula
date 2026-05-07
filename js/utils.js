@@ -21,8 +21,7 @@ function jsonp(url, callback) {
 }
 
 // ------ POST sem esperar resposta (evita CORS) ------
-function postSemResposta(dados, mensagemSucesso, callbackAposSucesso) {
-  mostrarLoading();
+function postSemResposta(dados, msgSucesso, callback) {
   fetch(API_URL, {
     method: "POST",
     mode: 'no-cors',
@@ -30,14 +29,11 @@ function postSemResposta(dados, mensagemSucesso, callbackAposSucesso) {
     body: JSON.stringify(dados)
   })
   .then(() => {
-    esconderLoading();
-    if (mensagemSucesso) mostrarToast(mensagemSucesso, "success");
-    if (callbackAposSucesso) callbackAposSucesso();
+    if (msgSucesso) mostrarToast(msgSucesso, 'success');
+    if (callback) callback();
   })
-  .catch(error => {
-    esconderLoading();
-    console.error("Erro de rede:", error);
-    mostrarToast("Erro de conexão. Verifique sua internet.", "error");
+  .catch(() => {
+    mostrarToast("Erro de conexão.", "error");
   });
 }
 
