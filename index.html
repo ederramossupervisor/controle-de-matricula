@@ -594,6 +594,8 @@
               <button onclick="abrirModalExportacao()" class="btn-header"><i class="fas fa-file-pdf"></i> Exportar Relatório </button>
               <button onclick="abrirModalLegislacao()" id="btnLegislacao" class="btn-header"><i class="fas fa-balance-scale"></i> Legislação</button>
               <button onclick="abrirModalAprovacaoTermos()" id="btnAprovacaoTermos" class="btn-header" style="display:none;"><i class="fas fa-file-signature"></i> Aprovar Termos</button>
+              <button onclick="abrirModalFormTI()" id="btnFormTI" class="btn-header"><i class="fas fa-clock"></i> Formulário TI</button>
+              <button onclick="abrirModalRespostasTI()" id="btnRespostasTI" class="btn-header"><i class="fas fa-eye"></i> Respostas TI</button>
             </div>
           </div>
         </div>
@@ -1661,6 +1663,7 @@
     <script src="js/dashboard.js"></script>
     <script src="js/log.js"></script>
     <script src="js/termo.js"></script>
+    <script src="js/formTempoIntegral.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js')
