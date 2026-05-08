@@ -1525,6 +1525,7 @@ function renderizarVinculosEdicaoAdicionados() {
         <span style="flex:1; font-size:13px;">${v.texto || v.idDestino}</span>
         <select onchange="alterarTipoVinculoEdicao(${i}, this.value)" style="width:140px; font-size:12px; padding:2px 4px;">
           <option value="revoga" ${v.tipoVinculo==='revoga'?'selected':''}>Revoga</option>
+          <option value="altera" ${v.tipoVinculo==='altera'?'selected':''}>Altera</option>
           <option value="retifica" ${v.tipoVinculo==='retifica'?'selected':''}>Retifica</option>
           <option value="acrescenta" ${v.tipoVinculo==='acrescenta'?'selected':''}>Complementa</option>
           <option value="ver também" ${v.tipoVinculo==='ver também'?'selected':''}>Ver também</option>
