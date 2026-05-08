@@ -3005,6 +3005,4 @@ input[data-mask]:invalid {
   font-size: 13px;
   margin-top: 6px;
 }
-#btnAprovacaoTermos {
-  display: none !important; /* nunca exibir até que o JS mude para block */
-}
+
