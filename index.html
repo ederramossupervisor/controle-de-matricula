@@ -1609,6 +1609,44 @@
       </div>
     </div>
 
+    <!-- 📋 MODAL FORMULÁRIO TEMPO INTEGRAL -->
+    <div id="modalFormTI" class="modal-overlay" style="display:none;">
+      <div class="modal-card modal-card--grande modal-card--fullscreen">
+        <div class="modal-header">
+          <h2><i class="fas fa-clock"></i> Acompanhamento do Tempo Integral</h2>
+          <button class="close-btn" onclick="fecharModalFormTI()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body" id="formTIBody" style="max-height: 70vh; overflow-y: auto;">
+          <!-- Formulário gerado dinamicamente -->
+        </div>
+        <div class="modal-actions" style="padding: 16px;">
+          <button class="btn-salvar" onclick="salvarFormTI()">Salvar Respostas</button>
+          <button class="btn-cancelar" onclick="fecharModalFormTI()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 👁️ MODAL VISUALIZAÇÃO RESPOSTAS TI (SUPERVISOR) -->
+    <div id="modalRespostasTI" class="modal-overlay" style="display:none;">
+      <div class="modal-card modal-card--grande">
+        <div class="modal-header">
+          <h2><i class="fas fa-eye"></i> Respostas - Tempo Integral</h2>
+          <button class="close-btn" onclick="fecharModalRespostasTI()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-icon" id="filtroEscolaTIWrapper" style="margin-bottom:16px;">
+            <select id="filtroEscolaTI" onchange="carregarRespostasTI()">
+              <option value="">Todas as escolas</option>
+            </select>
+          </div>
+          <div id="listaRespostasTI" style="max-height:60vh; overflow-y:auto;"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-cancelar" onclick="fecharModalRespostasTI()">Fechar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- SCRIPTS MODULARIZADOS - ORDEM IMPORTANTE -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
