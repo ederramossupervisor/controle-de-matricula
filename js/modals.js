@@ -876,17 +876,17 @@ function toggleSenha(iconElement) {
 // ------ MENU DROPDOWN (USUÁRIO NO HEADER) ------
 function toggleMenu() {
   const menu = document.getElementById("menuDropdown");
-  // Se estiver oculto ou sem display definido, apenas remove o inline
-  if (menu.style.display === "none" || menu.style.display === "") {
-    menu.style.display = "";   // remove o inline, deixando o CSS agir
-  } else {
+  // Verifica se o menu está realmente visível (considerando CSS inline e classes)
+  const style = window.getComputedStyle(menu);
+  const estaVisivel = style.display !== 'none' && menu.style.display !== 'none';
+
+  if (estaVisivel) {
     menu.style.display = "none";
+  } else {
+    // Remove qualquer estilo inline para que o CSS (flex-direction etc.) funcione
+    menu.style.display = "";
   }
 }
-
-// Clicar fora fecha menu (será tratado em main.js, mas podemos deixar aqui também se quisermos; 
-// mas para evitar duplicação, main.js terá o listener global. Deixaremos apenas a função toggleMenu.)
-
 // ------ COPIAR CÓDIGO DO PROCESSO ------
 function copiarCodigo(codigo) {
   if (!codigo) return;
