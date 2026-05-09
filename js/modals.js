@@ -1905,3 +1905,12 @@ function abrirResultadoBusca(link) {
       break;
   }
 }
+function atualizarCampoNomeTitular() {
+  const tipoSelecionado = document.getElementById("uploadTipoDoc").value;
+  const campoNome = document.getElementById("campoNomeTitular");
+  if (tiposDocumentoSemNome.includes(tipoSelecionado)) {
+    campoNome.style.display = 'none';
+  } else {
+    campoNome.style.display = 'block';
+  }
+}
