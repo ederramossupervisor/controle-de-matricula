@@ -3165,3 +3165,21 @@ input[data-mask]:invalid {
 .btn-menu:hover {
   background-color: rgba(255, 255, 255, 0.15) !important;  /* leve brilho ao passar o mouse */
 }
+/* =========================
+   EFEITO DE BRILHO NO MENU
+   ========================= */
+.btn-icone.btn-menu-brilho i {
+  color: #facc15;
+  animation: brilhoMenu 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes brilhoMenu {
+  from {
+    text-shadow: 0 0 4px rgba(250, 204, 21, 0.3), 0 0 8px rgba(250, 204, 21, 0.1);
+    opacity: 0.8;
+  }
+  to {
+    text-shadow: 0 0 12px rgba(250, 204, 21, 0.8), 0 0 20px rgba(250, 204, 21, 0.4);
+    opacity: 1;
+  }
+}
