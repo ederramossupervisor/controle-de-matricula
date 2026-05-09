@@ -196,40 +196,26 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     // =========================
     // OCULTAR SEÇÕES VAZIAS DO MENU
     // =========================
-    function secaoTemBotoesVisiveis(secaoId) {
-      const secao = document.getElementById(secaoId);
-      if (!secao) return false;
-      let irmao = secao.nextElementSibling;
-      while (irmao) {
-        if (irmao.classList.contains('menu-secao-titulo') || irmao.classList.contains('menu-separador')) break;
-        if (irmao.tagName === 'BUTTON' && irmao.style.display !== 'none') return true;
-        irmao = irmao.nextElementSibling;
-      }
-      return false;
-    }
+    function secaoTemBotoesVisiveis(colunaId) {
+  const coluna = document.getElementById(colunaId);
+  if (!coluna) return false;
+  const botoes = coluna.querySelectorAll('button');
+  for (const btn of botoes) {
+    if (btn.style.display !== 'none') return true;
+  }
+  return false;
+}
 
-    function esconderSecaoMenu(tituloId, separadorId) {
-      const titulo = document.getElementById(tituloId);
-      if (titulo) titulo.style.display = 'none';
-      const sep = document.getElementById(separadorId);
-      if (sep) sep.style.display = 'none';
-    }
+    function esconderColunaMenu(colunaId) {
+  const coluna = document.getElementById(colunaId);
+  if (coluna) coluna.style.display = 'none';
+}
 
-    if (!secaoTemBotoesVisiveis('menuSecaoAlunos')) {
-      esconderSecaoMenu('menuSecaoAlunos', 'menuSep1');
-    }
-    if (!secaoTemBotoesVisiveis('menuSecaoDocs')) {
-      esconderSecaoMenu('menuSecaoDocs', 'menuSep2');
-    }
-    if (!secaoTemBotoesVisiveis('menuSecaoGestao')) {
-      esconderSecaoMenu('menuSecaoGestao', 'menuSep3');
-    }
-    if (!secaoTemBotoesVisiveis('menuSecaoPlanoTatico')) {
-      esconderSecaoMenu('menuSecaoPlanoTatico', 'menuSep4');
-    }
-    if (!secaoTemBotoesVisiveis('menuSecaoAdmin')) {
-      esconderSecaoMenu('menuSecaoAdmin', null);
-    }
+if (!secaoTemBotoesVisiveis('menuColunaAlunos')) esconderColunaMenu('menuColunaAlunos');
+if (!secaoTemBotoesVisiveis('menuColunaDocs')) esconderColunaMenu('menuColunaDocs');
+if (!secaoTemBotoesVisiveis('menuColunaGestao')) esconderColunaMenu('menuColunaGestao');
+if (!secaoTemBotoesVisiveis('menuColunaPlanoTatico')) esconderColunaMenu('menuColunaPlanoTatico');
+if (!secaoTemBotoesVisiveis('menuColunaAdmin')) esconderColunaMenu('menuColunaAdmin');
 
     esconderLoading();
   });
