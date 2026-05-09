@@ -876,7 +876,12 @@ function toggleSenha(iconElement) {
 // ------ MENU DROPDOWN (USUÁRIO NO HEADER) ------
 function toggleMenu() {
   const menu = document.getElementById("menuDropdown");
-  menu.style.display = menu.style.display === "none" ? "block" : "none";
+  // Se estiver oculto ou sem display definido, apenas remove o inline
+  if (menu.style.display === "none" || menu.style.display === "") {
+    menu.style.display = "";   // remove o inline, deixando o CSS agir
+  } else {
+    menu.style.display = "none";
+  }
 }
 
 // Clicar fora fecha menu (será tratado em main.js, mas podemos deixar aqui também se quisermos; 
