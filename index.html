@@ -1853,8 +1853,14 @@
         </div>
         <div class="modal-actions">
           <button class="btn-salvar" onclick="exportarPlanoTaticoPDF()">
-            <i class="fas fa-file-pdf"></i> Exportar PDF
+            <i class="fas fa-file-pdf"></i> Exportar Painel
           </button>
+          <button class="btn-salvar" onclick="exportarPlanilhaCompletaPDF()" id="btnExportarPlanilhaCompleta" style="display:none;">
+            <i class="fas fa-file-pdf"></i> Exportar Planilha Completa
+          </button>
+          <a href="https://docs.google.com/spreadsheets/d/1R38FuhaLIyMpZkZDcdCn-hlkp71Lh6RVuIQeaEDPd_E/edit" target="_blank" class="btn-primary" style="text-decoration:none; padding:10px 16px; border-radius:8px;">
+            <i class="fas fa-external-link-alt"></i> Abrir Planilha
+          </a>
           <button class="btn-cancelar" onclick="fecharModalAcompanhamentoPT()">Fechar</button>
         </div>
       </div>
