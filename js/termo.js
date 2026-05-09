@@ -66,8 +66,8 @@ async function enviarConsentimentoETermo() {
     document.getElementById('modalConsentimento').style.display = 'none';
 
     // Exibe o toast de confirmação
-    mostrarToast('Documentos enviados com sucesso! Você receberá um e‑mail quando o acesso for aprovado.', 'success');
-
+    mostrarToast('Documentos enviados com sucesso! Você receberá um e‑mail quando o acesso for aprovado.', 'success', 0);
+    
     // Faz logout (volta para a tela de login)
     logout();
 
