@@ -115,14 +115,17 @@ function mostrarToast(mensagem, tipo = 'info', duracao = 4000) {
     setTimeout(() => toast.remove(), 300);
   });
 
-  setTimeout(() => {
-    if (toast.parentElement) {
-      toast.style.animation = 'fadeOut 0.3s ease forwards';
-      setTimeout(() => toast.remove(), 300);
-    }
-  }, duracao);
-}
+  const duracaoReal = (duracao !== undefined) ? duracao : 4000;
 
+  if (duracaoReal > 0) {
+    setTimeout(() => {
+      if (toast.parentElement) {
+        toast.style.animation = 'fadeOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+      }
+    }, duracaoReal);
+  }
+}
 // ------ LOADING SCREEN ------
 function mostrarLoading() {
   document.getElementById("loading").style.display = "flex";
