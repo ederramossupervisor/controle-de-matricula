@@ -80,10 +80,10 @@ async function enviarConsentimentoETermo() {
 }
 
 
-// ---------- Supervisor Master ----------
+// ---------- Administrador ----------
 function abrirModalAprovacaoTermos() {
   if (emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
-    mostrarToast('Apenas supervisor master.', 'error');
+    mostrarToast('Apenas Administrador.', 'error');
     return;
   }
   document.getElementById('modalAprovacaoTermos').style.display = 'flex';
@@ -135,7 +135,7 @@ function aprovarTermo(emailAlvo) {
 
   postSemResposta({
     acao: 'aprovarTermo',
-    emailMaster: emailUsuario,
+    emailAdmin: emailUsuario,
     emailAlvo: emailAlvo,
     decisao: 'aprovar'
   }, 'Termo aprovado! E-mail enviado ao usuário.', () => {
@@ -152,7 +152,7 @@ function recusarTermo(emailAlvo) {
 
   postSemResposta({
     acao: 'aprovarTermo',
-    emailMaster: emailUsuario,
+    emailAdmin: emailUsuario,
     emailAlvo: emailAlvo,
     decisao: 'recusar',
     obs: motivo || ''
