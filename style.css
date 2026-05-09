@@ -3006,3 +3006,27 @@ input[data-mask]:invalid {
   margin-top: 6px;
 }
 
+/* =========================
+   MODAL ACOMPANHAMENTO PLANO TÁTICO
+   Corrige barras de rolagem extras
+   ========================= */
+#modalAcompanhamentoPT .modal-body {
+  overflow-x: hidden;           /* remove barra horizontal */
+  overflow-y: auto;             /* mantém rolagem vertical controlada */
+  max-height: none !important;  /* já definido pelo fullscreen, reforça */
+  padding-right: 12px;          /* espaço para a barra de rolagem */
+}
+
+#tabelaAcompanhamentoPT {
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Garante que cards e tabelas internas não estourem */
+#tabelaAcompanhamentoPT table,
+#tabelaAcompanhamentoPT > div {
+  max-width: 100%;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
