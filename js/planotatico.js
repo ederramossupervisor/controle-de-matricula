@@ -318,6 +318,13 @@ function abrirModalAcompanhamentoPT() {
     return;
   }
   document.getElementById('modalAcompanhamentoPT').style.display = 'flex';
+
+  // Exibe o botão de exportação completa apenas para o master
+  const btnExportarCompleta = document.getElementById('btnExportarPlanilhaCompleta');
+  if (btnExportarCompleta) {
+    btnExportarCompleta.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'inline-block' : 'none';
+  }
+
   carregarIndicadoresGerais();
 }
 
