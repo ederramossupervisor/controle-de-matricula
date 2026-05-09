@@ -2937,97 +2937,6 @@ input[data-mask]:invalid {
   box-sizing: border-box;
 }
 /* =========================
-   MENU DROPDOWN HORIZONTAL
-   ========================= */
-.dropdown-horizontal {
-  flex-direction: row !important;
-  flex-wrap: nowrap;
-  gap: 16px;
-  max-height: none !important;
-  overflow-x: auto;           /* rolagem horizontal se necessário */
-  overflow-y: visible;        /* sem rolagem vertical */
-  width: max-content;
-  max-width: calc(100vw - 32px);
-  padding: 12px;
-}
-
-/* Cada coluna do menu */
-.menu-coluna {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 200px;
-  max-width: 280px;
-  flex-shrink: 0;
-}
-
-/* Título da seção */
-.menu-coluna .menu-secao-titulo {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-  padding: 8px 0 4px;
-  border-bottom: 1px solid var(--card-border);
-  opacity: 0.8;
-  white-space: nowrap;
-  margin-bottom: 4px;
-}
-
-/* Botões dentro das colunas */
-.menu-coluna .btn-header {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  padding: 10px 12px !important;
-  margin: 0 !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  text-align: left !important;
-  gap: 10px !important;
-  white-space: nowrap !important;
-  line-height: 1.4 !important;
-  border: none !important;
-  background: transparent !important;
-  color: var(--text-primary) !important;
-  font-weight: 500 !important;
-  font-size: 14px !important;
-  transition: background 0.2s !important;
-  border-radius: 6px !important;
-  box-shadow: none !important;
-}
-
-/* Ícones nos botões */
-.menu-coluna .btn-header i {
-  display: inline-block !important;
-  width: 20px !important;
-  flex-shrink: 0 !important;
-  text-align: center !important;
-  margin: 0 !important;
-  font-size: 1rem !important;
-  color: #dd5e15 !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-/* Hover */
-.menu-coluna .btn-header:hover {
-  background-color: var(--card-border) !important;
-}
-
-/* Responsivo: volta ao layout vertical em telas estreitas */
-@media (max-width: 800px) {
-  .dropdown-horizontal {
-    flex-direction: column !important;
-    overflow-x: hidden;
-    max-width: 100%;
-  }
-  .menu-coluna {
-    max-width: 100%;
-  }
-}
-/* =========================
    MENU DROPDOWN (BASE)
    ========================= */
 .dropdown-content {
@@ -3044,14 +2953,14 @@ input[data-mask]:invalid {
   z-index: 9999;
   border: 1px solid var(--card-border);
   display: flex;
-  flex-direction: column;      /* padrão vertical */
+  flex-direction: column;      /* base vertical */
   gap: 4px;
   max-height: 70vh;
   overflow-y: auto;
 }
 
 /* =========================
-   MENU HORIZONTAL (SOBRESCREVE)
+   MENU HORIZONTAL (SOBRESCREVE A BASE)
    ========================= */
 .dropdown-horizontal {
   flex-direction: row !important;
@@ -3065,7 +2974,7 @@ input[data-mask]:invalid {
   padding: 12px;
 }
 
-/* Cada coluna do menu */
+/* Colunas do menu horizontal */
 .menu-coluna {
   display: flex;
   flex-direction: column;
@@ -3075,7 +2984,6 @@ input[data-mask]:invalid {
   flex-shrink: 0;
 }
 
-/* Título da seção */
 .menu-coluna .menu-secao-titulo {
   font-size: 11px;
   font-weight: 700;
@@ -3089,7 +2997,6 @@ input[data-mask]:invalid {
   margin-bottom: 4px;
 }
 
-/* Botões dentro das colunas */
 .menu-coluna .btn-header {
   display: flex !important;
   align-items: center !important;
@@ -3112,7 +3019,6 @@ input[data-mask]:invalid {
   box-shadow: none !important;
 }
 
-/* Ícones nos botões */
 .menu-coluna .btn-header i {
   display: inline-block !important;
   width: 20px !important;
@@ -3125,12 +3031,11 @@ input[data-mask]:invalid {
   opacity: 1 !important;
 }
 
-/* Hover */
 .menu-coluna .btn-header:hover {
   background-color: var(--card-border) !important;
 }
 
-/* Responsivo: volta ao layout vertical em telas estreitas */
+/* Volta ao vertical em telas menores */
 @media (max-width: 800px) {
   .dropdown-horizontal {
     flex-direction: column !important;
