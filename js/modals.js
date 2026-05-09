@@ -57,11 +57,13 @@ function abrirModalDetalhes(aluno) {
   docsBasicos.forEach(doc => {
     const chave = `${aluno._row}_${doc.coluna}`;
     const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : doc.valor;
+    const disabledAttr = (perfilUsuario === 'PEDAGOGICO') ? 'disabled' : '';
     html += `
       <div class="checkbox-moderno">
         <input type="checkbox" 
           id="doc_${doc.coluna}" 
           ${checked ? "checked" : ""} 
+          ${disabledAttr}
           onchange="marcarAlteracao(${aluno._row}, ${doc.coluna}, this.checked)">
         <label for="doc_${doc.coluna}">${doc.label}</label>
       </div>
@@ -72,11 +74,13 @@ function abrirModalDetalhes(aluno) {
     const docEspecial = { label: "Laudo/Relatório Pedagógico (Ed. Especial)", coluna: 17, valor: aluno.ED_ESPECIAL };
     const chave = `${aluno._row}_${docEspecial.coluna}`;
     const checked = (alteracoesPendentes.hasOwnProperty(chave)) ? alteracoesPendentes[chave] : docEspecial.valor;
+    const disabledAttr = (perfilUsuario === 'PEDAGOGICO') ? 'disabled' : '';
     html += `
       <div class="checkbox-moderno">
         <input type="checkbox" 
           id="doc_${docEspecial.coluna}" 
           ${checked ? "checked" : ""} 
+          ${disabledAttr}
           onchange="marcarAlteracao(${aluno._row}, ${docEspecial.coluna}, this.checked)">
         <label for="doc_${docEspecial.coluna}">${docEspecial.label}</label>
       </div>
@@ -99,12 +103,38 @@ function abrirModalDetalhes(aluno) {
   document.getElementById("detalhesConteudo").innerHTML = html;
   
   // ---- Preenche os campos editáveis ----
+  const isPedagogico = (perfilUsuario === 'PEDAGOGICO');
+  
   document.getElementById("editNomeAluno").value = aluno.ALUNO || "";
+  document.getElementById("editNomeAluno").disabled = isPedagogico;
+  
   document.getElementById("editIdAluno").value = aluno.ID || '';
+  document.getElementById("editIdAluno").disabled = isPedagogico;
+  
   document.getElementById("editResponsavel").value = aluno.RESPONSAVEL || "";
+  document.getElementById("editResponsavel").disabled = isPedagogico;
+  
   preencherCamposTelefoneEdicao(aluno.TELEFONE || "");
+  // Desabilita campos de telefone se for pedagogo
+  if (isPedagogico) {
+    document.querySelectorAll('#telefonesContainerEdicao input').forEach(inp => inp.disabled = true);
+  }
+  
   document.getElementById("editEdEspecial").checked = aluno.ED_ESPECIAL === true;
+  document.getElementById("editEdEspecial").disabled = isPedagogico;
+  
   document.getElementById("editCpfNumero").value = aluno.CPF_NUMERO || '';
+  document.getElementById("editCpfNumero").disabled = isPedagogico;
+  
+  // Oculta botões de ação para pedagogo
+  document.getElementById("btnSalvarInfoAluno").style.display = isPedagogico ? 'none' : '';
+  document.getElementById("btnSalvarDetalhes").style.display = isPedagogico ? 'none' : '';
+  
+  // Oculta a seção de encerrar matrícula (Transferido, Concluído, Excluir)
+  const secaoEncerrar = document.querySelector('#modalDetalhes .modal-actions > div:first-child');
+  if (secaoEncerrar) {
+    secaoEncerrar.style.display = isPedagogico ? 'none' : '';
+  }
   
   carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
   document.getElementById("modalDetalhes").style.display = "flex";
@@ -140,6 +170,10 @@ function toggleTodosDocumentos() {
 
 // ------ MODAL IMPORTAÇÃO CSV ------
 function abrirModalImportacao() {
+  if (perfilUsuario === 'PEDAGOGICO') {
+    mostrarToast('Perfil pedagógico não pode importar alunos.', 'warning');
+    return;
+  }
   document.getElementById('modalImportacao').style.display = 'flex';
   document.getElementById('arquivoCSV').value = '';
   document.getElementById('previewContainer').innerHTML = '<p style="padding:16px;color:#64748b;">Selecione um arquivo CSV para visualizar os dados.</p>';
@@ -437,6 +471,10 @@ function mostrarAbaBuscaProcesso() {
 
 // ------ MODAL LISTA DE USUÁRIOS ------
 function abrirModalListaUsuarios() {
+  if (perfilUsuario === 'PEDAGOGICO') {
+    mostrarToast('Perfil pedagógico não pode gerenciar usuários.', 'warning');
+    return;
+  }
   document.getElementById("modalListaUsuarios").style.display = "flex";
   carregarUsuarios();
 }
@@ -446,6 +484,10 @@ function fecharModalListaUsuarios() {
 }
 
 function abrirModalCadastroUsuario() {
+  if (perfilUsuario === 'PEDAGOGICO') {
+    mostrarToast('Perfil pedagógico não pode cadastrar usuários.', 'warning');
+    return;
+  }
   document.getElementById("novoEmail").value = "";
   document.getElementById("perfil").value = "SECRETARIA";
   document.getElementById("erroUsuario").style.display = "none";
@@ -512,6 +554,10 @@ function fecharModalExportacao() {
 
 // ------ MODAL CHECKLIST EM LOTE ------
 function abrirModalChecklistLote() {
+  if (perfilUsuario === 'PEDAGOGICO') {
+    mostrarToast('Perfil pedagógico não pode acessar checklist em lote.', 'warning');
+    return;
+  }
   document.getElementById("modalChecklistLote").style.display = "flex";
   document.getElementById("escolaAtualChecklist").textContent = escolaUsuario;
   
@@ -628,6 +674,10 @@ async function carregarAlunosParaChecklist() {
 
 // ------ NOVO ALUNO (MODAL) ------
 function abrirNovoAluno() {
+  if (perfilUsuario === 'PEDAGOGICO') {
+    mostrarToast('Perfil pedagógico não pode cadastrar alunos.', 'warning');
+    return;
+  }
   document.getElementById("novoAluno").style.display = "flex";
   document.getElementById("lista").style.display = "none";
   document.getElementById("painel").style.display = "none";
