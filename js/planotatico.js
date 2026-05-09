@@ -674,4 +674,68 @@ function exportarPlanoTaticoPDF() {
   printWindow.onload = function() {
     printWindow.print();
   };
+}function exportarPlanilhaCompletaPDF() {
+  if (emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
+    mostrarToast('Apenas supervisor master.', 'warning');
+    return;
+  }
+
+  mostrarLoading();
+  jsonp(`${API_URL}?tipo=planilhaCompleta&email=${encodeURIComponent(emailUsuario)}`, function(dados) {
+    esconderLoading();
+
+    if (!dados || dados.erro) {
+      mostrarToast('Erro ao carregar dados da planilha.', 'error');
+      return;
+    }
+
+    let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Plano Tático - Completo</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px; }
+      h2 { color: #0f172a; border-bottom: 2px solid #0369a1; padding-bottom: 5px; }
+      h3 { color: #334155; margin-top: 25px; }
+      table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 11px; }
+      th { background: #f1f5f9; padding: 6px; border: 1px solid #cbd5e1; font-weight: 600; }
+      td { padding: 5px; border: 1px solid #cbd5e1; text-align: center; }
+      @page { size: A4 landscape; margin: 10mm; }
+      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+      .aba-separator { page-break-before: always; }
+    </style></head><body>`;
+
+    const abas = ['Mensal', 'TRIM_1', 'TRIM_2', 'TRIM_3', 'Compilado_Regional'];
+
+    abas.forEach((nomeAba, index) => {
+      const dadosAba = dados[nomeAba];
+      if (!dadosAba || dadosAba.length === 0) return;
+
+      // Adiciona quebra de página entre abas (exceto a primeira)
+      if (index > 0) html += '<div class="aba-separator"></div>';
+
+      html += `<h2>Aba: ${nomeAba}</h2>`;
+      html += '<table>';
+
+      dadosAba.forEach((linha, rowIdx) => {
+        html += '<tr>';
+        linha.forEach(celula => {
+          const valor = celula !== null && celula !== undefined ? celula.toString() : '';
+          if (rowIdx === 0) {
+            html += `<th>${valor}</th>`;
+          } else {
+            html += `<td>${valor}</td>`;
+          }
+        });
+        html += '</tr>';
+      });
+
+      html += '</table>';
+    });
+
+    html += '</body></html>';
+
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => printWindow.print(), 500);
+  });
 }
