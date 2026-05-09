@@ -318,6 +318,9 @@ function abrirModalAcompanhamentoPT() {
     return;
   }
   document.getElementById('modalAcompanhamentoPT').style.display = 'flex';
+  
+  // Trava a rolagem do fundo (como Agenda/Legislação)
+  document.body.style.overflow = 'hidden';
 
   // Exibe o botão de exportação completa apenas para o master
   const btnExportarCompleta = document.getElementById('btnExportarPlanilhaCompleta');
@@ -330,8 +333,10 @@ function abrirModalAcompanhamentoPT() {
 
 function fecharModalAcompanhamentoPT() {
   document.getElementById('modalAcompanhamentoPT').style.display = 'none';
+  
+  // Restaura a rolagem da página
+  document.body.style.overflow = '';
 }
-
 function carregarIndicadoresGerais() {
   mostrarLoading();
   jsonp(`${API_URL}?tipo=indicadoresGerais&email=${encodeURIComponent(emailUsuario)}`, function(dados) {
