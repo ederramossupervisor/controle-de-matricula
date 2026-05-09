@@ -62,11 +62,11 @@ async function enviarConsentimentoETermo() {
       }, null, () => resolve());
     });
 
-    // Fecha o modal de consentimento
+        // Fecha o modal de consentimento
     document.getElementById('modalConsentimento').style.display = 'none';
 
-    // Grava uma mensagem que será exibida na tela de login ao recarregar
-    localStorage.setItem('msgTermoEnviado', 'Seu termo de compromisso foi enviado com sucesso! Você receberá um e‑mail quando o acesso for aprovado.');
+    // Exibe o toast de confirmação
+    mostrarToast('Documentos enviados com sucesso! Você receberá um e‑mail quando o acesso for aprovado.', 'success');
 
     // Faz logout (volta para a tela de login)
     logout();
@@ -79,32 +79,6 @@ async function enviarConsentimentoETermo() {
   }
 }
 
-// Função que exibe mensagem na tela de login (chamada ao carregar a página)
-function exibirMensagemPosEnvio() {
-  const msg = localStorage.getItem('msgTermoEnviado');
-  if (msg) {
-    // Cria um aviso bonito na tela de login (sem apagar o conteúdo principal)
-    const loginEl = document.getElementById('login');
-    const antiga = document.getElementById('avisoPosEnvio');
-    if (antiga) antiga.remove();
-
-    const aviso = document.createElement('div');
-    aviso.id = 'avisoPosEnvio';
-    aviso.style.cssText = 'margin-top: 20px; padding: 16px; background: #d1fae5; border: 1px solid #10b981; border-radius: 12px; color: #065f46; text-align: center; font-size: 14px;';
-    aviso.innerHTML = `
-      <i class="fas fa-check-circle" style="font-size: 18px; margin-right: 8px;"></i>
-      ${msg}
-      <br><button onclick="fecharAvisoPosEnvio()" style="margin-top: 12px;" class="btn-pequeno">Fechar</button>
-    `;
-    loginEl.appendChild(aviso);
-  }
-}
-
-function fecharAvisoPosEnvio() {
-  const aviso = document.getElementById('avisoPosEnvio');
-  if (aviso) aviso.remove();
-  localStorage.removeItem('msgTermoEnviado');
-}
 
 // ---------- Supervisor Master ----------
 function abrirModalAprovacaoTermos() {
@@ -197,8 +171,3 @@ function lerArquivoBase64(file) {
     reader.readAsDataURL(file);
   });
 }
-
-// Chama automaticamente ao carregar a página (deve ser executado após o DOM pronto)
-document.addEventListener('DOMContentLoaded', function() {
-  exibirMensagemPosEnvio();
-});
