@@ -28,32 +28,27 @@ function continuarCarregamentoAlunos(pagina, filtros) {
   jsonp(url, function(dados) {
     esconderLoading();
 
-    // 🔒 Tratamento do erro de termo (vindo do backend)
-if (dados.erro === "termo_pendente") {
-  esconderLoading();
+    // 🔒 Tratamento do erro de termo (mantém na tela de login)
+    if (dados.erro === "termo_pendente") {
+      esconderLoading();
 
-  if (dados.status === 'pendente' || dados.status === 'recusado') {
-      // Já enviou o termo: mostra aviso na tela de login
-      document.getElementById('app').style.display = 'none';
-      document.getElementById('login').style.display = '';
-
-      const mensagem = dados.status === 'pendente'
-        ? 'Seu termo de compromisso ainda não foi aprovado. Você receberá um e‑mail quando o acesso for liberado.'
-        : 'Seu termo de compromisso foi recusado. Entre em contato com a SRE.';
-      exibirMensagemLogin(mensagem);
-    } else {
-      // Termo não enviado (nao_enviado): mostra o modal de consentimento
-      // O app permanece visível para que o modal (que está dentro dele) apareça
-      document.getElementById('login').style.display = 'none';
-      document.getElementById('app').style.display = 'block';
-
-      document.getElementById('modalConsentimento').style.display = 'flex';
-      document.getElementById('arquivoTermo').value = '';
-      document.getElementById('statusUploadTermo').innerHTML = '';
-      if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
+      if (dados.status === 'pendente' || dados.status === 'recusado') {
+        document.getElementById('app').style.display = 'none';
+        document.getElementById('login').style.display = '';
+        const mensagem = dados.status === 'pendente'
+          ? 'Seu termo de compromisso ainda não foi aprovado. Você receberá um e‑mail quando o acesso for liberado.'
+          : 'Seu termo de compromisso foi recusado. Entre em contato com a SRE.';
+        exibirMensagemLogin(mensagem);
+      } else {
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('modalConsentimento').style.display = 'flex';
+        document.getElementById('arquivoTermo').value = '';
+        document.getElementById('statusUploadTermo').innerHTML = '';
+        if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
+      }
+      return;
     }
-    return;
-  }
 
     if (dados.erro) {
       mostrarToast("Acesso não autorizado", "error");
@@ -159,63 +154,86 @@ if (dados.erro === "termo_pendente") {
       if (btnProcessos) btnProcessos.style.display = "inline-block";
     }
 
-    const btnAprovacao = document.getElementById("btnAprovacaoTermos");
-    if (btnAprovacao && emailUsuario === 'eder.ramos@educador.edu.es.gov.br') {
-      btnAprovacao.style.display = 'block';
-    }
-
     // =========================
-    // 🔒 CONTROLE DE VISIBILIDADE PARA PERFIL PEDAGOGICO
-    // Remove botões de ações restritas do menu dropdown
+    // CONTROLE DE VISIBILIDADE DOS BOTÕES DO MENU
     // =========================
-        if (perfilUsuario === 'PEDAGOGICO') {
-      // Seleciona todos os botões dentro do menu dropdown
-      const botoesMenu = document.querySelectorAll('#menuDropdown button');
-      
-      // Textos dos botões que devem ser ocultados
+    if (perfilUsuario === 'PEDAGOGICO') {
       const textosRestritos = [
-        'Novo Aluno',
-        'Importar Alunos',
-        'Atualizar Matriculados',
-        'Promover Alunos',
-        'Checklist em Lote',
-        'Usuários',
-        'Usuário'
+        'Novo Aluno', 'Importar Alunos', 'Atualizar Matriculados',
+        'Promover Alunos', 'Checklist em Lote', 'Usuários', 'Cadastrar'
       ];
-      
-      botoesMenu.forEach(btn => {
-        // Obtém o texto visível do botão (excluindo o ícone)
+      document.querySelectorAll('#menuDropdown button').forEach(btn => {
         const texto = btn.textContent.trim();
         if (textosRestritos.some(t => texto.includes(t))) {
           btn.style.display = 'none';
         }
       });
-
-      // Oculta o seletor de situação (Transferido, Concluído, etc.)
       const filtroSituacao = document.getElementById('filtroSituacaoWrapper');
       if (filtroSituacao) filtroSituacao.style.display = 'none';
     }
 
-    // Exibe o botão do Plano Tático apenas para PEDAGOGICO e SUPERVISOR
-    const btnPlanoTatico = document.getElementById('btnPlanoTatico');
-    if (btnPlanoTatico && (perfilUsuario === 'PEDAGOGICO' || perfilUsuario === 'SUPERVISOR')) {
-      btnPlanoTatico.style.display = 'block';
+    // Exibe botões do Plano Tático
+    const botoesPlano = ['btnPlanoTatico', 'btnPlanoTaticoTrim'];
+    botoesPlano.forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) {
+        btn.style.display = (perfilUsuario === 'PEDAGOGICO' || perfilUsuario === 'SUPERVISOR') ? 'block' : 'none';
+      }
+    });
+
+    // Acompanhamento apenas supervisor
+    const btnAcomp = document.getElementById('btnAcompanhamentoPT');
+    if (btnAcomp) {
+      btnAcomp.style.display = (perfilUsuario === 'SUPERVISOR') ? 'block' : 'none';
     }
 
-    const btnPlanoTaticoTrim = document.getElementById('btnPlanoTaticoTrim');
-    if (btnPlanoTaticoTrim && (perfilUsuario === 'PEDAGOGICO' || perfilUsuario === 'SUPERVISOR')) {
-      btnPlanoTaticoTrim.style.display = 'block';
+    // Aprovação de termos apenas master
+    const btnAprovacao = document.getElementById('btnAprovacaoTermos');
+    if (btnAprovacao) {
+      btnAprovacao.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'block' : 'none';
     }
 
-    const btnAcompanhamentoPT = document.getElementById('btnAcompanhamentoPT');
-    if (btnAcompanhamentoPT && perfilUsuario === 'SUPERVISOR') {
-      btnAcompanhamentoPT.style.display = 'block';
+    // =========================
+    // OCULTAR SEÇÕES VAZIAS DO MENU
+    // =========================
+    function secaoTemBotoesVisiveis(secaoId) {
+      const secao = document.getElementById(secaoId);
+      if (!secao) return false;
+      let irmao = secao.nextElementSibling;
+      while (irmao) {
+        if (irmao.classList.contains('menu-secao-titulo') || irmao.classList.contains('menu-separador')) break;
+        if (irmao.tagName === 'BUTTON' && irmao.style.display !== 'none') return true;
+        irmao = irmao.nextElementSibling;
+      }
+      return false;
+    }
+
+    function esconderSecaoMenu(tituloId, separadorId) {
+      const titulo = document.getElementById(tituloId);
+      if (titulo) titulo.style.display = 'none';
+      const sep = document.getElementById(separadorId);
+      if (sep) sep.style.display = 'none';
+    }
+
+    if (!secaoTemBotoesVisiveis('menuSecaoAlunos')) {
+      esconderSecaoMenu('menuSecaoAlunos', 'menuSep1');
+    }
+    if (!secaoTemBotoesVisiveis('menuSecaoDocs')) {
+      esconderSecaoMenu('menuSecaoDocs', 'menuSep2');
+    }
+    if (!secaoTemBotoesVisiveis('menuSecaoGestao')) {
+      esconderSecaoMenu('menuSecaoGestao', 'menuSep3');
+    }
+    if (!secaoTemBotoesVisiveis('menuSecaoPlanoTatico')) {
+      esconderSecaoMenu('menuSecaoPlanoTatico', 'menuSep4');
+    }
+    if (!secaoTemBotoesVisiveis('menuSecaoAdmin')) {
+      esconderSecaoMenu('menuSecaoAdmin', null);
     }
 
     esconderLoading();
   });
 }
-
 // ------ TURMAS ------
 async function carregarTurmas(escola = "") {
   mostrarLoading();
