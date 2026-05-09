@@ -2958,13 +2958,13 @@ input[data-mask]:invalid {
   max-height: 70vh;
   overflow-y: auto;
 }
-
 /* =========================
    MENU HORIZONTAL (SOBRESCREVE A BASE)
    ========================= */
 .dropdown-horizontal {
+  display: flex !important;
   flex-direction: row !important;
-  flex-wrap: nowrap;
+  flex-wrap: nowrap !important;
   gap: 16px;
   max-height: none !important;
   overflow-x: auto;
@@ -2972,77 +2972,4 @@ input[data-mask]:invalid {
   width: max-content;
   max-width: calc(100vw - 32px);
   padding: 12px;
-}
-
-/* Colunas do menu horizontal */
-.menu-coluna {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 200px;
-  max-width: 280px;
-  flex-shrink: 0;
-}
-
-.menu-coluna .menu-secao-titulo {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-  padding: 8px 0 4px;
-  border-bottom: 1px solid var(--card-border);
-  opacity: 0.8;
-  white-space: nowrap;
-  margin-bottom: 4px;
-}
-
-.menu-coluna .btn-header {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  padding: 10px 12px !important;
-  margin: 0 !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  text-align: left !important;
-  gap: 10px !important;
-  white-space: nowrap !important;
-  line-height: 1.4 !important;
-  border: none !important;
-  background: transparent !important;
-  color: var(--text-primary) !important;
-  font-weight: 500 !important;
-  font-size: 14px !important;
-  transition: background 0.2s !important;
-  border-radius: 6px !important;
-  box-shadow: none !important;
-}
-
-.menu-coluna .btn-header i {
-  display: inline-block !important;
-  width: 20px !important;
-  flex-shrink: 0 !important;
-  text-align: center !important;
-  margin: 0 !important;
-  font-size: 1rem !important;
-  color: #dd5e15 !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-.menu-coluna .btn-header:hover {
-  background-color: var(--card-border) !important;
-}
-
-/* Volta ao vertical em telas menores */
-@media (max-width: 800px) {
-  .dropdown-horizontal {
-    flex-direction: column !important;
-    overflow-x: hidden;
-    max-width: 100%;
-  }
-  .menu-coluna {
-    max-width: 100%;
-  }
 }
