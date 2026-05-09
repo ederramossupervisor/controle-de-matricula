@@ -577,26 +577,49 @@
           <div class="dropdown">
             <button class="btn-header" onclick="toggleMenu()" data-tooltip="Menu"><i class="fas fa-bars"></i></button>
             <div id="menuDropdown" class="dropdown-content" style="display: none;">
+            
+              <!-- Seção: Alunos -->
+              <div class="menu-secao-titulo" id="menuSecaoAlunos">Alunos</div>
               <button onclick="abrirNovoAluno()" class="btn-header"><i class="fas fa-user-plus"></i> Novo Aluno</button>
               <button onclick="abrirModalImportacao()" class="btn-header"><i class="fas fa-upload"></i> Importar Alunos</button>
               <button onclick="abrirModalAtualizarMatriculados()" class="btn-header"><i class="fas fa-sync-alt"></i> Atualizar Matriculados</button>
               <button onclick="abrirModalPromocao()" class="btn-header"><i class="fas fa-arrow-up"></i> Promover Alunos</button>
               <button onclick="abrirModalChecklistLote()" class="btn-header"><i class="fas fa-tasks"></i> Checklist em Lote</button>
+              <button onclick="abrirModalExportacao()" class="btn-header"><i class="fas fa-file-pdf"></i> Exportar Relatório</button>
+              <button onclick="abrirModalInativos()" id="btnInativos" class="btn-header"><i class="fas fa-archive"></i> Transferidos / Concluídos</button>
+            
+              <hr class="menu-separador" id="menuSep1">
+            
+              <!-- Seção: Documentos e Processos -->
+              <div class="menu-secao-titulo" id="menuSecaoDocs">Documentos e Processos</div>
               <button onclick="abrirModalDocumentos()" id="btnDocumentos" class="btn-header"><i class="fas fa-folder-open"></i> Documentos</button>
               <button onclick="abrirModalModelos()" id="btnModelos" class="btn-header"><i class="fas fa-file-alt"></i> Modelos</button>
-              <button onclick="abrirModalInativos()" id="btnInativos" class="btn-header"><i class="fas fa-archive"></i> Transferidos / Concluídos</button>
               <button onclick="abrirModalProcessos()" id="btnProcessos" class="btn-header"><i class="fas fa-folder-open"></i> Edocs</button>
-              <button onclick="abrirModalLegalizacao()" id="btnLegalizacao" class="btn-header" style="display:none;"><i class="fas fa-gavel"></i> Atos Autorizativos</button>
+            
+              <hr class="menu-separador" id="menuSep2">
+            
+              <!-- Seção: Gestão Escolar -->
+              <div class="menu-secao-titulo" id="menuSecaoGestao">Gestão Escolar</div>
               <button onclick="abrirModalTurmas()" id="btnTurmas" class="btn-header"><i class="fas fa-school"></i> Turmas</button>
-              <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios" class="btn-header"><i class="fas fa-users"></i> Usuários</button>
-              <button onclick="abrirModalCadastroUsuario()" id="btnCadastrarUsuario" class="btn-header"><i class="fas fa-user-plus"></i> Usuário</button>
-              <button onclick="abrirModalAlterarSenha()" class="btn-header" id="btnAlterarSenha"><i class="fas fa-key"></i> Alterar Senha</button>
-              <button onclick="abrirModalExportacao()" class="btn-header"><i class="fas fa-file-pdf"></i> Exportar Relatório </button>
               <button onclick="abrirModalLegislacao()" id="btnLegislacao" class="btn-header"><i class="fas fa-balance-scale"></i> Legislação</button>
+              <button onclick="abrirModalLegalizacao()" id="btnLegalizacao" class="btn-header" style="display:none;"><i class="fas fa-gavel"></i> Legalização</button>
+            
+              <hr class="menu-separador" id="menuSep3">
+            
+              <!-- Seção: Plano Tático (visível apenas para pedagogo/supervisor) -->
+              <div class="menu-secao-titulo" id="menuSecaoPlanoTatico">Plano Tático</div>
+              <button onclick="abrirModalPlanoTaticoMensal()" id="btnPlanoTatico" class="btn-header" style="display:none;"><i class="fas fa-chart-line"></i> Mensal</button>
+              <button onclick="abrirModalPlanoTaticoTrimestral()" id="btnPlanoTaticoTrim" class="btn-header" style="display:none;"><i class="fas fa-chart-bar"></i> Trimestral</button>
+              <button onclick="abrirModalAcompanhamentoPT()" id="btnAcompanhamentoPT" class="btn-header" style="display:none;"><i class="fas fa-clipboard-list"></i> Acompanhar</button>
+            
+              <hr class="menu-separador" id="menuSep4">
+            
+              <!-- Seção: Administração -->
+              <div class="menu-secao-titulo" id="menuSecaoAdmin">Administração</div>
+              <button onclick="abrirModalListaUsuarios()" id="btnVerUsuarios" class="btn-header"><i class="fas fa-users"></i> Usuários</button>
+              <button onclick="abrirModalCadastroUsuario()" id="btnCadastrarUsuario" class="btn-header"><i class="fas fa-user-plus"></i> Cadastrar</button>
+              <button onclick="abrirModalAlterarSenha()" class="btn-header" id="btnAlterarSenha"><i class="fas fa-key"></i> Alterar Senha</button>
               <button onclick="abrirModalAprovacaoTermos()" id="btnAprovacaoTermos" class="btn-header" style="display:none;"><i class="fas fa-file-signature"></i> Aprovar Termos</button>
-              <button onclick="abrirModalPlanoTaticoMensal()" id="btnPlanoTatico" class="btn-header" style="display:none;"><i class="fas fa-chart-line"></i> Plano Tático Mensal</button>
-              <button onclick="abrirModalPlanoTaticoTrimestral()" id="btnPlanoTaticoTrim" class="btn-header" style="display:none;"><i class="fas fa-chart-bar"></i> Plano Tático Trimestral</button>
-              <button onclick="abrirModalAcompanhamentoPT()" id="btnAcompanhamentoPT" class="btn-header" style="display:none;"><i class="fas fa-clipboard-list"></i> Acompanhar Plano Tático</button>
             </div>
           </div>
         </div>
