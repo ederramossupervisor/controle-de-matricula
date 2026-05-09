@@ -3005,3 +3005,45 @@ input[data-mask]:invalid {
   font-size: 13px;
   margin-top: 6px;
 }
+
+#modalAcompanhamentoPT .modal-body {
+  overflow-x: hidden !important;   /* remove de vez a barra horizontal */
+  overflow-y: auto;
+  padding-right: 12px;
+  box-sizing: border-box;
+}
+
+#tabelaAcompanhamentoPT {
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Garante que nada interno estoure a largura */
+#tabelaAcompanhamentoPT > div,
+#tabelaAcompanhamentoPT table,
+#tabelaAcompanhamentoPT details {
+  max-width: 100%;
+  word-wrap: break-word;
+  box-sizing: border-box;
+}
+/* Títulos das seções do menu dropdown */
+.menu-secao-titulo {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  padding: 12px 16px 4px;
+  border-bottom: 1px solid var(--card-border);
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Separadores entre seções */
+.menu-separador {
+  border: none;
+  height: 1px;
+  background: var(--card-border);
+  margin: 4px 8px;
+}
