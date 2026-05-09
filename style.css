@@ -3131,3 +3131,11 @@ input[data-mask]:invalid {
     max-width: 100%;
   }
 }
+/* =========================
+   DROPDOWN CENTRALIZADO
+   ========================= */
+.dropdown-content.dropdown-horizontal {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  right: auto !important;
+}
