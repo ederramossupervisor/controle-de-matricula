@@ -3030,35 +3030,16 @@ input[data-mask]:invalid {
 /* =========================
    MENU DROPDOWN HORIZONTAL
    ========================= */
-.dropdown-content {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 8px;
-  background-color: var(--card-bg);
-  min-width: 240px;
-  max-width: calc(100vw - 32px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-  border-radius: 12px;
-  padding: 12px;
-  z-index: 9999;
-  border: 1px solid var(--card-border);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-/* Layout horizontal apenas para o dropdown com a classe .dropdown-horizontal */
 .dropdown-horizontal {
   flex-direction: row !important;
   flex-wrap: nowrap;
   gap: 16px;
-  max-height: none;
-  overflow-y: visible;
+  max-height: none !important;
+  overflow-x: auto;           /* rolagem horizontal se necessário */
+  overflow-y: visible;        /* sem rolagem vertical */
   width: max-content;
-  max-width: 95vw;
+  max-width: calc(100vw - 32px);
+  padding: 12px;
 }
 
 /* Cada coluna do menu */
@@ -3067,6 +3048,7 @@ input[data-mask]:invalid {
   flex-direction: column;
   gap: 4px;
   min-width: 200px;
+  max-width: 280px;
   flex-shrink: 0;
 }
 
@@ -3077,10 +3059,11 @@ input[data-mask]:invalid {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-muted);
-  padding: 8px 16px 4px;
+  padding: 8px 0 4px;
   border-bottom: 1px solid var(--card-border);
   opacity: 0.8;
   white-space: nowrap;
+  margin-bottom: 4px;
 }
 
 /* Botões dentro das colunas */
@@ -3088,12 +3071,12 @@ input[data-mask]:invalid {
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
-  padding: 10px 16px !important;
+  padding: 10px 12px !important;
   margin: 0 !important;
   width: 100% !important;
   box-sizing: border-box !important;
   text-align: left !important;
-  gap: 12px !important;
+  gap: 10px !important;
   white-space: nowrap !important;
   line-height: 1.4 !important;
   border: none !important;
@@ -3128,9 +3111,10 @@ input[data-mask]:invalid {
 @media (max-width: 800px) {
   .dropdown-horizontal {
     flex-direction: column !important;
+    overflow-x: hidden;
     max-width: 100%;
   }
   .menu-coluna {
-    min-width: 100%;
+    max-width: 100%;
   }
 }
