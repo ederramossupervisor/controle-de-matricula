@@ -570,10 +570,13 @@
       </div>
       <input type="file" id="inputUploadFoto" accept="image/*" style="display: none;" onchange="fazerUploadFoto(this.files[0])">
 
-      <!-- Barra de ferramentas (menu à esquerda, ações à direita) -->
-      <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-        <!-- Menu (hambúrguer) à esquerda -->
-        <div>
+      <!-- Barra de ferramentas (menu centralizado, ações à direita) -->
+      <div style="width: 100%; display: flex; align-items: center; margin-top: 10px; position: relative;">
+        <!-- Espaçador à esquerda (mesma largura dos botões de ação) -->
+        <div style="flex: 1;"></div>
+
+        <!-- Menu centralizado -->
+        <div style="flex: 0; text-align: center;">
           <div class="dropdown">
             <button class="btn-header" onclick="toggleMenu()" data-tooltip="Menu"><i class="fas fa-bars"></i></button>
             <div id="menuDropdown" class="dropdown-content dropdown-horizontal" style="display: none;">
@@ -627,7 +630,7 @@
         </div>
 
         <!-- Botões de ação à direita -->
-        <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="flex: 1; display: flex; align-items: center; gap: 10px; justify-content: flex-end;">
             <!-- 🔍 CAMPO DE BUSCA GLOBAL -->
           <div style="position: relative;">
             <input type="text" id="inputBuscaGlobal" placeholder="Buscar no sistema..."
