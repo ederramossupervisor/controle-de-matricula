@@ -3139,3 +3139,9 @@ input[data-mask]:invalid {
   transform: translateX(-50%) !important;
   right: auto !important;
 }
+.btn-menu {
+  width: 32px !important;          /* antes era 40px */
+  height: 32px !important;         /* antes era 40px */
+  font-size: 12px !important;      /* reduz o ícone */
+  margin-top: 8px;                 /* desce o botão uns pixels */
+}
