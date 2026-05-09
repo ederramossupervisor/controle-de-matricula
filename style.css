@@ -3145,3 +3145,23 @@ input[data-mask]:invalid {
   font-size: 16px !important;      /* reduz o ícone */
   margin-top: 8px;                 /* desce o botão uns pixels */
 }
+.btn-menu {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 14px !important;
+  margin-top: 8px;
+  background-color: transparent !important;   /* remove o fundo branco */
+  border: none !important;                    /* remove a borda */
+  box-shadow: none !important;                /* remove a sombra */
+  color: #ffffff !important;                  /* ícone branco */
+}
+
+/* Cor do ícone dentro do botão */
+.btn-menu i {
+  color: #fbbf24 !important;
+}
+
+/* Efeito hover suave (opcional) */
+.btn-menu:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;  /* leve brilho ao passar o mouse */
+}
