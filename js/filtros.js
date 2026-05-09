@@ -204,14 +204,12 @@ function atualizarSubcategorias() {
 
 // ------ AJUSTES DE INTERFACE POR PERFIL ------
 function ajustarOpcoesCadastroUsuario() {
-  const selectPerfil = document.getElementById('perfil');
-  if (perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
-    for (let i = 0; i < selectPerfil.options.length; i++) {
-      if (selectPerfil.options[i].value === 'SUPERVISOR') {
-        selectPerfil.remove(i);
-        break;
-      }
-    }
+  const perfil = document.getElementById('perfil').value;
+  const campoEscola = document.getElementById('campoEscolaContainer');
+  if (perfil === 'SECRETARIA' || perfil === 'PEDAGOGICO') {
+    campoEscola.style.display = 'block';
+  } else {
+    campoEscola.style.display = 'none';
   }
 }
 
