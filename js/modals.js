@@ -1,6 +1,12 @@
 let fotoAlunoCarregada = null;
 let vinculosEdicaoSelecionados = [];
 
+const tiposDocumentoSemNome = [
+  "Atas de Conselho de Classe",
+  "Listas de Alunos Concluintes",
+  "Plano de Curso (Técnico)"
+];
+
 // =========================
 // MODAIS: ABERTURA, FECHAMENTO E AÇÕES INTERNAS
 // =========================
