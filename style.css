@@ -3140,8 +3140,8 @@ input[data-mask]:invalid {
   right: auto !important;
 }
 .btn-menu {
-  width: 32px !important;          /* antes era 40px */
-  height: 32px !important;         /* antes era 40px */
-  font-size: 12px !important;      /* reduz o ícone */
+  width: 28px !important;          /* antes era 40px */
+  height: 28px !important;         /* antes era 40px */
+  font-size: 16px !important;      /* reduz o ícone */
   margin-top: 8px;                 /* desce o botão uns pixels */
 }
