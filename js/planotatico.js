@@ -322,7 +322,7 @@ function abrirModalAcompanhamentoPT() {
   // Trava a rolagem do fundo (como Agenda/Legislação)
   document.body.style.overflow = 'hidden';
 
-  // Exibe o botão de exportação completa apenas para o master
+  // Exibe o botão de exportação completa apenas para o Admin
   const btnExportarCompleta = document.getElementById('btnExportarPlanilhaCompleta');
   if (btnExportarCompleta) {
     btnExportarCompleta.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'inline-block' : 'none';
@@ -681,7 +681,7 @@ function exportarPlanoTaticoPDF() {
   };
 }function exportarPlanilhaCompletaPDF() {
   if (emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
-    mostrarToast('Apenas supervisor master.', 'warning');
+    mostrarToast('Apenas Administrador.', 'warning');
     return;
   }
 
