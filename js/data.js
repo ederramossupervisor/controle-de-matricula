@@ -648,13 +648,18 @@ async function cadastrarProcesso() {
 async function fazerUpload() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("uploadEscola").value : escolaUsuario;
   const tipo = document.getElementById("uploadTipoDoc").value;
-  const nomeAluno = document.getElementById("uploadNomeAluno").value.trim();
+  const nomeTitular = document.getElementById("uploadNomeTitular").value.trim();
   const fileInput = document.getElementById("arquivoUpload");
   const file = fileInput.files[0];
   
   if (!escola) { mostrarToast("Selecione a escola.", "warning"); return; }
   if (!tipo) { mostrarToast("Selecione o tipo de documento.", "warning"); return; }
-  if (!nomeAluno) { mostrarToast("Digite o nome do aluno.", "warning"); return; }
+  
+  // Nome só é obrigatório se o campo estiver visível e vazio
+  if (!tiposDocumentoSemNome.includes(tipo) && !nomeTitular) {
+    mostrarToast("Informe o nome do titular do documento.", "warning");
+    return;
+  }
   if (!file) { mostrarToast("Selecione um arquivo.", "warning"); return; }
   
   const btnSalvar = document.querySelector("#abaUpload .btn-salvar");
@@ -669,7 +674,7 @@ async function fazerUpload() {
       email: emailUsuario,
       escola: escola,
       tipo: tipo,
-      nomeAluno: nomeAluno,
+      nomeAluno: nomeTitular,   // continua enviando como "nomeAluno" para compatibilidade
       fileName: file.name,
       mimeType: file.type,
       fileBase64: base64
@@ -677,7 +682,7 @@ async function fazerUpload() {
     
     postSemResposta(dados, "Upload realizado com sucesso!", () => {
       fileInput.value = "";
-      document.getElementById("uploadNomeAluno").value = "";
+      document.getElementById("uploadNomeTitular").value = "";
       document.getElementById("uploadTipoDoc").value = "";
       if (perfilUsuario === "SUPERVISOR") document.getElementById("uploadEscola").value = "";
       
