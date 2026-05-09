@@ -3005,25 +3005,3 @@ input[data-mask]:invalid {
   font-size: 13px;
   margin-top: 6px;
 }
-
-#modalAcompanhamentoPT .modal-body {
-  overflow-x: hidden !important;   /* remove de vez a barra horizontal */
-  overflow-y: auto;
-  padding-right: 12px;
-  box-sizing: border-box;
-}
-
-#tabelaAcompanhamentoPT {
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-/* Garante que nada interno estoure a largura */
-#tabelaAcompanhamentoPT > div,
-#tabelaAcompanhamentoPT table,
-#tabelaAcompanhamentoPT details {
-  max-width: 100%;
-  word-wrap: break-word;
-  box-sizing: border-box;
-}
