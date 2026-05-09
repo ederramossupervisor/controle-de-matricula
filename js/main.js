@@ -242,3 +242,12 @@ document.addEventListener('keydown', function(e) {
     }
   }
 });
+// Fecha o menu dropdown ao pressionar ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const menu = document.getElementById('menuDropdown');
+    if (menu && window.getComputedStyle(menu).display !== 'none') {
+      menu.style.display = 'none';
+    }
+  }
+});
