@@ -386,10 +386,10 @@ function editarAto(id) {
 function abrirModalModelos() {
   document.getElementById("modalModelos").style.display = "flex";
   
-  const isMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+  const isAdmin = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
   const abaUploadBtn = document.getElementById("abaUploadModeloBtn");
   
-  if (isMaster) {
+  if (isAdmin) {
     abaUploadBtn.style.display = "inline-block";
     preencherSelectTipoModelo();
   } else {
