@@ -3030,3 +3030,6 @@ input[data-mask]:invalid {
   word-wrap: break-word;
   box-sizing: border-box;
 }
+#modalAcompanhamentoPT .modal-body {
+  overflow-x: hidden;
+}
