@@ -235,7 +235,7 @@ function ajustarInterfacePorPerfil() {
     if (btnInativos) btnInativos.style.display = "none";
   }
 
-  const isSupervisorMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+  const isAdministrador = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
   const btnLegalizacao = document.getElementById("btnLegalizacao");
   if (perfilUsuario === "SUPERVISOR") {
     if (btnLegalizacao) btnLegalizacao.style.display = "inline-block";
@@ -268,7 +268,7 @@ function ajustarInterfacePorPerfil() {
     if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "block";
     if (btnModelos) btnModelos.style.display = "inline-block";
 
-    if (isSupervisorMaster) {
+    if (isAdministrador) {
       if (btnImportarCSV) btnImportarCSV.style.display = "inline-block";
     } else {
       if (btnImportarCSV) btnImportarCSV.style.display = "none";
