@@ -224,3 +224,21 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   observer.observe(document.body, { childList: true, subtree: true });
 });
+// Fechar os modais do Plano Tático com a tecla ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const modais = [
+      { id: 'modalPlanoTaticoMensal', fechar: fecharModalPlanoTaticoMensal },
+      { id: 'modalPlanoTaticoTrimestral', fechar: fecharModalPlanoTaticoTrimestral },
+      { id: 'modalAcompanhamentoPT', fechar: fecharModalAcompanhamentoPT }
+    ];
+
+    for (const modal of modais) {
+      const el = document.getElementById(modal.id);
+      if (el && el.style.display === 'flex') {
+        modal.fechar();
+        break;
+      }
+    }
+  }
+});
