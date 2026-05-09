@@ -301,12 +301,12 @@ function renderPainel(resumo) {
 // ------ CARDS POR ESCOLA ------
 function renderPorEscola(mapa, metricas) {
   const painel = document.getElementById("painel");
-  const isMaster = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+  const isAdmin = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
   
   const card = document.createElement('div');
   card.className = 'metrica-card metrica-escola';
   
-  if (isMaster) {
+  if (isAdmin) {
     const totalAlunos = metricas ? metricas.total : 0;
     const completos = metricas ? metricas.completos : 0;
     const pendentes = metricas ? metricas.pendentes : 0;
