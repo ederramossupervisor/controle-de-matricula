@@ -28,28 +28,32 @@ function continuarCarregamentoAlunos(pagina, filtros) {
   jsonp(url, function(dados) {
     esconderLoading();
 
-    // 🔒 Tratamento do erro de termo (mantém na tela de login)
     // 🔒 Tratamento do erro de termo (vindo do backend)
-    if (dados.erro === "termo_pendente") {
-      // Garante que estamos na tela de login e o app escondido
+if (dados.erro === "termo_pendente") {
+  esconderLoading();
+
+  if (dados.status === 'pendente' || dados.status === 'recusado') {
+      // Já enviou o termo: mostra aviso na tela de login
       document.getElementById('app').style.display = 'none';
       document.getElementById('login').style.display = '';
 
-      if (dados.status === 'pendente' || dados.status === 'recusado') {
-        // Já enviou o termo: mostra aviso na tela de login
-        const mensagem = dados.status === 'pendente'
-          ? 'Seu termo de compromisso ainda não foi aprovado. Você receberá um e‑mail quando o acesso for liberado.'
-          : 'Seu termo de compromisso foi recusado. Entre em contato com a SRE.';
-        exibirMensagemLogin(mensagem);
-      } else {
-        // Termo não enviado: mostra o modal de consentimento (como antes)
-        document.getElementById('modalConsentimento').style.display = 'flex';
-        document.getElementById('arquivoTermo').value = '';
-        document.getElementById('statusUploadTermo').innerHTML = '';
-        if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
-      }
-      return;
+      const mensagem = dados.status === 'pendente'
+        ? 'Seu termo de compromisso ainda não foi aprovado. Você receberá um e‑mail quando o acesso for liberado.'
+        : 'Seu termo de compromisso foi recusado. Entre em contato com a SRE.';
+      exibirMensagemLogin(mensagem);
+    } else {
+      // Termo não enviado (nao_enviado): mostra o modal de consentimento
+      // O app permanece visível para que o modal (que está dentro dele) apareça
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+
+      document.getElementById('modalConsentimento').style.display = 'flex';
+      document.getElementById('arquivoTermo').value = '';
+      document.getElementById('statusUploadTermo').innerHTML = '';
+      if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
     }
+    return;
+  }
 
     if (dados.erro) {
       mostrarToast("Acesso não autorizado", "error");
@@ -151,14 +155,61 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     renderPorEscola(mapaParaRender, dados.metricas);
     
     const btnProcessos = document.getElementById("btnProcessos");
-    if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
+    if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR" || perfilUsuario === "PEDAGOGICO") {
       if (btnProcessos) btnProcessos.style.display = "inline-block";
     }
 
     const btnAprovacao = document.getElementById("btnAprovacaoTermos");
-    if (btnAprovacao) {
-      // Exibe APENAS para o supervisor master; esconde para qualquer outro
-      btnAprovacao.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'block' : 'none';
+    if (btnAprovacao && emailUsuario === 'eder.ramos@educador.edu.es.gov.br') {
+      btnAprovacao.style.display = 'block';
+    }
+
+    // =========================
+    // 🔒 CONTROLE DE VISIBILIDADE PARA PERFIL PEDAGOGICO
+    // Remove botões de ações restritas do menu dropdown
+    // =========================
+        if (perfilUsuario === 'PEDAGOGICO') {
+      // Seleciona todos os botões dentro do menu dropdown
+      const botoesMenu = document.querySelectorAll('#menuDropdown button');
+      
+      // Textos dos botões que devem ser ocultados
+      const textosRestritos = [
+        'Novo Aluno',
+        'Importar Alunos',
+        'Atualizar Matriculados',
+        'Promover Alunos',
+        'Checklist em Lote',
+        'Usuários',
+        'Usuário'
+      ];
+      
+      botoesMenu.forEach(btn => {
+        // Obtém o texto visível do botão (excluindo o ícone)
+        const texto = btn.textContent.trim();
+        if (textosRestritos.some(t => texto.includes(t))) {
+          btn.style.display = 'none';
+        }
+      });
+
+      // Oculta o seletor de situação (Transferido, Concluído, etc.)
+      const filtroSituacao = document.getElementById('filtroSituacaoWrapper');
+      if (filtroSituacao) filtroSituacao.style.display = 'none';
+    }
+
+    // Exibe o botão do Plano Tático apenas para PEDAGOGICO e SUPERVISOR
+    const btnPlanoTatico = document.getElementById('btnPlanoTatico');
+    if (btnPlanoTatico && (perfilUsuario === 'PEDAGOGICO' || perfilUsuario === 'SUPERVISOR')) {
+      btnPlanoTatico.style.display = 'block';
+    }
+
+    const btnPlanoTaticoTrim = document.getElementById('btnPlanoTaticoTrim');
+    if (btnPlanoTaticoTrim && (perfilUsuario === 'PEDAGOGICO' || perfilUsuario === 'SUPERVISOR')) {
+      btnPlanoTaticoTrim.style.display = 'block';
+    }
+
+    const btnAcompanhamentoPT = document.getElementById('btnAcompanhamentoPT');
+    if (btnAcompanhamentoPT && perfilUsuario === 'SUPERVISOR') {
+      btnAcompanhamentoPT.style.display = 'block';
     }
 
     esconderLoading();
@@ -928,8 +979,8 @@ async function salvarUsuario() {
     erroDiv.style.display = "block";
     return;
   }
-  if (perfil === "SECRETARIA" && !escola) {
-    erroDiv.textContent = "Escola obrigatória para Secretaria";
+  if ((perfil === "SECRETARIA" || perfil === "PEDAGOGICO") && !escola) {
+    erroDiv.textContent = "Escola obrigatória para este perfil";
     erroDiv.style.display = "block";
     return;
   }
@@ -1430,6 +1481,10 @@ async function atualizar(row, coluna, valor) {
 let alunosPromocao = []; // armazena os dados lidos do CSV
 
 function abrirModalPromocao() {
+  if (perfilUsuario === 'PEDAGOGICO') {
+    mostrarToast('Perfil pedagógico não pode promover alunos.', 'warning');
+    return;
+  }
   document.getElementById("modalPromocao").style.display = "flex";
   document.getElementById("arquivoCSVPromocao").value = "";
   document.getElementById("previewPromocao").innerHTML = "";
@@ -1567,6 +1622,10 @@ async function executarPromocaoCSV() {
 let alunosAtualizar = [];
 
 function abrirModalAtualizarMatriculados() {
+  if (perfilUsuario === 'PEDAGOGICO') {
+    mostrarToast('Perfil pedagógico não pode atualizar matriculados.', 'warning');
+    return;
+  }
   document.getElementById("modalAtualizarMatriculados").style.display = "flex";
   document.getElementById("arquivoCSVAtualizar").value = "";
   document.getElementById("previewAtualizar").innerHTML = "";
