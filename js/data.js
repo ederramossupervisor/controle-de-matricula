@@ -187,7 +187,7 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       btnAcomp.style.display = (perfilUsuario === 'SUPERVISOR') ? 'block' : 'none';
     }
 
-    // Aprovação de termos apenas master
+    // Aprovação de termos apenas Admin
     const btnAprovacao = document.getElementById('btnAprovacaoTermos');
     if (btnAprovacao) {
       btnAprovacao.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'block' : 'none';
