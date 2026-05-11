@@ -1001,15 +1001,9 @@ function carregarFotoAluno(id, escola) {
 function abrirModalAlterarSenhaObrigatorio() {
   const modal = document.getElementById("modalAlterarSenha");
   if (!modal) return;
-
-  // Exibe o modal
   modal.style.display = "flex";
-
-  // Esconde o botão de fechar (X)
   const closeBtn = modal.querySelector(".close-btn");
   if (closeBtn) closeBtn.style.display = "none";
-
-  // Marca o modal como "obrigatório" para impedir fechamento via Esc/clique fora
   modal.classList.add("primeiro-acesso");
 
   // Limpa os campos
