@@ -527,12 +527,10 @@ function abrirModalAlterarSenha() {
 }
 
 function fecharModalAlterarSenha() {
-  // Se o modal estiver como obrigatório (primeiro acesso), não permite fechar
   const modal = document.getElementById("modalAlterarSenha");
   if (modal && modal.classList.contains("primeiro-acesso")) {
-    return;
+    return; // não permite fechar durante o primeiro acesso
   }
-  // Caso contrário, fecha normalmente
   modal.style.display = "none";
 }
 
