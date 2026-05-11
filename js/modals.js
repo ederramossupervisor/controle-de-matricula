@@ -527,7 +527,13 @@ function abrirModalAlterarSenha() {
 }
 
 function fecharModalAlterarSenha() {
-  document.getElementById("modalAlterarSenha").style.display = "none";
+  // Se o modal estiver como obrigatório (primeiro acesso), não permite fechar
+  const modal = document.getElementById("modalAlterarSenha");
+  if (modal && modal.classList.contains("primeiro-acesso")) {
+    return;
+  }
+  // Caso contrário, fecha normalmente
+  modal.style.display = "none";
 }
 
 // ------ MODAL EXPORTAÇÃO ------
