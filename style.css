@@ -1394,14 +1394,15 @@ textarea:focus {
   background: var(--text-muted);
   border-radius: 10px;
 }
-/* Fundo da tela de login */
+
 #login {
   background-image: url('imagens/login-bg.jpg');
-  background-size: cover;
+  background-size: 110%;           /* um pouco maior que a tela, evita bordas brancas ao mover */
   background-position: center;
   background-repeat: no-repeat;
   min-height: 100vh;
   position: relative;
+  transition: background-position 0.1s ease-out; /* opcional, mas ajuda na suavidade */
 }
 
 /* Overlay escuro opcional (melhora a legibilidade do card de login) */
