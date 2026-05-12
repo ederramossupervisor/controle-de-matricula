@@ -689,31 +689,33 @@ function abrirNovoAluno() {
     return;
   }
 
-  // 🔒 Trava COMPLETAMENTE a rolagem da página (html + body)
-  document.documentElement.style.overflow = 'hidden';
-  document.body.style.overflow = 'hidden';
+  // 🔒 Fixa o body para impedir QUALQUER rolagem do fundo
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+  document.body.style.top = `-${window.scrollY}px`;  // mantém a posição de rolagem atual visual
 
   document.getElementById("novoAluno").style.display = "flex";
   document.getElementById("lista").style.display = "none";
   document.getElementById("painel").style.display = "none";
-  document.getElementById("escolaVinculada").textContent =
+  document.getElementById("escolaVinculada").textContent = 
     `Aluno será matriculado em: ${escolaUsuario}`;
   carregarTurmasParaCadastro(escolaUsuario);
 }
-
 function voltarApp() {
-  // 🔓 Restaura a rolagem
-  document.documentElement.style.overflow = '';
-  document.body.style.overflow = '';
+  // 🔓 Restaura o scroll do body
+  const scrollY = document.body.style.top;
+  document.body.style.position = '';
+  document.body.style.width = '';
+  document.body.style.top = '';
+  window.scrollTo(0, parseInt(scrollY || '0') * -1);
 
-  // Fecha os modais auxiliares
+  // Fecha o modal e restaura a interface
   const idsParaEsconder = ["usuarios", "cadastro", "novoAluno", "modalListaUsuarios", "modalCadastroUsuario"];
   idsParaEsconder.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
 
-  // Reexibe lista e painel
   const lista = document.getElementById("lista");
   const painel = document.getElementById("painel");
   if (lista) lista.style.display = "";
