@@ -2568,8 +2568,8 @@ input[data-mask]:invalid {
 .modal-card--fullscreen .modal-body {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   max-height: none !important;
-  padding: 20px 24px;
 }
 .modal-card--fullscreen .modal-header {
   padding: 20px 24px 10px;
