@@ -76,6 +76,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.target === this) fecharModalComunicado();
   });
 
+  document.getElementById('modalAprovacaoTermos').addEventListener('click', function(e) {
+    if (e.target === this) fecharModalAprovacaoTermos();
+  });
+
   document.getElementById('modalPromocao').addEventListener('click', function(e) {
     if (e.target === this) fecharModalPromocao();
   });
@@ -146,6 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
     { element: document.getElementById('modalAtualizarMatriculados'), close: fecharModalAtualizarMatriculados },
     { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
     { element: document.getElementById('modalPromocao'), close: fecharModalPromocao },
+    { element: document.getElementById('modalAprovacaoTermos'), close: fecharModalAprovacaoTermos },
     { element: document.getElementById('modalConsentimento'), close: logout }
   ];
 
