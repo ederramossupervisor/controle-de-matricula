@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     { id: 'modalChecklistLote', close: fecharModalChecklistLote },
     { id: 'modalLegislacao', close: fecharModalLegislacao },
     { id: 'modalEditarLegislacao', close: fecharEdicaoLegislacao },
-    { id: 'modalEditarEvento', close: fecharEdicaoEvento },  // <-- ADICIONE ESTA LINHA
+    { id: 'modalEditarEvento', close: fecharEdicaoEvento },
     { id: 'modalComunicado', close: fecharModalComunicado },
     { id: 'modalConsentimento', close: logout },
     { id: 'modalHistorico', close: fecharModalHistorico },
@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
     { id: 'modalPainelDiretor', close: fecharPainelDiretor }
   ];
 
-  // Adiciona evento de clique no overlay para fechar
+  // Adiciona evento de clique no overlay para fechar cada modal
   todosOsModais.forEach(({ id, close }) => {
     const modal = document.getElementById(id);
     if (!modal) return;
@@ -95,22 +95,29 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('keydown', function(e) {
     // ---- ESC: fecha o primeiro modal aberto e/ou menu dropdown ----
     if (e.key === 'Escape') {
-      // Verifica modais
+      // Verifica modais (usando style.display inline, mais confiável)
+      let modalFechado = false;
       for (const { id, close } of todosOsModais) {
         const modal = document.getElementById(id);
-        if (modal && window.getComputedStyle(modal).display === 'flex') {
+        // Verifica o estilo inline: se foi setado 'flex', está visível
+        if (modal && modal.style.display === 'flex') {
           e.preventDefault();
+          e.stopPropagation();   // impede que outros listeners atrapalhem
           close();
-          return; // fecha apenas um modal por vez
+          modalFechado = true;
+          break;                 // fecha apenas UM modal por vez
         }
       }
-      // Fecha menu dropdown
-      const menu = document.getElementById('menuDropdown');
-      if (menu && window.getComputedStyle(menu).display !== 'none') {
-        menu.style.display = 'none';
-        e.preventDefault();
+
+      // Se nenhum modal foi fechado, tenta fechar o menu dropdown
+      if (!modalFechado) {
+        const menu = document.getElementById('menuDropdown');
+        if (menu && menu.style.display !== 'none') {
+          menu.style.display = 'none';
+          e.preventDefault();
+        }
       }
-      return;
+      return;                   // encerra o tratamento da tecla ESC
     }
 
     // ---- Atalhos de teclado (somente quando o app está visível) ----
@@ -120,13 +127,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const tag = e.target.tagName.toLowerCase();
     const isInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
 
-    // Ctrl + N: Novo Aluno (funciona mesmo em inputs)
+    // Ctrl + N: Novo Aluno
     if (e.ctrlKey && e.key === 'n') {
       e.preventDefault();
       abrirNovoAluno();
+      return;
     }
 
-    // Ctrl + F: Focar no campo de busca (funciona mesmo em inputs)
+    // Ctrl + F: Focar no campo de busca da lista
     if (e.ctrlKey && e.key === 'f') {
       e.preventDefault();
       const inputBusca = document.getElementById('pesquisaNome');
@@ -134,12 +142,10 @@ document.addEventListener('DOMContentLoaded', function() {
         inputBusca.focus();
         inputBusca.select();
       }
+      return;
     }
 
-    // Outros atalhos ignorados se estiver num campo de texto
-    if (isInput) return;
-
-    // Exemplo: tecla 'm' para menu, etc. (adicione aqui se quiser)
+    // Outros atalhos podem ser adicionados aqui
   });
 
   // --- Listener do filtro de turma (guardar valor anterior) ---
