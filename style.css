@@ -3184,17 +3184,6 @@ input[data-mask]:invalid {
     opacity: 1;
   }
 }
-.modal-card--fullscreen {
-  width: 100% !important;
-  max-width: 100% !important;
-  height: 100vh !important;
-  border-radius: 0 !important;
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-card--fullscreen .modal-body {
-  flex: 1;
-  overflow-y: auto;
-  max-height: none !important;
+#novoAluno {
+  overflow: hidden;
 }
