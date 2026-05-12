@@ -87,15 +87,15 @@ let mesAtual = new Date().getMonth();
 let anoAtual = new Date().getFullYear();
 
 function encontrarEventoPorId(id) {
+  // Busca no global (carregado) ou no cache (última renderização)
   const pool = eventosAgendaGlobal.length > 0 ? eventosAgendaGlobal : eventosCache;
   return pool.find(ev => ev.id === id) || null;
 }
-
 // =========================
 // ABERTURA / FECHAMENTO DA AGENDA
 // =========================
 function abrirModalAgenda() {
-  document.body.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';   // trava o fundo
   document.getElementById('modalAgenda').style.display = 'flex';
   if (perfilUsuario === 'SUPERVISOR') {
     document.getElementById('btnNovaVisita').style.display = 'inline-block';
@@ -107,7 +107,7 @@ function abrirModalAgenda() {
 }
 
 function fecharModalAgenda() {
-  document.body.style.overflow = '';
+  document.body.style.overflow = '';         // restaura
   document.getElementById('modalAgenda').style.display = 'none';
 }
 
@@ -125,30 +125,12 @@ function mostrarAbaNovaVisita() {
   document.getElementById('abaMinhaAgenda').style.display = 'none';
   document.getElementById('abaNovaVisita').style.display = 'block';
   document.getElementById('abaNovoEventoPessoal').style.display = 'none';
-  
-  // Preenche data e hora com valores padrão
-  const hoje = new Date();
-  const dia = String(hoje.getDate()).padStart(2, '0');
-  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-  const ano = hoje.getFullYear();
-  document.getElementById('dataVisita').value = `${dia}/${mes}/${ano}`;
-  document.getElementById('horaVisita').value = '08:00';
 }
 
 function mostrarAbaNovoEventoPessoal() {
   document.getElementById('abaMinhaAgenda').style.display = 'none';
   document.getElementById('abaNovaVisita').style.display = 'none';
   document.getElementById('abaNovoEventoPessoal').style.display = 'block';
-  
-  // Preenche data e hora com valores padrão
-  const hoje = new Date();
-  const dia = String(hoje.getDate()).padStart(2, '0');
-  const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-  const ano = hoje.getFullYear();
-  const hora = String(hoje.getHours()).padStart(2, '0');
-  const min = String(hoje.getMinutes()).padStart(2, '0');
-  document.getElementById('dataPessoal').value = `${dia}/${mes}/${ano}`;
-  document.getElementById('horaPessoal').value = `${hora}:${min}`;
 }
 
 // =========================
@@ -187,9 +169,6 @@ function criarVisita() {
     mostrarToast('Data ou hora inválida.', 'error');
     return;
   }
-
-  const btnSalvar = document.querySelector('#abaNovaVisita .btn-salvar');
-  showButtonLoading(btnSalvar);
   
   const dados = {
     acao: 'criarEventoAgenda',
@@ -201,7 +180,6 @@ function criarVisita() {
   };
   
   postSemResposta(dados, 'Visita agendada e escola notificada!', () => {
-    hideButtonLoading(btnSalvar);
     mostrarAbaMinhaAgenda();
     carregarAgenda();
     document.getElementById('dataVisita').value = '';
@@ -225,9 +203,6 @@ function criarEventoPessoal() {
     mostrarToast('Data ou hora inválida.', 'error');
     return;
   }
-
-  const btnSalvar = document.querySelector('#abaNovoEventoPessoal .btn-salvar');
-  showButtonLoading(btnSalvar);
   
   const dados = {
     acao: 'criarEventoAgenda',
@@ -238,7 +213,6 @@ function criarEventoPessoal() {
   };
   
   postSemResposta(dados, 'Evento pessoal criado!', () => {
-    hideButtonLoading(btnSalvar);
     mostrarAbaMinhaAgenda();
     carregarAgenda();
     document.getElementById('dataPessoal').value = '';
@@ -281,16 +255,17 @@ function carregarAgenda() {
   const url = `${API_URL}?tipo=agenda&email=${emailUsuario}&_=${Date.now()}`;
   jsonp(url, function(res) {
     esconderLoading();
-    const container = document.getElementById('listaAgenda');
-    if (!container) return;
-    container.innerHTML = '';
+    const container = document.getElementById('listaAgenda');  // ← FALTANDO
+    container.innerHTML = '';                                   // ← FALTANDO
     
+    // Aceita tanto array direto quanto objeto { eventos: [...] }
     const eventos = Array.isArray(res) ? res : (res && res.eventos ? res.eventos : []);
+    console.log('📅 Eventos recebidos:', eventos.length, eventos);
     eventosAgendaGlobal = eventos;
-    eventosCache = eventos;
+    eventosCache = eventos; // já atualiza o cache
 
     if (!eventos || eventos.length === 0) {
-      container.innerHTML = '<p>Nenhum evento na agenda.</p>';
+      container.innerHTML = '<p>Nenhum evento na agenda.</p>';  // ← Agora container existe
     } else {
       eventos.forEach(ev => {
         const dataFormatada = new Date(ev.dataHora).toLocaleString('pt-BR');
@@ -301,9 +276,11 @@ function carregarAgenda() {
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <strong>${ev.tipo} ${ev.escola ? '- ' + ev.escola : ''}</strong>
                 <div style="display: flex; gap: 4px;">
+                  <!-- Botão de editar (lápis) -->
                   <button class="btn-icone" onclick="abrirEdicaoEvento(encontrarEventoPorId('${ev.id}'))" data-tooltip="Editar evento" style="color: #3b82f6; width: 24px; height: 24px;">
                     <i class="fas fa-pen"></i>
                   </button>
+                  <!-- Botão de excluir (já existente) -->
                   <button class="btn-icone tooltip-below" onclick="excluirEvento('${ev.id}')" data-tooltip="Excluir evento" style="color: #ef4444; width: 24px; height: 24px;">
                     <i class="fas fa-trash-alt"></i>
                   </button>
@@ -321,7 +298,7 @@ function carregarAgenda() {
 }
 
 // =========================
-// CALENDÁRIO
+// CALENDÁRIO (NOVA VERSÃO)
 // =========================
 function carregarEventosParaCalendario() {
   eventosCache = eventosAgendaGlobal || [];
@@ -351,16 +328,19 @@ function mostrarEventosDia(dia) {
   }
 
   let html = `<strong>${dia}/${mesAtual+1}/${anoAtual}</strong><br>`;
-  eventosDia.forEach(ev => {
+    eventosDia.forEach(ev => {
+    // Dentro do loop forEach de eventosDia:
     html += `
       <div class="evento-arrastavel" draggable="true" data-id="${ev.id}" 
           style="margin: 6px 0; padding: 6px; background: var(--card-border); border-radius: 4px; cursor: grab;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <span><i class="fas fa-circle"></i> ${ev.tipo} ${ev.escola ? '- ' + ev.escola : ''}</span>
           <div style="display: flex; gap: 4px;">
+            <!-- Botão de editar -->
             <button class="btn-icone" onclick="event.stopPropagation(); abrirEdicaoEvento(encontrarEventoPorId('${ev.id}'))" data-tooltip="Editar evento" style="color: #3b82f6; width: 20px; height: 20px;">
               <i class="fas fa-pen" style="font-size: 12px;"></i>
             </button>
+            <!-- Botão de excluir -->
             <button class="btn-icone" onclick="event.stopPropagation(); excluirEvento('${ev.id}')" data-tooltip="Excluir evento" style="color: #ef4444; width: 20px; height: 20px;">
               <i class="fas fa-trash-alt" style="font-size: 12px;"></i>
             </button>
@@ -399,9 +379,6 @@ function reagendarEvento(e, elementoDia) {
   const horaOriginal = new Date(eventoOriginal.dataHora);
   const novaData = new Date(ano, mes, dia, horaOriginal.getHours(), horaOriginal.getMinutes());
   
-  const btn = document.querySelector('#modalAgenda .btn-salvar');
-  if (btn) showButtonLoading(btn);
-  
   const dados = {
     acao: 'reagendarEvento',
     email: emailUsuario,
@@ -410,7 +387,6 @@ function reagendarEvento(e, elementoDia) {
   };
   
   postSemResposta(dados, 'Evento reagendado!', () => {
-    if (btn) hideButtonLoading(btn);
     carregarAgenda();
   });
 }
@@ -419,6 +395,7 @@ function obterInfoCalendarioEscolar(dia, mes) {
   const descricoes = [];
   let classePrioritaria = '';
   
+  // Função auxiliar para processar uma lista de eventos (com suporte a intervalos)
   function processarLista(lista, classe, tipoIcone) {
     const encontrados = [];
     for (let item of lista) {
@@ -435,12 +412,14 @@ function obterInfoCalendarioEscolar(dia, mes) {
     }
     if (encontrados.length > 0) {
       descricoes.push(...encontrados);
+      // Define a classe com prioridade (feriado > recesso > JPP > conselho > recuperação > FPM > outros)
       if (!classePrioritaria || classe === 'feriado') {
         classePrioritaria = classe;
       }
     }
   }
 
+  // Processa todas as categorias
   processarLista(CALENDARIO_ESCOLAR.F, 'feriado');
   processarLista(CALENDARIO_ESCOLAR.FE, 'ferias');
   processarLista(CALENDARIO_ESCOLAR.RE, 'recesso');
@@ -458,8 +437,10 @@ function obterInfoCalendarioEscolar(dia, mes) {
     return { tipo: null, descricao: '', classe: '' };
   }
 
+  // Concatena as descrições com quebra de linha (usando &#10; para tooltip HTML)
   const descricaoFinal = descricoes.join(' &#10;');
 
+  // Define o tipo principal para o ícone
   let tipoPrincipal = '';
   if (classePrioritaria === 'feriado') tipoPrincipal = 'feriado';
   else if (classePrioritaria === 'ferias') tipoPrincipal = 'férias';
@@ -494,9 +475,11 @@ function renderizarCalendario(mes, ano) {
   const hoje = new Date();
   for (let dia = 1; dia <= totalDias; dia++) {
     const data = new Date(ano, mes, dia);
-    const temEvento = eventosCache.some(ev => {
+        const temEvento = eventosCache.some(ev => {
+      // Converte a data do evento para objeto Date e zera horas
       const evData = new Date(ev.dataHora);
       evData.setHours(0, 0, 0, 0);
+      // Data do dia do calendário também zerada
       const dataCalendario = new Date(ano, mes, dia);
       dataCalendario.setHours(0, 0, 0, 0);
       return evData.getTime() === dataCalendario.getTime();
@@ -518,46 +501,44 @@ function renderizarCalendario(mes, ano) {
       else iconeIndicador = '📌';
     }
 
-    grid.innerHTML += `
-      <div class="dia ${classeDia} ${classeHoje}${classeCalendario}" 
-          data-dia="${dia}" data-mes="${mes}" data-ano="${ano}"
-          data-tooltip="${tooltipCalendario}"
-          ondragover="event.preventDefault(); this.style.background='var(--input-border)';"
-          ondragleave="this.style.background='';"
-          ondrop="reagendarEvento(event, this)"
-          onclick="mostrarEventosDia(${dia})">
-        ${dia}${temEvento ? '<span class="bolinha-evento"></span>' : ''}
-        ${iconeIndicador ? `<span class="calendario-indicador">${iconeIndicador}</span>` : ''}
-      </div>`;
+        grid.innerHTML += `
+        <div class="dia ${classeDia} ${classeHoje}${classeCalendario}" 
+            data-dia="${dia}" data-mes="${mes}" data-ano="${ano}"
+            data-tooltip="${tooltipCalendario}"
+            ondragover="event.preventDefault(); this.style.background='var(--input-border)';"
+            ondragleave="this.style.background='';"
+            ondrop="reagendarEvento(event, this)"
+            onclick="mostrarEventosDia(${dia})">
+          ${dia}${temEvento ? '<span class="bolinha-evento"></span>' : ''}
+          ${iconeIndicador ? `<span class="calendario-indicador">${iconeIndicador}</span>` : ''}
+        </div>`;
   }
   
   document.getElementById('eventosDoDia').innerHTML = '';
 }
-
-// =========================
-// EDIÇÃO E EXCLUSÃO
-// =========================
+function excluirEvento(id) {
+  if (!confirm("Excluir este evento permanentemente?")) return;
+  
+  const dados = {
+    acao: 'excluirEventoAgenda',
+    email: emailUsuario,
+    id: id
+  };
+  
+  postSemResposta(dados, 'Evento excluído!', () => {
+    carregarAgenda(); // recarrega a lista e o calendário
+  });
+}
 let eventoEditandoId = null;
 let eventoEditandoTipo = null;
 
 function abrirEdicaoEvento(ev) {
-  if (!ev) {
-    mostrarToast('Evento não encontrado.', 'warning');
-    return;
-  }
-
   eventoEditandoId = ev.id;
   eventoEditandoTipo = ev.tipo;
 
   const data = new Date(ev.dataHora);
-  const dia = String(data.getDate()).padStart(2, '0');
-  const mes = String(data.getMonth() + 1).padStart(2, '0');
-  const ano = data.getFullYear();
-  const hora = String(data.getHours()).padStart(2, '0');
-  const min = String(data.getMinutes()).padStart(2, '0');
-
-  document.getElementById('editDataEvento').value = `${dia}/${mes}/${ano}`;
-  document.getElementById('editHoraEvento').value = `${hora}:${min}`;
+  document.getElementById('editDataEvento').value = data.toISOString().split('T')[0];
+  document.getElementById('editHoraEvento').value = data.toTimeString().slice(0,5);
   document.getElementById('editDescricaoEvento').value = ev.descricao || '';
 
   if (ev.tipo === 'Visita_Circuito' && perfilUsuario === 'SUPERVISOR') {
@@ -579,8 +560,8 @@ function fecharEdicaoEvento() {
 }
 
 function salvarEdicaoEvento() {
-  const data = document.getElementById('editDataEvento').value;
-  const hora = document.getElementById('editHoraEvento').value;
+  const data = document.getElementById('editDataEvento').value; // YYYY-MM-DD
+  const hora = document.getElementById('editHoraEvento').value; // HH:MM
   const descricao = document.getElementById('editDescricaoEvento').value;
   const escola = eventoEditandoTipo === 'Visita_Circuito'
     ? document.getElementById('editSelectEscola').value
@@ -591,15 +572,8 @@ function salvarEdicaoEvento() {
     return;
   }
 
-  const partesData = data.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (!partesData) {
-    mostrarToast('Data inválida. Use DD/MM/AAAA.', 'warning');
-    return;
-  }
-  const dataHoraISO = `${partesData[3]}-${partesData[2]}-${partesData[1]}T${hora}:00`;
-
-  const btnSalvar = document.querySelector('#modalEditarEvento .btn-salvar');
-  showButtonLoading(btnSalvar);
+  // Monta a data/hora ISO 8601 diretamente
+  const dataHoraISO = `${data}T${hora}:00`; // Ex: "2025-05-02T14:30:00"
 
   const dados = {
     acao: 'editarEventoAgenda',
@@ -612,24 +586,7 @@ function salvarEdicaoEvento() {
   };
 
   postSemResposta(dados, 'Evento atualizado!', () => {
-    hideButtonLoading(btnSalvar);
     fecharEdicaoEvento();
-    carregarAgenda();
-  });
-}
-
-function excluirEvento(id) {
-  if (!confirm("Excluir este evento permanentemente?")) return;
-  
-  const dados = {
-    acao: 'excluirEventoAgenda',
-    email: emailUsuario,
-    id: id
-  };
-  
-  mostrarLoading();
-  postSemResposta(dados, 'Evento excluído!', () => {
-    esconderLoading();
     carregarAgenda();
   });
 }
