@@ -688,28 +688,32 @@ function abrirNovoAluno() {
     mostrarToast('Perfil pedagógico não pode cadastrar alunos.', 'warning');
     return;
   }
-  
-  // Trava a rolagem do fundo (como na agenda)
+
+  // 🔒 Trava COMPLETAMENTE a rolagem da página (html + body)
+  document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
-  
+
   document.getElementById("novoAluno").style.display = "flex";
   document.getElementById("lista").style.display = "none";
   document.getElementById("painel").style.display = "none";
-  document.getElementById("escolaVinculada").textContent = 
+  document.getElementById("escolaVinculada").textContent =
     `Aluno será matriculado em: ${escolaUsuario}`;
   carregarTurmasParaCadastro(escolaUsuario);
 }
 
 function voltarApp() {
-  // Restaura a rolagem
+  // 🔓 Restaura a rolagem
+  document.documentElement.style.overflow = '';
   document.body.style.overflow = '';
-  
+
+  // Fecha os modais auxiliares
   const idsParaEsconder = ["usuarios", "cadastro", "novoAluno", "modalListaUsuarios", "modalCadastroUsuario"];
   idsParaEsconder.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
 
+  // Reexibe lista e painel
   const lista = document.getElementById("lista");
   const painel = document.getElementById("painel");
   if (lista) lista.style.display = "";
@@ -723,13 +727,10 @@ function voltarApp() {
   }
   const erroNome = document.getElementById("erroNome");
   if (erroNome) erroNome.style.display = "none";
-
   const nomeResp = document.getElementById("nomeResponsavel");
   if (nomeResp) nomeResp.value = "";
-
   const tel = document.getElementById("telefoneContato");
   if (tel) tel.value = "";
-
   const edEspCheck = document.getElementById("alunoEdEspecial");
   if (edEspCheck) edEspCheck.checked = false;
 }
