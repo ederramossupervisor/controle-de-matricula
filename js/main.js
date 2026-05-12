@@ -76,6 +76,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.target === this) fecharModalComunicado();
   });
 
+  document.getElementById('modalPromocao').addEventListener('click', function(e) {
+    if (e.target === this) fecharModalPromocao();
+  });
+
   // --- Listener do filtro de turma (guardar valor anterior) ---
   const selectTurma = document.getElementById("filtroTurma");
   if (selectTurma) {
@@ -141,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
     { element: document.getElementById('modalLegislacao'), close: fecharModalLegislacao },
     { element: document.getElementById('modalAtualizarMatriculados'), close: fecharModalAtualizarMatriculados },
     { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
+    { element: document.getElementById('modalPromocao'), close: fecharModalPromocao },
     { element: document.getElementById('modalConsentimento'), close: logout }
   ];
 
