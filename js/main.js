@@ -43,37 +43,71 @@ window.onload = function () {
 // EVENTOS GLOBAIS (quando o DOM estiver pronto)
 // =========================
 document.addEventListener('DOMContentLoaded', function() {
-  // --- Fechar modais ao clicar fora (overlay) ---
-  document.getElementById("novoAluno").addEventListener("click", function(e) {
-    if (e.target === this) voltarApp();
+
+  // Lista de todos os modais com seus respectivos métodos de fechamento
+  const todosOsModais = [
+    { id: 'novoAluno', close: voltarApp },
+    { id: 'modalDetalhes', close: fecharModalDetalhes },
+    { id: 'modalTurmas', close: fecharModalTurmas },
+    { id: 'modalCadastroTurma', close: fecharModalCadastroTurma },
+    { id: 'modalExportacao', close: fecharModalExportacao },
+    { id: 'modalDocumentos', close: fecharModalDocumentos },
+    { id: 'modalLegalizacao', close: fecharModalLegalizacao },
+    { id: 'modalFormAto', close: fecharFormAto },
+    { id: 'modalImportacao', close: fecharModalImportacao },
+    { id: 'modalPromocao', close: fecharModalPromocao },
+    { id: 'modalAtualizarMatriculados', close: fecharModalAtualizarMatriculados },
+    { id: 'modalModelos', close: fecharModalModelos },
+    { id: 'modalInativos', close: fecharModalInativos },
+    { id: 'modalNotificacoes', close: fecharNotificacoes },
+    { id: 'modalAgenda', close: fecharModalAgenda },
+    { id: 'modalDashboard', close: fecharModalDashboard },
+    { id: 'modalAlterarSenha', close: fecharModalAlterarSenha },
+    { id: 'modalChecklistLote', close: fecharModalChecklistLote },
+    { id: 'modalLegislacao', close: fecharModalLegislacao },
+    { id: 'modalEditarLegislacao', close: fecharEdicaoLegislacao },
+    { id: 'modalComunicado', close: fecharModalComunicado },
+    { id: 'modalConsentimento', close: logout },
+    { id: 'modalHistorico', close: fecharModalHistorico },
+    { id: 'modalListaUsuarios', close: fecharModalListaUsuarios },
+    { id: 'modalCadastroUsuario', close: fecharModalCadastroUsuario },
+    { id: 'modalPlanoTaticoMensal', close: fecharModalPlanoTaticoMensal },
+    { id: 'modalPlanoTaticoTrimestral', close: fecharModalPlanoTaticoTrimestral },
+    { id: 'modalAcompanhamentoPT', close: fecharModalAcompanhamentoPT },
+    { id: 'modalProcessos', close: fecharModalProcessos },
+    { id: 'modalAprovacaoTermos', close: fecharModalAprovacaoTermos },
+    { id: 'modalPainelDiretor', close: fecharPainelDiretor }
+  ];
+
+  // Adiciona evento de clique no overlay para fechar todos os modais
+  todosOsModais.forEach(({ id, close }) => {
+    const modal = document.getElementById(id);
+    if (!modal) return;
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        close();
+      }
+    });
   });
 
-  document.getElementById('modalEditarLegislacao').addEventListener('click', function(e) {
-    if (e.target === this) fecharEdicaoLegislacao();
-  });
-
-  document.getElementById("modalDetalhes").addEventListener("click", function(e) {
-    if (e.target === this) fecharModalDetalhes();
-  });
-
-  document.getElementById("modalListaUsuarios").addEventListener("click", function(e) {
-    if (e.target === this) fecharModalListaUsuarios();
-  });
-
-  document.getElementById("modalCadastroUsuario").addEventListener("click", function(e) {
-    if (e.target === this) fecharModalCadastroUsuario();
-  });
-
-  document.getElementById('modalAtualizarMatriculados').addEventListener('click', function(e) {
-    if (e.target === this) fecharModalAtualizarMatriculados();
-  });
-
-  document.getElementById('modalDashboard').addEventListener('click', function(e) {
-    if (e.target === this) fecharModalDashboard();
-  });
-
-  document.getElementById('modalComunicado').addEventListener('click', function(e) {
-    if (e.target === this) fecharModalComunicado();
+  // Fecha modais com a tecla ESC (substitui o array anterior)
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      // Fecha o primeiro modal aberto encontrado
+      for (const { id, close } of todosOsModais) {
+        const modal = document.getElementById(id);
+        if (modal && modal.style.display === 'flex') {
+          e.preventDefault();
+          close();
+          // Não quebra aqui para permitir fechar o menu dropdown também se necessário
+        }
+      }
+      // Fecha o menu dropdown se estiver aberto
+      const menu = document.getElementById('menuDropdown');
+      if (menu && menu.style.display !== 'none') {
+        menu.style.display = 'none';
+      }
+    }
   });
 
   // --- Listener do filtro de turma (guardar valor anterior) ---
@@ -111,55 +145,6 @@ document.addEventListener('DOMContentLoaded', function() {
         inputBusca.select();
       }
     }
-
-        // Esc: Fechar menu dropdown ou modais abertos
-    if (e.key === 'Escape') {
-  const menuDropdown = document.getElementById('menuDropdown');
-  
-  // 1️⃣ Tenta fechar um modal aberto primeiro
-  const modaisAbertos = [
-    { element: document.getElementById('modalDetalhes'), close: fecharModalDetalhes },
-    { element: document.getElementById('modalChecklistLote'), close: fecharModalChecklistLote },
-    { element: document.getElementById('modalDocumentos'), close: fecharModalDocumentos },
-    { element: document.getElementById('modalModelos'), close: fecharModalModelos },
-    { element: document.getElementById('modalInativos'), close: fecharModalInativos },
-    { element: document.getElementById('modalProcessos'), close: fecharModalProcessos },
-    { element: document.getElementById('modalLegalizacao'), close: fecharModalLegalizacao },
-    { element: document.getElementById('modalTurmas'), close: fecharModalTurmas },
-    { element: document.getElementById('modalCadastroTurma'), close: fecharModalCadastroTurma },
-    { element: document.getElementById('modalListaUsuarios'), close: fecharModalListaUsuarios },
-    { element: document.getElementById('modalCadastroUsuario'), close: fecharModalCadastroUsuario },
-    { element: document.getElementById('modalAlterarSenha'), close: fecharModalAlterarSenha },
-    { element: document.getElementById('modalImportacao'), close: fecharModalImportacao },
-    { element: document.getElementById('modalExportacao'), close: fecharModalExportacao },
-    { element: document.getElementById('modalFormAto'), close: fecharFormAto },
-    { element: document.getElementById('modalNotificacoes'), close: fecharNotificacoes },
-    { element: document.getElementById('modalAgenda'), close: fecharModalAgenda },
-    { element: document.getElementById('novoAluno'), close: voltarApp },
-    { element: document.getElementById('modalDashboard'), close: fecharModalDashboard },
-    { element: document.getElementById('modalEditarLegislacao'), close: fecharEdicaoLegislacao },
-    { element: document.getElementById('modalLegislacao'), close: fecharModalLegislacao },
-    { element: document.getElementById('modalAtualizarMatriculados'), close: fecharModalAtualizarMatriculados },
-    { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
-    { element: document.getElementById('modalConsentimento'), close: logout }
-  ];
-
-  let modalFechado = false;
-  for (let modal of modaisAbertos) {
-    if (modal.element && modal.element.style.display === 'flex') {
-      e.preventDefault();
-      modal.close();
-      modalFechado = true;
-      break;
-    }
-  }
-
-  // 2️⃣ Se nenhum modal foi fechado, tenta fechar o menu dropdown
-  if (!modalFechado && menuDropdown && menuDropdown.style.display === 'block') {
-    e.preventDefault();
-    menuDropdown.style.display = 'none';
-  }
-}
   });
 
   // --- Fechar menu dropdown ao clicar fora ---
@@ -223,31 +208,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   observer.observe(document.body, { childList: true, subtree: true });
-});
-// Fechar os modais do Plano Tático com a tecla ESC
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    const modais = [
-      { id: 'modalPlanoTaticoMensal', fechar: fecharModalPlanoTaticoMensal },
-      { id: 'modalPlanoTaticoTrimestral', fechar: fecharModalPlanoTaticoTrimestral },
-      { id: 'modalAcompanhamentoPT', fechar: fecharModalAcompanhamentoPT }
-    ];
-
-    for (const modal of modais) {
-      const el = document.getElementById(modal.id);
-      if (el && el.style.display === 'flex') {
-        modal.fechar();
-        break;
-      }
-    }
-  }
-});
-// Fecha o menu dropdown ao pressionar ESC
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    const menu = document.getElementById('menuDropdown');
-    if (menu && window.getComputedStyle(menu).display !== 'none') {
-      menu.style.display = 'none';
-    }
-  }
 });
