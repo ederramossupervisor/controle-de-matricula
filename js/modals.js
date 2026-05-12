@@ -22,6 +22,11 @@ function abrirAluno(row) {
 }
 
 function abrirModalDetalhes(aluno) {
+  // 🔒 Trava COMPLETAMENTE a rolagem da página (técnica body scroll lock)
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+  document.body.style.top = `-${window.scrollY}px`;
+
   dadosAlunoAtual = aluno;
   
   document.getElementById("detalhesTitulo").textContent = aluno.ALUNO;
@@ -121,7 +126,6 @@ function abrirModalDetalhes(aluno) {
   document.getElementById("editResponsavel").disabled = isPedagogico;
   
   preencherCamposTelefoneEdicao(aluno.TELEFONE || "");
-  // Desabilita campos de telefone se for pedagogo
   if (isPedagogico) {
     document.querySelectorAll('#telefonesContainerEdicao input').forEach(inp => inp.disabled = true);
   }
@@ -132,11 +136,9 @@ function abrirModalDetalhes(aluno) {
   document.getElementById("editCpfNumero").value = aluno.CPF_NUMERO || '';
   document.getElementById("editCpfNumero").disabled = isPedagogico;
   
-  // Oculta botões de ação para pedagogo
   document.getElementById("btnSalvarInfoAluno").style.display = isPedagogico ? 'none' : '';
   document.getElementById("btnSalvarDetalhes").style.display = isPedagogico ? 'none' : '';
   
-  // Oculta a seção de encerrar matrícula (Transferido, Concluído, Excluir)
   const secaoEncerrar = document.querySelector('#modalDetalhes .modal-actions > div:first-child');
   if (secaoEncerrar) {
     secaoEncerrar.style.display = isPedagogico ? 'none' : '';
@@ -145,12 +147,19 @@ function abrirModalDetalhes(aluno) {
   carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
   document.getElementById("modalDetalhes").style.display = "flex";
 }
-
 function fecharModalDetalhes() {
+  // 🔓 Restaura a rolagem da página
+  const scrollY = document.body.style.top;
+  document.body.style.position = '';
+  document.body.style.width = '';
+  document.body.style.top = '';
+  if (scrollY) {
+    window.scrollTo(0, parseInt(scrollY.replace('px', '')) * -1);
+  }
+
   document.getElementById("modalDetalhes").style.display = "none";
   dadosAlunoAtual = null;
 }
-
 function marcarAlteracao(row, coluna, valor) {
   const chave = `${row}_${coluna}`;
   alteracoesPendentes[chave] = valor;
