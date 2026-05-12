@@ -688,6 +688,7 @@ function abrirNovoAluno() {
     mostrarToast('Perfil pedagógico não pode cadastrar alunos.', 'warning');
     return;
   }
+  document.body.style.overflow = 'hidden';   // 🔒 Trava rolagem do fundo
   document.getElementById("novoAluno").style.display = "flex";
   document.getElementById("lista").style.display = "none";
   document.getElementById("painel").style.display = "none";
@@ -697,6 +698,8 @@ function abrirNovoAluno() {
 }
 
 function voltarApp() {
+  document.body.style.overflow = '';        // 🔓 Restaura rolagem
+
   const idsParaEsconder = ["usuarios", "cadastro", "novoAluno", "modalListaUsuarios", "modalCadastroUsuario"];
   idsParaEsconder.forEach(id => {
     const el = document.getElementById(id);
