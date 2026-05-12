@@ -1606,6 +1606,10 @@ function renderizarVinculosEdicaoAdicionados() {
 // MURAL DE COMUNICADOS
 // =========================
 
+// =========================
+// MURAL DE COMUNICADOS
+// =========================
+
 function abrirModalComunicado() {
   document.getElementById('modalComunicado').style.display = 'flex';
   document.getElementById('tituloModalComunicado').innerHTML = '<i class="fas fa-bullhorn"></i> Novo Comunicado';
@@ -1627,7 +1631,7 @@ function fecharModalComunicado() {
   document.getElementById('modalComunicado').style.display = 'none';
 }
 
-function salvarComunicado() {
+async function salvarComunicado() {
   const titulo = document.getElementById('tituloComunicado').value.trim();
   const texto = document.getElementById('textoComunicado').value.trim();
   const prioridade = document.getElementById('prioridadeComunicado').value;
@@ -1647,7 +1651,7 @@ function salvarComunicado() {
     return;
   }
 
-  // 🔥 Validação da data de expiração (não pode ser anterior à data atual)
+  // Validação da data de expiração (não pode ser anterior à data atual)
   if (dataExpiracao) {
     const dataExp = new Date(dataExpiracao);
     const hoje = new Date();
@@ -1657,6 +1661,9 @@ function salvarComunicado() {
       return;
     }
   }
+
+  const btnSalvar = document.querySelector('#modalComunicado .btn-salvar');
+  showButtonLoading(btnSalvar);
 
   const dados = {
     acao: 'salvarComunicado',
@@ -1670,6 +1677,7 @@ function salvarComunicado() {
   };
 
   postSemResposta(dados, 'Comunicado publicado!', () => {
+    hideButtonLoading(btnSalvar);
     fecharModalComunicado();
     carregarComunicados(); // atualiza o mural
   });
@@ -1680,7 +1688,7 @@ function carregarComunicados() {
   const container = document.getElementById('muralCards');
   const btnNovo = document.getElementById('btnNovoComunicado');
 
-  // 🔥 O mural fica sempre visível para supervisores e secretarias
+  // O mural fica sempre visível para supervisores e secretarias
   const podePublicar = (perfilUsuario === 'SUPERVISOR' || perfilUsuario === 'SECRETARIA');
   if (mural) mural.style.display = podePublicar ? 'block' : 'none';
 
@@ -1694,14 +1702,12 @@ function carregarComunicados() {
     container.innerHTML = '';
 
     if (!Array.isArray(dados) || dados.length === 0) {
-      // Exibe mensagem amigável, mantendo o mural aberto
       container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:16px;">
         Nenhum comunicado no momento.
       </p>`;
       return;
     }
 
-    // Cria os cards (código já existente)
     const cores = { urgente: '#ef4444', importante: '#f59e0b', informativo: '#3b82f6' };
     const icones = { urgente: '⚠️', importante: '⚡', informativo: 'ℹ️' };
 
@@ -1721,13 +1727,11 @@ function carregarComunicados() {
       card.onmouseenter = () => card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)';
       card.onmouseleave = () => card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
 
-      // Variável de controle de expansão
       let expandido = false;
       const textoOriginal = item.texto;
       const textoCurto = textoOriginal.length > 150 ? textoOriginal.substring(0, 150) + '...' : textoOriginal;
       const textoLinkificado = linkificar(textoOriginal);
 
-      // Renderiza inicialmente com texto truncado
       const atualizarCard = () => {
         card.querySelector('.texto-comunicado').innerHTML = expandido ? textoLinkificado : textoCurto;
         card.querySelector('.texto-comunicado').style.display = '-webkit-box';
@@ -1767,7 +1771,6 @@ function carregarComunicados() {
   });
 }
 
-// Função para recolher/expandir o mural (botão “Recolher”)
 function toggleMural() {
   const cards = document.getElementById('muralCards');
   const btn = document.getElementById('btnToggleMural');
@@ -1779,6 +1782,7 @@ function toggleMural() {
     btn.innerHTML = '<i class="fas fa-chevron-down"></i> Expandir';
   }
 }
+
 function excluirComunicadoItem(id) {
   if (!confirm('Deseja excluir este comunicado?')) return;
 
@@ -1786,9 +1790,9 @@ function excluirComunicadoItem(id) {
     carregarComunicados();
   });
 }
+
 function linkificar(texto) {
   if (!texto) return '';
-  // Regex para detectar URLs com http/https
   const urlPattern = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gi;
   return texto.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 }
