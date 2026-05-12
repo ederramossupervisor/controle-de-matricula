@@ -689,31 +689,27 @@ function abrirNovoAluno() {
     return;
   }
   
-  // Trava a página completamente
+  // Trava a rolagem do fundo (como na agenda)
   document.body.style.overflow = 'hidden';
-  document.documentElement.style.overflow = 'hidden';
-  document.getElementById('app').style.display = 'none';   // esconde TODO o conteúdo principal
-
+  
   document.getElementById("novoAluno").style.display = "flex";
+  document.getElementById("lista").style.display = "none";
+  document.getElementById("painel").style.display = "none";
   document.getElementById("escolaVinculada").textContent = 
     `Aluno será matriculado em: ${escolaUsuario}`;
   carregarTurmasParaCadastro(escolaUsuario);
 }
 
 function voltarApp() {
-  // Restaura a rolagem e exibe novamente o sistema
+  // Restaura a rolagem
   document.body.style.overflow = '';
-  document.documentElement.style.overflow = '';
-  document.getElementById('app').style.display = '';       // restaura o display padrão
-
-  // Fecha todos os modais que possam estar abertos
+  
   const idsParaEsconder = ["usuarios", "cadastro", "novoAluno", "modalListaUsuarios", "modalCadastroUsuario"];
   idsParaEsconder.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
 
-  // Reexibe lista e painel
   const lista = document.getElementById("lista");
   const painel = document.getElementById("painel");
   if (lista) lista.style.display = "";
