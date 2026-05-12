@@ -44,7 +44,7 @@ window.onload = function () {
 // =========================
 document.addEventListener('DOMContentLoaded', function() {
 
-  // Lista de todos os modais com seus respectivos métodos de fechamento
+  // Lista COMPLETA de modais com seus métodos de fechamento
   const todosOsModais = [
     { id: 'novoAluno', close: voltarApp },
     { id: 'modalDetalhes', close: fecharModalDetalhes },
@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
     { id: 'modalChecklistLote', close: fecharModalChecklistLote },
     { id: 'modalLegislacao', close: fecharModalLegislacao },
     { id: 'modalEditarLegislacao', close: fecharEdicaoLegislacao },
+    { id: 'modalEditarEvento', close: fecharEdicaoEvento },  // <-- ADICIONE ESTA LINHA
     { id: 'modalComunicado', close: fecharModalComunicado },
     { id: 'modalConsentimento', close: logout },
     { id: 'modalHistorico', close: fecharModalHistorico },
@@ -79,7 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
     { id: 'modalPainelDiretor', close: fecharPainelDiretor }
   ];
 
-  // Adiciona evento de clique no overlay para fechar todos os modais
+  // Adiciona evento de clique no overlay para fechar
   todosOsModais.forEach(({ id, close }) => {
     const modal = document.getElementById(id);
     if (!modal) return;
@@ -90,24 +91,55 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Fecha modais com a tecla ESC (substitui o array anterior)
+  // ÚNICO listener de teclado – trata ESC (fechar modais/menu) e atalhos
   document.addEventListener('keydown', function(e) {
+    // ---- ESC: fecha o primeiro modal aberto e/ou menu dropdown ----
     if (e.key === 'Escape') {
-      // Fecha o primeiro modal aberto encontrado
+      // Verifica modais
       for (const { id, close } of todosOsModais) {
         const modal = document.getElementById(id);
-        if (modal && modal.style.display === 'flex') {
+        if (modal && window.getComputedStyle(modal).display === 'flex') {
           e.preventDefault();
           close();
-          // Não quebra aqui para permitir fechar o menu dropdown também se necessário
+          return; // fecha apenas um modal por vez
         }
       }
-      // Fecha o menu dropdown se estiver aberto
+      // Fecha menu dropdown
       const menu = document.getElementById('menuDropdown');
-      if (menu && menu.style.display !== 'none') {
+      if (menu && window.getComputedStyle(menu).display !== 'none') {
         menu.style.display = 'none';
+        e.preventDefault();
+      }
+      return;
+    }
+
+    // ---- Atalhos de teclado (somente quando o app está visível) ----
+    const app = document.getElementById('app');
+    if (!app || app.style.display === 'none') return;
+
+    const tag = e.target.tagName.toLowerCase();
+    const isInput = (tag === 'input' || tag === 'textarea' || tag === 'select');
+
+    // Ctrl + N: Novo Aluno (funciona mesmo em inputs)
+    if (e.ctrlKey && e.key === 'n') {
+      e.preventDefault();
+      abrirNovoAluno();
+    }
+
+    // Ctrl + F: Focar no campo de busca (funciona mesmo em inputs)
+    if (e.ctrlKey && e.key === 'f') {
+      e.preventDefault();
+      const inputBusca = document.getElementById('pesquisaNome');
+      if (inputBusca) {
+        inputBusca.focus();
+        inputBusca.select();
       }
     }
+
+    // Outros atalhos ignorados se estiver num campo de texto
+    if (isInput) return;
+
+    // Exemplo: tecla 'm' para menu, etc. (adicione aqui se quiser)
   });
 
   // --- Listener do filtro de turma (guardar valor anterior) ---
@@ -117,35 +149,6 @@ document.addEventListener('DOMContentLoaded', function() {
       this.setAttribute('data-valor-anterior', this.value);
     });
   }
-
-  // --- Atalhos de teclado ---
-  document.addEventListener('keydown', function(e) {
-    const app = document.getElementById('app');
-    if (!app || app.style.display === 'none') return;
-
-    const tag = e.target.tagName.toLowerCase();
-    if (tag === 'input' || tag === 'textarea' || tag === 'select') {
-      if (!(e.ctrlKey && e.key === 'f')) {
-        return;
-      }
-    }
-
-    // Ctrl + N: Novo Aluno
-    if (e.ctrlKey && e.key === 'n') {
-      e.preventDefault();
-      abrirNovoAluno();
-    }
-
-    // Ctrl + F: Focar no campo de busca
-    if (e.ctrlKey && e.key === 'f') {
-      e.preventDefault();
-      const inputBusca = document.getElementById('pesquisaNome');
-      if (inputBusca) {
-        inputBusca.focus();
-        inputBusca.select();
-      }
-    }
-  });
 
   // --- Fechar menu dropdown ao clicar fora ---
   window.addEventListener('click', function(e) {
