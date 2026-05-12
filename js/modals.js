@@ -688,29 +688,38 @@ function abrirNovoAluno() {
     mostrarToast('Perfil pedagógico não pode cadastrar alunos.', 'warning');
     return;
   }
-  document.body.style.overflow = 'hidden';   // 🔒 Trava rolagem do fundo
+  
+  // Trava a página completamente
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
+  document.getElementById('app').style.display = 'none';   // esconde TODO o conteúdo principal
+
   document.getElementById("novoAluno").style.display = "flex";
-  document.getElementById("lista").style.display = "none";
-  document.getElementById("painel").style.display = "none";
   document.getElementById("escolaVinculada").textContent = 
     `Aluno será matriculado em: ${escolaUsuario}`;
   carregarTurmasParaCadastro(escolaUsuario);
 }
 
 function voltarApp() {
-  document.body.style.overflow = '';        // 🔓 Restaura rolagem
+  // Restaura a rolagem e exibe novamente o sistema
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
+  document.getElementById('app').style.display = '';       // restaura o display padrão
 
+  // Fecha todos os modais que possam estar abertos
   const idsParaEsconder = ["usuarios", "cadastro", "novoAluno", "modalListaUsuarios", "modalCadastroUsuario"];
   idsParaEsconder.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
 
+  // Reexibe lista e painel
   const lista = document.getElementById("lista");
   const painel = document.getElementById("painel");
   if (lista) lista.style.display = "";
   if (painel) painel.style.display = "";
 
+  // Limpa campos
   const nomeAluno = document.getElementById("nomeAluno");
   if (nomeAluno) {
     nomeAluno.value = "";
@@ -728,7 +737,6 @@ function voltarApp() {
   const edEspCheck = document.getElementById("alunoEdEspecial");
   if (edEspCheck) edEspCheck.checked = false;
 }
-
 async function salvarAluno() {
   const nomeInput = document.getElementById("nomeAluno");
   const idAluno = document.getElementById("idAlunoCadastro")?.value.trim() || "";
