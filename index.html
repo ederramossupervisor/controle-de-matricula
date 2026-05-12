@@ -1895,6 +1895,47 @@
       </div>
     </div>
 
+    <!-- Efeito Parallax no Fundo do Login -->
+    <script>
+      (function() {
+        const loginEl = document.getElementById('login');
+        if (!loginEl) return;
+    
+        // Posições atuais e alvo (para suavizar o movimento)
+        let currentX = 0, currentY = 0;
+        let targetX = 0, targetY = 0;
+        
+        // Intensidade do efeito (ajuste conforme desejar)
+        const intensidade = 15; // quanto maior, mais o fundo se move
+    
+        // Escuta o movimento do mouse
+        document.addEventListener('mousemove', function(e) {
+          const centroX = window.innerWidth / 2;
+          const centroY = window.innerHeight / 2;
+          
+          // Calcula para onde o fundo deve ir (-1 a 1)
+          targetX = (e.clientX - centroX) / centroX * intensidade;
+          targetY = (e.clientY - centroY) / centroY * intensidade;
+        });
+    
+        // Função de animação contínua
+        function animar() {
+          // Suaviza: o valor atual se aproxima gradualmente do alvo
+          currentX += (targetX - currentX) * 0.05;
+          currentY += (targetY - currentY) * 0.05;
+          
+          // Aplica a posição do fundo
+          loginEl.style.backgroundPosition = `calc(50% + ${currentX}px) calc(50% + ${currentY}px)`;
+          
+          // Continua a animação
+          requestAnimationFrame(animar);
+        }
+    
+        // Inicia a animação
+        animar();
+      })();
+    </script>
+
     <!-- SCRIPTS MODULARIZADOS - ORDEM IMPORTANTE -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
