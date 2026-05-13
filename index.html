@@ -562,13 +562,14 @@
           </div>
           <span id="emailUsuarioTexto" style="font-size: 12px; margin-top: 4px; white-space: nowrap; color: #ffffff;"></span>
           <span id="perfilUsuarioTexto" style="font-size: 11px; margin-top: 2px; white-space: nowrap; color: #facc15; font-weight: 500;"></span>
+          
+          <!-- 🔽 MOVER O INDICADOR PARA CÁ, DENTRO DO CONTAINER -->
+          <div id="indicadorUltimaAtualizacao" style="font-size: 10px; color: #ffffff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); margin-top: 6px; text-align: center;">
+            <i class="fas fa-sync-alt"></i> <span id="textoUltimaAtualizacao">---</span>
+          </div>
         </div>
 
-        <!-- 🔥 Indicador de última atualização (FORA do container da foto) -->
-        <div id="indicadorUltimaAtualizacao" style="font-size: 11px; color: #ffffff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); margin-top: 4px; text-align: right;">
-          <i class="fas fa-sync-alt"></i> <span id="textoUltimaAtualizacao">---</span>
         </div>
-      </div>
       <input type="file" id="inputUploadFoto" accept="image/*" style="display: none;" onchange="fazerUploadFoto(this.files[0])">
 
       <!-- Barra de ferramentas (menu centralizado, ações à direita) -->
