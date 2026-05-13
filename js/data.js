@@ -63,6 +63,28 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     }
 
     perfilUsuario = dados.perfil;
+    // Exibir o nome do perfil abaixo da foto
+    const perfilSpan = document.getElementById('perfilUsuarioTexto');
+    if (perfilSpan) {
+        let nomePerfil = '';
+        switch (perfilUsuario) {
+            case 'SUPERVISOR':
+                nomePerfil = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'Administrador' : 'Supervisor';
+                break;
+            case 'SECRETARIA':
+                nomePerfil = 'Secretaria';
+                break;
+            case 'PEDAGOGICO':
+                nomePerfil = 'Pedagógico';
+                break;
+            case 'DIRETOR':
+                nomePerfil = 'Diretor';
+                break;
+            default:
+                nomePerfil = perfilUsuario;
+        }
+        perfilSpan.textContent = nomePerfil;
+    }
     document.body.classList.remove('perfil-supervisor', 'perfil-secretaria');
     document.body.classList.add(perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria');
     escolaUsuario = dados.escola;
