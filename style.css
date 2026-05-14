@@ -3147,14 +3147,14 @@ input[data-mask]:invalid {
   margin-top: 8px;                 /* desce o botão uns pixels */
 }
 .btn-menu {
-  width: 32px !important;
-  height: 32px !important;
-  font-size: 14px !important;
+  width: 36px !important;      /* aumente (antes estava 28px) */
+  height: 36px !important;     /* aumente (antes estava 28px) */
+  font-size: 22px !important;  /* aumente (antes estava 16px) – isso afeta o ícone */
   margin-top: 8px;
-  background-color: transparent !important;   /* remove o fundo branco */
-  border: none !important;                    /* remove a borda */
-  box-shadow: none !important;                /* remove a sombra */
-  color: #ffffff !important;                  /* ícone branco */
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
 }
 
 /* Cor do ícone dentro do botão */
