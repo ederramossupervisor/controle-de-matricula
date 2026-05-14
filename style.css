@@ -152,7 +152,7 @@ header > * {
   align-items: center;
   justify-content: flex-start;
   gap: 16px;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 .header-actions-left {
