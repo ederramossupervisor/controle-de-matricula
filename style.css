@@ -3187,3 +3187,9 @@ input[data-mask]:invalid {
 #novoAluno {
   overflow: hidden;
 }
+#geradorForm .input-icon {
+  margin-bottom: 8px;
+}
+#geradorForm label {
+  font-size: 14px;
+}
