@@ -151,6 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
     { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
     { element: document.getElementById('modalPromocao'), close: fecharModalPromocao },
     { element: document.getElementById('modalAprovacaoTermos'), close: fecharModalAprovacaoTermos },
+    { element: document.getElementById('modalGeradorDocumentos'), close: fecharModalGeradorDocumentos },
     { element: document.getElementById('modalConsentimento'), close: logout }
   ];
 
