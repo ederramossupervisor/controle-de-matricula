@@ -219,16 +219,22 @@ function construirFormulario(tipo) {
     });
   });
 
-  // Auto-preenchimento (escola → município/diretor)
+  // ---- AUTO-PREENCHIMENTO (cidade e diretor) ----
   form.querySelectorAll('select[name="Nome da Escola"], select[name="Escola de Interesse"]').forEach(select => {
     select.addEventListener('change', function() {
       const escola = this.value;
-      // Preencher cidade e diretor (se existir campo)
-      const cidadeInput = form.querySelector('[name="Nome do Município"], [name="Município da Escola de Interesse"]');
-      if (cidadeInput && escola) {
-        // Buscar cidade no array de escolas (não temos cidade no momento, então deixamos vazio)
-        // Se futuramente você quiser incluir cidade, pode manter um mapa.
-        // Por enquanto, o campo permanece editável se readOnly for false.
+      const dados = ESCOLAS_DADOS[escola] || {};
+      
+      // Preencher município (campo pode ter nome "Nome do Município" ou "Município da Escola de Interesse")
+      const cidadeInput = form.querySelector('[name="Nome do Município"]') || form.querySelector('[name="Município da Escola de Interesse"]');
+      if (cidadeInput) {
+        cidadeInput.value = dados.city || '';
+      }
+
+      // Preencher diretor, se o campo existir (ex.: "Nome do Diretor")
+      const diretorInput = form.querySelector('[name="Nome do Diretor"]');
+      if (diretorInput) {
+        diretorInput.value = dados.director || '';
       }
     });
   });
@@ -243,7 +249,6 @@ function construirFormulario(tipo) {
     });
   });
 }
-
 // ---------- GERAÇÃO ----------
 async function gerarDocumento() {
   const form = document.getElementById('geradorForm');
