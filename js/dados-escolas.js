@@ -88,7 +88,7 @@ const ESCOLAS_DADOS = {
   },
   "EEEFM Mário Bergamin": {
     city: "Venda Nova do Imigrante",
-    director: "CELINA JANUÁRIO MOREIRA"  // nome em caixa alta conforme seu arquivo original
+    director: "Celina Januário Moreira"  
   },
   "EEEFM Marlene Brandão": {
     city: "Brejetuba",
