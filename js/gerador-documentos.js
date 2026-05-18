@@ -343,9 +343,11 @@ async function gerarDocumento() {
     userEmail: emailUsuario
   };
 
-  // Chamada JSONP
-  const url = GERADOR_GAS_URL + '?callback=jsonp_gerador&data=' + encodeURIComponent(JSON.stringify(payload));
+  // Constrói URL com parâmetro data (o callback será adicionado pela função jsonp)
+  const dataParam = encodeURIComponent(JSON.stringify(payload));
+  const url = GERADOR_GAS_URL + (GERADOR_GAS_URL.includes('?') ? '&' : '?') + 'data=' + dataParam;
 
+  // Usa a função jsonp padrão do sistema (utils.js)
   jsonp(url, function(resposta) {
     btn.innerHTML = originalHTML;
     btn.disabled = false;
