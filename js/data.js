@@ -191,8 +191,13 @@ function continuarCarregamentoAlunos(pagina, filtros) {
         }
       });
       const filtroSituacao = document.getElementById('filtroSituacaoWrapper');
-      if (filtroSituacao) filtroSituacao.style.display = 'none';
-    }
+        if (filtroSituacao) filtroSituacao.style.display = 'none';
+      }
+
+    const btnGerador = document.getElementById('btnGeradorDocumentos');
+      if (btnGerador && perfilUsuario === 'SUPERVISOR') {
+        btnGerador.style.display = 'block';
+      }
 
     // Exibe botões do Plano Tático
     const botoesPlano = ['btnPlanoTatico', 'btnPlanoTaticoTrim'];
