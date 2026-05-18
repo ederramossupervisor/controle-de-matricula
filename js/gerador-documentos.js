@@ -2,9 +2,6 @@
 // GERADOR DE DOCUMENTOS (SUPERVISORES)
 // =========================
 
-// URL do Google Apps Script (substitua pela sua)
-const GERADOR_GAS_URL = 'https://script.google.com/macros/s/AKfycbwwDwg9POfW_Brcrm-QSnTcyoXlvjnVUMbUrZP8uGx9X7BzCF6IuBFxe7HKtqLS6Dbf/exec';
-
 // ---------- Definições dos documentos ----------
 const DOCUMENT_TYPES = {
   cuidador:        { nome: "Cuidador",                icon: "fas fa-user-nurse" },
@@ -337,34 +334,43 @@ async function gerarDocumento() {
   btn.disabled = true;
 
   const payload = {
-    action: 'generateDocument',
     documentType: currentDocType,
     formData: formData,
     userEmail: emailUsuario
   };
 
-  // Constrói URL com parâmetro data (o callback será adicionado pela função jsonp)
-  const dataParam = encodeURIComponent(JSON.stringify(payload));
-  const url = GERADOR_GAS_URL + (GERADOR_GAS_URL.includes('?') ? '&' : '?') + 'data=' + dataParam;
+  try {
+    const response = await fetch('https://southamerica-east1-sistema-documentos-sreac.cloudfunctions.net/supervisaoSp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
 
-  // Usa a função jsonp padrão do sistema (utils.js)
-  jsonp(url, function(resposta) {
+    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+
+    const result = await response.json();
+
     btn.innerHTML = originalHTML;
     btn.disabled = false;
 
-    if (resposta.success) {
+    if (result.success && result.data) {
+      const data = result.data; // dados retornados pelo GAS
       mostrarToast('Documento gerado com sucesso!', 'success');
       const container = document.getElementById('geradorResultado');
       container.style.display = 'block';
       container.innerHTML = `
         <div class="usuario-card" style="justify-content:space-between;">
           <span><i class="fas fa-check-circle" style="color:green;"></i> Documento pronto</span>
-          <a href="${resposta.pdfUrl || resposta.editableUrl}" target="_blank" class="btn-pequeno">
+          <a href="${data.pdfUrl || data.editableUrl}" target="_blank" class="btn-pequeno">
             <i class="fas fa-download"></i> Baixar / Visualizar
           </a>
         </div>`;
     } else {
-      mostrarToast('Erro ao gerar: ' + (resposta.error || 'Erro desconhecido'), 'error');
+      throw new Error(result.error || result.data?.error || 'Erro desconhecido');
     }
-  });
+  } catch (error) {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+    mostrarToast('Erro ao gerar: ' + error.message, 'error');
+  }
 }
