@@ -349,25 +349,25 @@ async function gerarDocumento() {
     if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
 
     const result = await response.json();
-    console.log('🔍 Resposta completa da Cloud Function:', JSON.stringify(result, null, 2));
+    console.log('🔍 Resposta da Cloud Function:', JSON.stringify(result, null, 2));
 
     btn.innerHTML = originalHTML;
     btn.disabled = false;
 
-    if (result.success && result.data) {
-      const data = result.data; // dados retornados pelo GAS
+    if (result.success && result.data && result.data.pdfUrl) {
+      const downloadUrl = result.data.pdfUrl;
       mostrarToast('Documento gerado com sucesso!', 'success');
       const container = document.getElementById('geradorResultado');
       container.style.display = 'block';
       container.innerHTML = `
         <div class="usuario-card" style="justify-content:space-between;">
           <span><i class="fas fa-check-circle" style="color:green;"></i> Documento pronto</span>
-          <a href="${data.pdfUrl || data.editableUrl}" target="_blank" class="btn-pequeno">
-            <i class="fas fa-download"></i> Baixar / Visualizar
+          <a href="${downloadUrl}" target="_blank" class="btn-pequeno">
+            <i class="fas fa-download"></i> Baixar PDF
           </a>
         </div>`;
     } else {
-      throw new Error(result.error || result.data?.error || 'Erro desconhecido');
+      mostrarToast('Documento gerado, mas URL não encontrada. Veja o console.', 'warning');
     }
   } catch (error) {
     btn.innerHTML = originalHTML;
