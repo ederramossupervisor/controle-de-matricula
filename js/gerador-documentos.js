@@ -183,39 +183,117 @@ function construirFormulario(tipo) {
   const form = document.getElementById('geradorForm');
   form.innerHTML = '';
   const fields = GERADOR_FIELDS[tipo];
+  
   fields.forEach(field => {
-    let html = '';
-    if (field.type === 'school_dropdown') {
-      html = `<select name="${field.name}" required><option value="">Selecione...</option></select>`;
-    } else if (field.type === 'supervisor_name') {
-      html = `<input type="text" name="${field.name}" value="${supervisorName}" placeholder="Seu nome completo" required>`;
-    } else if (field.type === 'serie_dropdown') {
-      html = `<select name="${field.name}" required>
-        <option value="">Selecione...</option>
-        <option value="1º ano">1º ano</option><option value="2º ano">2º ano</option><option value="3º ano">3º ano</option><option value="4º ano">4º ano</option><option value="5º ano">5º ano</option>
-        <option value="6º ano">6º ano</option><option value="7º ano">7º ano</option><option value="8º ano">8º ano</option><option value="9º ano">9º ano</option>
-        <option value="1ª série">1ª série</option><option value="2ª série">2ª série</option><option value="3ª série">3ª série</option>
-      </select>`;
-    } else if (field.type === 'dropdown') {
-      const opts = (field.options || []).map(o => `<option value="${o}">${o}</option>`).join('');
-      html = `<select name="${field.name}" required><option value="">Selecione...</option>${opts}</select>`;
-    } else if (field.type === 'textarea') {
-      html = `<textarea name="${field.name}" rows="4" required ${field.readOnly ? 'readonly' : ''}></textarea>`;
-    } else {
-      html = `<input type="${field.type === 'date' ? 'date' : 'text'}" name="${field.name}" value="${field.type === 'date' ? new Date().toISOString().split('T')[0] : ''}" required ${field.readOnly ? 'readonly' : ''}>`;
-    }
+    // Determina ícone conforme o tipo
+    let icone = 'fa-pencil-alt';
+    if (field.type === 'date') icone = 'fa-calendar-alt';
+    else if (field.type === 'school_dropdown') icone = 'fa-school';
+    else if (field.type === 'supervisor_name') icone = 'fa-user-tie';
+    else if (field.type === 'serie_dropdown') icone = 'fa-graduation-cap';
+    else if (field.type === 'dropdown') icone = 'fa-list';
+    else if (field.type === 'textarea') icone = 'fa-align-left';
+    else if (field.name.includes('Email')) icone = 'fa-envelope';
+    else if (field.name.includes('Telefone')) icone = 'fa-phone';
+    else if (field.name.includes('Funcional')) icone = 'fa-id-card';
+    else if (field.name.includes('Diagnóstico')) icone = 'fa-notes-medical';
+    else if (field.name.includes('CID')) icone = 'fa-file-medical';
+    else if (field.name.includes('Relato')) icone = 'fa-comment-dots';
+    else if (field.name.includes('Projeto')) icone = 'fa-project-diagram';
+    else if (field.name.includes('Edocs')) icone = 'fa-folder-open';
+    else if (field.name.includes('Área')) icone = 'fa-layer-group';
+    else if (field.name.includes('Turno')) icone = 'fa-sun';
+    
+    // Monta o label
+    const labelText = `${field.name} ${field.required ? '<span style="color:#ef4444;">*</span>' : ''}`;
+    
+    // Cria o container do campo
     const div = document.createElement('div');
-    div.className = 'input-icon';
-    div.innerHTML = `<span class="icon"><i class="fas fa-${field.type === 'date' ? 'calendar' : 'pencil'}-alt"></i></span>${html}`;
+    div.style.marginBottom = '16px';
+    
+    // Label
+    const label = document.createElement('label');
+    label.style.cssText = 'font-weight:500; display:block; margin-bottom:6px; color:var(--text-primary);';
+    label.innerHTML = labelText;
+    div.appendChild(label);
+    
+    // Campo com ícone
+    const inputWrapper = document.createElement('div');
+    inputWrapper.className = 'input-icon';
+    
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'icon';
+    iconSpan.innerHTML = `<i class="fas ${icone}"></i>`;
+    inputWrapper.appendChild(iconSpan);
+    
+    // Cria o input/select/textarea
+    let input;
+    if (field.type === 'school_dropdown') {
+      input = document.createElement('select');
+      input.name = field.name;
+      input.required = field.required;
+      input.innerHTML = '<option value="">Selecione a escola...</option>';
+    } else if (field.type === 'supervisor_name') {
+      input = document.createElement('input');
+      input.type = 'text';
+      input.name = field.name;
+      input.value = supervisorName;
+      input.placeholder = 'Seu nome completo';
+      input.required = field.required;
+    } else if (field.type === 'serie_dropdown') {
+      input = document.createElement('select');
+      input.name = field.name;
+      input.required = field.required;
+      const series = [
+        "1º ano","2º ano","3º ano","4º ano","5º ano",
+        "6º ano","7º ano","8º ano","9º ano",
+        "1ª série","2ª série","3ª série"
+      ];
+      input.innerHTML = '<option value="">Selecione a série...</option>';
+      series.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        input.appendChild(opt);
+      });
+    } else if (field.type === 'dropdown') {
+      input = document.createElement('select');
+      input.name = field.name;
+      input.required = field.required;
+      input.innerHTML = '<option value="">Selecione...</option>';
+      (field.options || []).forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o; opt.textContent = o;
+        input.appendChild(opt);
+      });
+    } else if (field.type === 'textarea') {
+      input = document.createElement('textarea');
+      input.name = field.name;
+      input.rows = 4;
+      input.required = field.required;
+      input.readOnly = field.readOnly || false;
+    } else {
+      input = document.createElement('input');
+      input.type = field.type === 'date' ? 'date' : 'text';
+      input.name = field.name;
+      input.required = field.required;
+      input.readOnly = field.readOnly || false;
+      if (field.type === 'date') input.value = new Date().toISOString().split('T')[0];
+      if (field.placeholder) input.placeholder = field.placeholder;
+    }
+    
+    inputWrapper.appendChild(input);
+    div.appendChild(inputWrapper);
     form.appendChild(div);
   });
 
-  // Preencher dropdowns de escolas
+  // Preenche dropdowns de escolas
   const schoolDropdowns = form.querySelectorAll('select[name="Nome da Escola"], select[name="Escola de Interesse"]');
   schoolDropdowns.forEach(select => {
     const escolas = window.escolasSupervisionadas || LISTA_ESCOLAS;
     escolas.forEach(esc => {
-      select.innerHTML += `<option value="${esc}">${esc}</option>`;
+      const opt = document.createElement('option');
+      opt.value = esc; opt.textContent = esc;
+      select.appendChild(opt);
     });
   });
 
@@ -225,17 +303,11 @@ function construirFormulario(tipo) {
       const escola = this.value;
       const dados = ESCOLAS_DADOS[escola] || {};
       
-      // Preencher município (campo pode ter nome "Nome do Município" ou "Município da Escola de Interesse")
       const cidadeInput = form.querySelector('[name="Nome do Município"]') || form.querySelector('[name="Município da Escola de Interesse"]');
-      if (cidadeInput) {
-        cidadeInput.value = dados.city || '';
-      }
+      if (cidadeInput) cidadeInput.value = dados.city || '';
 
-      // Preencher diretor, se o campo existir (ex.: "Nome do Diretor")
       const diretorInput = form.querySelector('[name="Nome do Diretor"]');
-      if (diretorInput) {
-        diretorInput.value = dados.director || '';
-      }
+      if (diretorInput) diretorInput.value = dados.director || '';
     });
   });
 
