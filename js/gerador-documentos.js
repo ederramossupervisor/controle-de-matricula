@@ -349,6 +349,7 @@ async function gerarDocumento() {
     if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
 
     const result = await response.json();
+    console.log('🔍 Resposta completa da Cloud Function:', JSON.stringify(result, null, 2));
 
     btn.innerHTML = originalHTML;
     btn.disabled = false;
