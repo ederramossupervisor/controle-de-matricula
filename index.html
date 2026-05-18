@@ -1894,6 +1894,36 @@
       </div>
     </div>
 
+  <!-- 📄 MODAL GERADOR DE DOCUMENTOS (SUPERVISORES) -->
+  <div id="modalGeradorDocumentos" class="modal-overlay" style="display:none;">
+    <div class="modal-card modal-card--grande modal-card--fullscreen">
+      <div class="modal-header">
+        <h2><i class="fas fa-file-alt"></i> Gerar Documento</h2>
+        <button class="close-btn" onclick="fecharModalGeradorDocumentos()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <!-- Seleção do tipo de documento -->
+        <h3>Tipo de Documento</h3>
+        <div id="geradorTiposDocumento" class="document-types" style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:24px;"></div>
+        
+        <!-- Formulário dinâmico -->
+        <div id="geradorFormContainer" style="display:none;">
+          <h3 id="geradorFormTitulo"></h3>
+          <form id="geradorForm"></form>
+          <div class="modal-actions" style="margin-top:20px;">
+            <button class="btn-salvar" id="btnGerarDocumento" onclick="gerarDocumento()">
+              <i class="fas fa-file-pdf"></i> Gerar Documento
+            </button>
+            <button class="btn-cancelar" onclick="fecharModalGeradorDocumentos()">Cancelar</button>
+          </div>
+        </div>
+        
+        <!-- Resultado (download) -->
+        <div id="geradorResultado" style="display:none; margin-top:20px;"></div>
+      </div>
+    </div>
+  </div>
+
     <!-- Efeito Parallax no Fundo do Login -->
     <script>
       (function() {
