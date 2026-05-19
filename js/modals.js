@@ -1408,6 +1408,7 @@ function renderizarVinculosAdicionados() {
           <option value="altera" ${v.tipoVinculo==='altera'?'selected':''}>Altera</option>
           <option value="retifica" ${v.tipoVinculo==='retifica'?'selected':''}>Retifica</option>
           <option value="acrescenta" ${v.tipoVinculo==='acrescenta'?'selected':''}>Complementa</option>
+          <option value="reorganiza" ${v.tipoVinculo==='reorganiza'?'selected':''}>Reorganiza</option>
           <option value="ver também" ${v.tipoVinculo==='ver também'?'selected':''}>Ver também</option>
         </select>
         <button type="button" class="btn-icone" onclick="removerVinculo(${i})" style="color:#ef4444;">
@@ -1606,6 +1607,7 @@ function renderizarVinculosEdicaoAdicionados() {
           <option value="altera" ${v.tipoVinculo==='altera'?'selected':''}>Altera</option>
           <option value="retifica" ${v.tipoVinculo==='retifica'?'selected':''}>Retifica</option>
           <option value="acrescenta" ${v.tipoVinculo==='acrescenta'?'selected':''}>Complementa</option>
+          <option value="reorganiza" ${v.tipoVinculo==='reorganiza'?'selected':''}>Reorganiza</option>
           <option value="ver também" ${v.tipoVinculo==='ver também'?'selected':''}>Ver também</option>
         </select>
         <button type="button" class="btn-icone" onclick="removerVinculoEdicao(${i})" style="color:#ef4444;">
