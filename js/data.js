@@ -62,7 +62,7 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       window.escolasSupervisionadas = [];
     }
 
-    // Dentro de continuarCarregamentoAlunos, após a definição de window.escolasSupervisionadas, adicione:
+    // Preencher select de histórico de visitas
     const selectHistoricoEscola = document.getElementById('historicoFiltroEscola');
     if (selectHistoricoEscola) {
       selectHistoricoEscola.innerHTML = '<option value="">Todas as escolas</option>';
@@ -71,7 +71,6 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     }
 
     perfilUsuario = dados.perfil;
-    // Exibir o nome do perfil abaixo da foto
     const perfilSpan = document.getElementById('perfilUsuarioTexto');
     if (perfilSpan) {
         let nomePerfil = '';
@@ -121,12 +120,19 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     renderLista(dadosGlobais);
     renderizarPaginacao(totalPaginas, totalRegistros);
 
+    // Aplica estado inicial mobile (esconde lista se for celular)
     if (typeof aplicarEstadoInicialMobile === 'function') {
       aplicarEstadoInicialMobile();
     }
 
     document.getElementById("login").style.display = "none";
     document.getElementById("app").style.display = "block";
+
+    // Exibe dock mobile após login
+    if (typeof exibirDockMobile === 'function') {
+      exibirDockMobile();
+    }
+
     carregarComunicados();
     iniciarPollingNotificacoes();
     carregarFotoPerfil();
@@ -140,7 +146,7 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       carregarTurmasParaFiltro();
     }
 
-    // ---- INDICADOR DE ÚLTIMA ATUALIZAÇÃO ----
+    // Indicador de última atualização
     if (dados.ultimaAtualizacao) {
       const data = new Date(dados.ultimaAtualizacao);
       const textoData = data.toLocaleString('pt-BR');
@@ -150,9 +156,8 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       document.getElementById('textoUltimaAtualizacao').textContent = 'Nenhuma atualização recente';
     }
 
-    // ---- MÉTRICAS GLOBAIS ----
+    // Métricas
     const statusAtual = document.getElementById('filtroStatus')?.value || '';
-
     if (dados.metricas) {
       if (!metricasOriginais || !statusAtual) {
         metricasOriginais = dados.metricas;
@@ -188,9 +193,7 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       if (btnProcessos) btnProcessos.style.display = "inline-block";
     }
 
-    // =========================
-    // CONTROLE DE VISIBILIDADE DOS BOTÕES DO MENU
-    // =========================
+    // Controle de visibilidade dos botões do menu
     if (perfilUsuario === 'PEDAGOGICO') {
       const textosRestritos = [
         'Novo Aluno', 'Importar Alunos', 'Atualizar Matriculados',
@@ -203,15 +206,15 @@ function continuarCarregamentoAlunos(pagina, filtros) {
         }
       });
       const filtroSituacao = document.getElementById('filtroSituacaoWrapper');
-        if (filtroSituacao) filtroSituacao.style.display = 'none';
-      }
+      if (filtroSituacao) filtroSituacao.style.display = 'none';
+    }
 
     const btnGerador = document.getElementById('btnGeradorDocumentos');
-      if (btnGerador && perfilUsuario === 'SUPERVISOR') {
-        btnGerador.style.display = 'block';
-      }
+    if (btnGerador && perfilUsuario === 'SUPERVISOR') {
+      btnGerador.style.display = 'block';
+    }
 
-    // Exibe botões do Plano Tático
+    // Botões do Plano Tático
     const botoesPlano = ['btnPlanoTatico', 'btnPlanoTaticoTrim'];
     botoesPlano.forEach(id => {
       const btn = document.getElementById(id);
@@ -220,27 +223,22 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       }
     });
 
-    // Acompanhamento apenas supervisor
     const btnAcomp = document.getElementById('btnAcompanhamentoPT');
     if (btnAcomp) {
       btnAcomp.style.display = (perfilUsuario === 'SUPERVISOR') ? 'block' : 'none';
     }
 
-    // Aprovação de termos apenas Admin
     const btnAprovacao = document.getElementById('btnAprovacaoTermos');
     if (btnAprovacao) {
       btnAprovacao.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'block' : 'none';
     }
 
-    // 🔥 NOVO: Exibir botão de Monitoramento para Supervisor
     const btnMonitoramento = document.getElementById('btnMonitoramento');
     if (btnMonitoramento) {
       btnMonitoramento.style.display = (perfilUsuario === 'SUPERVISOR') ? 'inline-block' : 'none';
     }
 
-    // =========================
-    // OCULTAR SEÇÕES VAZIAS DO MENU
-    // =========================
+    // Ocultar colunas vazias do menu
     function secaoTemBotoesVisiveis(colunaId) {
       const coluna = document.getElementById(colunaId);
       if (!coluna) return false;
@@ -1452,6 +1450,11 @@ function logout() {
   document.getElementById("app").style.display = "none";
   document.body.style.backgroundImage = "";
   document.body.classList.remove("fundo-personalizado");
+
+  // Esconde a dock mobile (se estiver visível)
+  if (typeof esconderDockMobile === 'function') {
+    esconderDockMobile();
+  }
   
   // Limpa mensagens de erro no login
   const msgErro = document.getElementById('mensagemLoginErro');
@@ -1987,4 +1990,15 @@ function preencherCursosTecnicos(cursoEtapa) {
       select.appendChild(opt);
     }
   });
+}
+function exibirDockMobile() {
+  if (window.innerWidth <= 600) {
+    const dock = document.getElementById('dockMobile');
+    if (dock) dock.style.display = 'flex';
+  }
+}
+
+function esconderDockMobile() {
+  const dock = document.getElementById('dockMobile');
+  if (dock) dock.style.display = 'none';
 }
