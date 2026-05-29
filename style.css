@@ -42,41 +42,6 @@
 }
 
 /* ==========================================
-   DARK MODE
-   ========================================== */
-[data-theme="dark"] {
-  --bg-gradient-start: #0f172a;
-  --bg-gradient-end: #1e293b;
-  --header-bg: #1e293b;
-  --header-text: #f1f5f9;
-  --card-bg: #1e293b;
-  --card-border: #334155;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --input-bg: #0f172a;
-  --input-border: #475569;
-  --input-focus-shadow: rgba(59, 130, 246, 0.2);
-  --btn-primary-bg: #3b82f6;
-  --btn-primary-hover: #2563eb;
-  --btn-cancelar-bg: #1e293b;
-  --btn-cancelar-border: #475569;
-  --modal-overlay: rgba(0, 0, 0, 0.7);
-  --shadow-sm: rgba(0, 0, 0, 0.2);
-  --shadow-md: rgba(0, 0, 0, 0.4);
-  --shadow-lg: rgba(0, 0, 0, 0.5);
-  --login-bg-start: #0f172a;
-  --login-bg-end: #1e293b;
-  --login-card-bg: rgba(30, 41, 59, 0.98);
-  --badge-completo-bg: #14532d;
-  --badge-completo-text: #dcfce7;
-  --badge-pendente-bg: #713f12;
-  --badge-pendente-text: #fef9c3;
-  --badge-vencido-bg: #7f1d1d;
-  --badge-vencido-text: #fee2e2;
-}
-
-/* ==========================================
    RESET / BASE
    ========================================== */
 *, *::before, *::after {
@@ -84,7 +49,6 @@
 }
 
 html {
-  /* Evita zoom automático em inputs no iOS */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -95,10 +59,8 @@ body {
   margin: 0;
   padding: 0;
   color: var(--text-primary);
-  /* Suporte a notch / Dynamic Island */
   padding-top: var(--safe-top);
   padding-bottom: var(--safe-bottom);
-  /* Suaviza rolagem em iOS */
   -webkit-overflow-scrolling: touch;
 }
 
@@ -201,7 +163,6 @@ header > * { position: relative; z-index: 1; }
   color: #1e293b !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 8px;
-  /* Touch target mínimo */
   min-height: var(--touch-min);
   padding: 0 16px;
   font-size: 14px;
@@ -214,7 +175,6 @@ header > * { position: relative; z-index: 1; }
   cursor: pointer;
   line-height: 1;
   white-space: nowrap;
-  /* Remove highlight de toque no iOS */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -474,7 +434,6 @@ input, select, textarea {
   background: var(--input-bg);
   color: var(--text-primary);
   width: 100%;
-  /* Evita zoom no iOS (mínimo 16px) */
   font-size: var(--font-base);
   transition: 0.2s;
   -webkit-appearance: none;
@@ -559,7 +518,6 @@ textarea:focus {
   cursor: pointer;
   color: var(--text-muted);
   z-index: 2;
-  /* Área de toque adequada */
   padding: 8px;
   min-width: var(--touch-min);
   min-height: var(--touch-min);
@@ -582,7 +540,6 @@ button {
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
-  /* Touch */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   min-height: var(--touch-min);
@@ -740,24 +697,10 @@ button:active { transform: scale(0.98); }
     inset 0 2px 6px rgba(255,255,255,0.8);
 }
 
-[data-theme="dark"] #lista > div {
-  background: linear-gradient(145deg, #1e293b 0%, #334155 70%, #1e293b 100%);
-  box-shadow:
-    0 4px 8px rgba(0,0,0,0.3),
-    0 2px 2px rgba(0,0,0,0.2),
-    inset 0 -1px 2px rgba(0,0,0,0.2),
-    inset 0 1px 2px rgba(255,255,255,0.05);
-  border-color: rgba(255,255,255,0.1);
-}
-
 /* Faixas de status */
 .status-completo { border-left-color: #10b981 !important; }
 .status-pendente { border-left-color: #f59e0b !important; }
 .status-vencido  { border-left-color: #ef4444 !important; }
-
-[data-theme="dark"] .status-completo { border-left-color: #34d399 !important; }
-[data-theme="dark"] .status-pendente { border-left-color: #fbbf24 !important; }
-[data-theme="dark"] .status-vencido  { border-left-color: #f87171 !important; }
 
 /* Avatar */
 .aluno-avatar {
@@ -786,11 +729,6 @@ button:active { transform: scale(0.98); }
   text-shadow: 0 1px 1px rgba(255,255,255,0.5);
 }
 
-[data-theme="dark"] .aluno-nome {
-  color: #f1f5f9;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-}
-
 .aluno-meta {
   display: flex;
   align-items: center;
@@ -798,8 +736,6 @@ button:active { transform: scale(0.98); }
   gap: 8px;
   color: #1e293b;
 }
-
-[data-theme="dark"] .aluno-meta { color: #cbd5e1; }
 
 .aluno-acoes {
   display: flex;
@@ -948,25 +884,6 @@ button:active { transform: scale(0.98); }
 .metrica-escola .metrica-detalhe::-webkit-scrollbar-track { background: rgba(255,255,255,0.2); border-radius: 10px; }
 .metrica-escola .metrica-detalhe::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
 
-/* Dark */
-[data-theme="dark"] .metrica-card {
-  background: #1e293b;
-  box-shadow:
-    0 10px 20px rgba(0,0,0,0.3),
-    0 6px 6px rgba(0,0,0,0.2),
-    inset 0 -2px 5px rgba(0,0,0,0.2),
-    inset 0 2px 5px rgba(255,255,255,0.05);
-}
-
-[data-theme="dark"] .metrica-total     { background: linear-gradient(to right, #1e293b 0%, #1e3a8a 100%); }
-[data-theme="dark"] .metrica-completos { background: linear-gradient(to right, #1e293b 0%, #14532d 100%); }
-[data-theme="dark"] .metrica-pendentes { background: linear-gradient(to right, #1e293b 0%, #713f12 100%); }
-[data-theme="dark"] .metrica-vencidos  { background: linear-gradient(to right, #1e293b 0%, #7f1d1d 100%); }
-[data-theme="dark"] .metrica-escola    { background: linear-gradient(to right, #1e293b 0%, #4c1d95 100%); }
-[data-theme="dark"] .metrica-titulo    { color: #cbd5e1; }
-[data-theme="dark"] .metrica-valor     { color: #f8fafc; }
-[data-theme="dark"] .metrica-detalhe   { color: #94a3b8; }
-
 /* ==========================================
    FILTROS
    ========================================== */
@@ -1014,15 +931,13 @@ button:active { transform: scale(0.98); }
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   display: flex;
-  align-items: flex-end;        /* mobile: sobe pela base */
+  align-items: flex-end;
   justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.2s ease;
-  /* Suporte ao notch */
   padding-bottom: var(--safe-bottom);
 }
 
-/* Em telas maiores, centraliza verticalmente */
 @media (min-width: 600px) {
   .modal-overlay { align-items: center; }
 }
@@ -1031,12 +946,10 @@ button:active { transform: scale(0.98); }
   background: var(--card-bg);
   width: 100%;
   max-width: 450px;
-  /* Mobile: sobe como bottom sheet */
   border-radius: 24px 24px 0 0;
   box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
   overflow: hidden;
   animation: slideUpMobile 0.3s ease;
-  /* Permite scroll interno */
   display: flex;
   flex-direction: column;
   max-height: 95vh;
@@ -1062,16 +975,12 @@ button:active { transform: scale(0.98); }
   flex-shrink: 0;
 }
 
-/* Alça de arrastar para modais mobile */
 .modal-header::before {
   content: "";
   display: none;
 }
 
 @media (max-width: 599px) {
-  .modal-overlay::before {
-    /* Indicador de arrastar acima do modal */
-  }
   .modal-card::before {
     content: "";
     display: block;
@@ -1115,13 +1024,12 @@ button:active { transform: scale(0.98); }
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   flex: 1;
-  /* Padding seguro na base em mobile */
   padding-bottom: max(20px, var(--safe-bottom));
 }
 
 .modal-card .modal-body,
 .modal-card--grande .modal-body {
-  max-height: none; /* já controlado pelo flex do pai */
+  max-height: none;
 }
 
 /* Scrollbar customizado */
@@ -1352,7 +1260,6 @@ button:active { transform: scale(0.98); }
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
-  /* Área de toque */
   padding: 8px 4px;
 }
 
@@ -1399,18 +1306,13 @@ button .spinner-btn { margin-left: 8px; margin-right: 0; }
   border-top-color: #475569;
 }
 
-[data-theme="dark"] .btn-cancelar .spinner-btn {
-  border-color: rgba(255,255,255,0.2);
-  border-top-color: #cbd5e1;
-}
-
 /* ==========================================
    CHECKBOX MODERNO
    ========================================== */
 .checkbox-moderno {
   display: flex;
   align-items: center;
-  padding: 14px 0;        /* mais espaço para toque */
+  padding: 14px 0;
   border-bottom: 1px solid var(--card-border);
 }
 
@@ -1428,7 +1330,6 @@ button .spinner-btn { margin-left: 8px; margin-right: 0; }
   transition: all 0.15s;
   position: relative;
   flex-shrink: 0;
-  /* Área de toque ampliada */
   padding: 0;
 }
 
@@ -1453,7 +1354,7 @@ button .spinner-btn { margin-left: 8px; margin-right: 0; }
   color: var(--text-primary);
   cursor: pointer;
   flex: 1;
-  padding: 8px 0; /* aumenta área de toque */
+  padding: 8px 0;
 }
 
 .checkbox-moderno:hover { background: var(--card-border); border-radius: 8px; }
@@ -1645,9 +1546,6 @@ select.btn-paginacao { background-color: var(--card-bg); cursor: pointer; }
 .doc-icon.vencido  i { color: #ef4444; }
 .doc-icon.info     i { color: #3b82f6; }
 
-[data-theme="dark"] .doc-icon { background-color: rgba(255,255,255,0.05); }
-[data-theme="dark"] .doc-icon:hover { background-color: rgba(255,255,255,0.1); }
-
 /* ==========================================
    TOOLTIP
    ========================================== */
@@ -1700,9 +1598,6 @@ select.btn-paginacao { background-color: var(--card-bg); cursor: pointer; }
   opacity: 1;
 }
 
-[data-theme="dark"] [data-tooltip]:before { background: #f1f5f9; color: #0f172a; }
-[data-theme="dark"] [data-tooltip]:after  { border-top-color: #f1f5f9; }
-
 /* Tooltip abaixo */
 .tooltip-below:before {
   bottom: auto !important;
@@ -1717,8 +1612,6 @@ select.btn-paginacao { background-color: var(--card-bg); cursor: pointer; }
   margin-bottom: 0;
   margin-top: -6px;
 }
-
-[data-theme="dark"] .tooltip-below:after { border-bottom-color: #f1f5f9; }
 
 /* ==========================================
    LOGO
@@ -1741,8 +1634,6 @@ body.fundo-personalizado {
   background-attachment: fixed;
   background-repeat: no-repeat;
 }
-
-[data-theme="dark"] #fundoOverlay { background-color: rgba(15,23,42,0.85); }
 
 /* ==========================================
    TOGGLE SWITCH
@@ -1904,8 +1795,6 @@ body.fundo-personalizado {
   font-size: 16px;
   color: white;
 }
-
-[data-theme="dark"] .btn-edocs-icon { background-color: #3b82f6; }
 
 .escola-icones-container {
   display: flex;
@@ -2286,13 +2175,13 @@ button i, .input-icon .icon i {
     box-shadow: 4px 0 20px rgba(0,0,0,0.3) !important;
     z-index: 10001 !important;
     background: var(--card-bg) !important;
-    display: none;                     /* escondido por padrão */
-    pointer-events: none;              /* quando fechado, não atrapalha */
+    display: none;
+    pointer-events: none;
   }
 
   .dropdown-content.dropdown-horizontal.menu-aberto {
     display: flex !important;
-    pointer-events: auto;              /* permite toques nos botões */
+    pointer-events: auto;
   }
 
   .menu-coluna {
@@ -2300,7 +2189,6 @@ button i, .input-icon .icon i {
     max-width: 100% !important;
   }
 
-  /* Overlay: só captura clique para fechar, não os toques internos */
   .menu-overlay {
     display: none;
     position: fixed;
@@ -2308,14 +2196,13 @@ button i, .input-icon .icon i {
     width: 100%; height: 100%;
     background: rgba(0,0,0,0.5);
     z-index: 10000;
-    pointer-events: none;              /* não bloqueia o menu */
+    pointer-events: none;
   }
   .menu-overlay.ativo {
     display: block;
-    pointer-events: auto;              /* agora pode ser clicado para fechar */
+    pointer-events: auto;
   }
 
-  /* Aumenta área de toque dos botões dentro do menu */
   .dropdown-content .btn-header {
     padding: 14px 16px !important;
     font-size: 15px !important;
@@ -2331,7 +2218,7 @@ button i, .input-icon .icon i {
 @media (max-width: 600px) {
 
   .header-actions::-webkit-scrollbar { display: none; }
-.header-actions { scrollbar-width: none; }
+  .header-actions { scrollbar-width: none; }
 
   /* HEADER */
   header {
@@ -2375,7 +2262,6 @@ button i, .input-icon .icon i {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Busca global ocupa linha inteira */
   #inputBuscaGlobal {
     width: 100% !important;
     box-sizing: border-box;
@@ -2449,7 +2335,6 @@ button i, .input-icon .icon i {
     margin: 10px !important;
   }
 
-  /* Card "Por escola" ocupa largura total */
   .metrica-escola {
     grid-column: 1 / -1;
   }
@@ -2462,11 +2347,10 @@ button i, .input-icon .icon i {
   .metrica-valor  { font-size: 30px !important; }
   .metrica-titulo { font-size: 12px !important; }
 
-  /* MODAL — bottom sheet nativo */
+  /* MODAL — bottom sheet */
   .modal-card {
     width: 100% !important;
     max-width: 100% !important;
-    /* Não força 100vh — deixa conteúdo determinar a altura */
     border-radius: 24px 24px 0 0 !important;
     margin: 0 !important;
   }
@@ -2489,7 +2373,6 @@ button i, .input-icon .icon i {
     font-size: 16px !important;
   }
 
-  /* Inputs sem zoom no iOS */
   .input-icon input,
   .input-icon select,
   .input-icon textarea,
@@ -2521,7 +2404,7 @@ button i, .input-icon .icon i {
     color: var(--text-primary);
   }
 
-  /* TOAST — largura total */
+  /* TOAST */
   .toast-container {
     left: 10px !important;
     right: 10px !important;
@@ -2535,7 +2418,6 @@ button i, .input-icon .icon i {
     max-height: 85vh;
   }
 
-  /* BOTÕES PEQUENOS mais fáceis de tocar */
   .btn-pequeno {
     padding: 10px 14px !important;
     font-size: 13px !important;
@@ -2568,29 +2450,27 @@ button i, .input-icon .icon i {
     transition-duration: 0.01ms !important;
   }
 }
+
 /* ==========================================
    MODAIS – ADAPTAÇÃO MOBILE UNIFICADA
    ========================================== */
 @media (max-width: 600px) {
 
-  /* Overlay do modal */
   .modal-overlay {
-    align-items: flex-end;              /* ancora na base */
+    align-items: flex-end;
   }
 
-  /* Cartão do modal – vira bottom sheet */
   .modal-card {
     width: 100% !important;
     max-width: 100% !important;
     border-radius: 24px 24px 0 0 !important;
     margin: 0 !important;
-    max-height: 90vh;                  /* limite de altura */
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
     animation: slideUpMobile 0.3s ease !important;
   }
 
-  /* Exceção: modais fullscreen (agenda, legislação, monitoramento) continuam ocupando a tela toda */
   .modal-card--fullscreen {
     height: 100vh !important;
     max-height: 100vh !important;
@@ -2598,12 +2478,10 @@ button i, .input-icon .icon i {
     animation: fadeIn 0.2s ease !important;
   }
 
-  /* Cabeçalho do modal */
   .modal-header {
     padding: 12px 16px 0 !important;
   }
 
-  /* Alça de arrastar (indicador visual) */
   .modal-card::before {
     content: "";
     display: block;
@@ -2615,12 +2493,10 @@ button i, .input-icon .icon i {
     flex-shrink: 0;
   }
 
-  /* Esconder a alça em modais fullscreen */
   .modal-card--fullscreen::before {
     display: none;
   }
 
-  /* Corpo do modal – ocupa espaço restante e rola internamente */
   .modal-body {
     flex: 1;
     overflow-y: auto;
@@ -2628,7 +2504,6 @@ button i, .input-icon .icon i {
     padding: 16px 16px max(20px, var(--safe-bottom)) !important;
   }
 
-  /* Botões de ação – empilhados e largos */
   .modal-actions {
     flex-direction: column !important;
     gap: 10px !important;
@@ -2645,14 +2520,12 @@ button i, .input-icon .icon i {
     border-radius: 40px;
   }
 
-  /* Inputs e selects – sem zoom automático no iOS */
   .modal-body input,
   .modal-body select,
   .modal-body textarea {
     font-size: var(--font-base) !important;
   }
 
-  /* Botão de fechar (X) – maior e mais fácil de tocar */
   .close-btn {
     width: 48px;
     height: 48px;
@@ -2662,7 +2535,6 @@ button i, .input-icon .icon i {
     justify-content: center;
   }
 
-  /* Garante que modais aninhados (ex.: confirmação) também funcionem */
   .modal-overlay .modal-overlay {
     align-items: flex-end;
   }
@@ -2672,6 +2544,7 @@ button i, .input-icon .icon i {
     max-height: 80vh;
   }
 }
+
 /* ==========================================
    ELIMINAR ROLAGEM HORIZONTAL EM TUDO
    ========================================== */
@@ -2680,13 +2553,11 @@ html, body {
   overflow-x: hidden;
 }
 
-/* Força qualquer elemento a não estourar a largura da tela */
 *, *::before, *::after {
   max-width: 100%;
   box-sizing: border-box;
 }
 
-/* Exceção: permite que tooltips e dropdowns ultrapassem (eles são posicionados via position) */
 [data-tooltip]:before,
 [data-tooltip]:after,
 .dropdown-content,
@@ -2694,7 +2565,6 @@ html, body {
   max-width: none;
 }
 
-/* Tabelas – rolagem interna em vez de estourar */
 .tabela-alunos,
 table {
   display: block;
@@ -2703,7 +2573,6 @@ table {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Cabeçalho flexível – impede que os botões forcem largura extra */
 .header-actions {
   flex-wrap: nowrap;
   overflow-x: auto;
@@ -2711,16 +2580,13 @@ table {
   max-width: 100%;
 }
 
-/* Modal – sem largura fixa, usa todo o espaço disponível */
 .modal-card {
-  width: calc(100% - 32px) !important;   /* margem lateral de 16px cada */
-  max-width: 500px;                       /* limite para desktop */
+  width: calc(100% - 32px) !important;
+  max-width: 500px;
   margin: 0 auto;
 }
 
-/* Em mobile, ocupa 100% da largura (sem margem) */
 @media (max-width: 600px) {
-  /* Botão "Mostrar Alunos" */
   #btnToggleListaMobile {
     display: flex !important;
     justify-content: center;
@@ -2728,56 +2594,50 @@ table {
   }
 }
 
-/* Cards de aluno – sem tamanho mínimo fixo */
 #lista {
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); /* ajuste de 280 para 260 */
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 #lista > div {
-  min-width: 0;              /* remove qualquer min-width herdado */
+  min-width: 0;
 }
 
-/* Inputs e selects – sem largura forçada */
 input, select, textarea {
   max-width: 100%;
 }
 
-/* Corrige o menu dropdown horizontal – permite rolagem interna se necessário */
 .dropdown-horizontal {
   max-width: calc(100vw - 32px);
   overflow-x: auto;
 }
 
-/* O menu lateral mobile (já está em tela cheia, então só confirmar) */
 @media (max-width: 800px) {
   .dropdown-content.dropdown-horizontal {
     width: 82vw !important;
     max-width: 320px !important;
   }
 }
+
 /* ==========================================
    MOBILE – PÁGINA INICIAL SEM LISTA
    ========================================== */
 @media (max-width: 600px) {
 
-  /* Oculta lista de alunos, paginação e filtros por padrão */
   #lista,
   #paginacao,
   .filtros-container {
     display: none !important;
   }
 
-  /* Botão "Mostrar Alunos" (visível só no mobile) */
   #btnToggleListaMobile {
     display: flex !important;
     justify-content: center;
     margin: 12px 20px;
   }
 
-  /* Quando a lista está ativa, exibe tudo */
   body.lista-mobile-ativa #lista,
   body.lista-mobile-ativa #paginacao,
   body.lista-mobile-ativa .filtros-container {
-    display: flex !important;      /* para filtros */
+    display: flex !important;
   }
   body.lista-mobile-ativa #lista {
     display: grid !important;
@@ -2786,7 +2646,6 @@ input, select, textarea {
     display: flex !important;
   }
 
-  /* Header – layout simplificado */
   header {
     height: auto !important;
     min-height: 100px !important;
@@ -2795,7 +2654,6 @@ input, select, textarea {
     align-items: stretch !important;
   }
 
-  /* Linha superior: menu à esquerda, foto à direita */
   .header-right {
     flex-direction: row !important;
     align-items: center !important;
@@ -2803,12 +2661,10 @@ input, select, textarea {
     margin-left: 0 !important;
   }
 
-  /* Esconde os botões de ação do header (ficarão no menu lateral) */
   .header-actions-right {
     display: none !important;
   }
 
-  /* Botão do menu – maior e destacado */
   .dropdown .btn-icone.btn-menu-brilho {
     width: 48px !important;
     height: 48px !important;
@@ -2816,13 +2672,11 @@ input, select, textarea {
     margin-top: 0;
   }
 
-  /* Barra de busca ocupa toda a largura */
   #inputBuscaGlobal {
     width: 100% !important;
     margin: 8px 0 0;
   }
 
-  /* Foto de perfil menor */
   #fotoPerfilImg,
   #fotoPerfilIniciais {
     width: 40px !important;
@@ -2833,18 +2687,19 @@ input, select, textarea {
     font-size: 10px !important;
   }
   #perfilUsuarioTexto {
-    display: none; /* economiza espaço */
+    display: none;
   }
 }
+
 @media (min-width: 801px) {
   .hide-desktop { display: none !important; }
 }
+
 /* ==========================================
    MOBILE – INTERFACE CLEAN (APP-LIKE)
    ========================================== */
 @media (max-width: 600px) {
 
-  /* Oculta tudo que não é essencial na tela inicial */
   #lista,
   #paginacao,
   .filtros-container,
@@ -2855,7 +2710,6 @@ input, select, textarea {
     display: none !important;
   }
 
-  /* Header simplificado */
   header {
     height: auto !important;
     min-height: 70px !important;
@@ -2866,12 +2720,10 @@ input, select, textarea {
     gap: 8px !important;
   }
 
-  /* Esconde botões de ação do header (ficarão no menu ou dock) */
   .header-actions-right {
     display: none !important;
   }
 
-  /* Menu hambúrguer maior */
   .dropdown .btn-icone.btn-menu-brilho {
     width: 44px !important;
     height: 44px !important;
@@ -2879,7 +2731,6 @@ input, select, textarea {
     margin: 0 !important;
   }
 
-  /* Foto de perfil menor, alinhada à direita */
   .header-right {
     flex-direction: row !important;
     align-items: center !important;
@@ -2899,231 +2750,6 @@ input, select, textarea {
     display: none;
   }
 
-  /* Busca global */
-  #inputBuscaGlobal {
-    width: 100% !important;
-    margin: 0 !important;
-    order: 3;
-  }
-
-  /* Painel de métricas – compacto e horizontal com scroll */
-  #painel {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    gap: 10px !important;
-    padding: 10px 12px !important;
-    margin: 0 !important;
-    -webkit-overflow-scrolling: touch;
-  }
-  .painel-metricas {
-    display: contents !important;   /* remove o grid, usa o flex do #painel */
-  }
-  .metrica-card {
-    flex: 0 0 auto !important;
-    min-width: 120px !important;
-    padding: 12px 10px !important;
-    border-radius: 16px !important;
-    text-align: center !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  .metrica-valor {
-    font-size: 28px !important;
-  }
-  .metrica-titulo {
-    font-size: 12px !important;
-    margin-bottom: 4px !important;
-  }
-  .metrica-detalhe {
-    font-size: 11px !important;
-  }
-
-  /* Botão "Ver Alunos" */
-  #btnToggleListaMobile {
-    display: flex !important;
-    margin: 0 12px 8px;
-  }
-
-  /* Quando ativo, mostra lista e filtros */
-  body.lista-mobile-ativa #lista {
-    display: grid !important;
-    padding: 0 10px 20px !important;
-  }
-  body.lista-mobile-ativa #paginacao {
-    display: flex !important;
-    margin-bottom: 80px !important; /* espaço para o dock */
-  }
-  body.lista-mobile-ativa .filtros-container {
-    display: flex !important;
-    flex-direction: column;
-    padding: 10px;
-  }
-  body.lista-mobile-ativa #painel {
-    display: none !important; /* esconde métricas para dar espaço */
-  }
-
-  /* ---- DOCK INFERIOR (atalhos) ---- */
-  #dockMobile {
-    /*display: flex !important;*/
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--card-bg);
-    border-top: 1px solid var(--card-border);
-    padding: 8px 8px max(8px, var(--safe-bottom));
-    justify-content: space-around;
-    align-items: center;
-    z-index: 500;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
-  }
-  .dock-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    font-size: 10px;
-    color: var(--text-secondary);
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    padding: 4px 8px;
-    border-radius: 8px;
-    transition: background 0.2s;
-  }
-  .dock-item i {
-    font-size: 20px;
-    color: var(--btn-primary-bg);
-  }
-  .dock-item:active {
-    background: var(--card-border);
-  }
-
-  /* Espaço extra no fim da página para não sobrepor o dock */
-  body {
-    padding-bottom: 80px;
-  }
-}
-
-/* Esconde o dock em desktop */
-@media (min-width: 601px) {
-  #dockMobile {
-    display: none !important;
-  }
-}
-@media (max-width: 600px) {
-
-  /* Fundo verde no header, sem imagem */
-  header {
-    background: #2e7d32 !important; /* verde escuro */
-    background-image: none !important;
-  }
-
-  /* Esconde todos os botões de ação, exceto o botão Sair */
-  .header-actions-right > *:not(#btnSair) {
-    display: none !important;
-  }
-
-  /* Ajusta posição do botão Sair (fica à direita) */
-  #btnSair {
-    display: flex !important;
-    margin-left: auto;
-  }
-
-  /* Esconde o botão "Mostrar Alunos" (o que estava solto) */
-  #btnToggleListaMobile {
-    display: none !important;
-  }
-
-  /* (Opcional) Se o botão Sair precisar de um estilo mais visível */
-  #btnSair i {
-    font-size: 20px;
-  }
-
-  /* Garante que o dock fique sobreposto corretamente */
-  #dockMobile {
-    z-index: 500;
-  }
-}
-
-/* ==========================================
-   MOBILE – LAYOUT ÚNICO E LIMPO (≤600px)
-   ========================================== */
-@media (max-width: 600px) {
-
-  /* --- FUNDO DO HEADER (verde sólido, sem imagem) --- */
-  header {
-    background: #2e7d32 !important;
-    background-image: none !important;
-    height: auto !important;
-    min-height: 70px !important;
-    padding: 10px 12px !important;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  header::before {
-    display: none !important;   /* remove overlay da imagem */
-  }
-
-  /* --- ESCONDER TODOS OS BOTÕES DO HEADER, EXCETO SAIR --- */
-  #headerActionsRight > *:not(#btnSair) {
-    display: none !important;
-  }
-  #btnSair {
-    display: flex !important;
-    margin-left: auto;
-  }
-
-  /* --- ESCONDER O BOTÃO "MOSTRAR ALUNOS" SOLTO --- */
-  #btnToggleListaMobile {
-    display: none !important;
-  }
-
-  /* --- MENU HAMBÚRGUER MAIOR --- */
-  .dropdown .btn-icone.btn-menu-brilho {
-    width: 44px !important;
-    height: 44px !important;
-    font-size: 24px !important;
-    margin: 0 !important;
-  }
-
-  /* --- FOTO DE PERFIL MENOR, ALINHADA À DIREITA --- */
-  .header-right {
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 6px !important;
-    margin-left: 0 !important;
-  }
-  #fotoPerfilImg,
-  #fotoPerfilIniciais {
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 18px !important;
-  }
-  #emailUsuarioTexto {
-    font-size: 10px !important;
-  }
-  #perfilUsuarioTexto {
-    display: none;
-  }
-
-  /* --- OCULTA LISTA, FILTROS, MURAL (SÓ APARECEM QUANDO ATIVADOS) --- */
-  #lista,
-  #paginacao,
-  .filtros-container,
-  #muralComunicados,
-  #toggleVisualizacao,
-  #indicadorUltimaAtualizacao {
-    display: none !important;
-  }
-
-  /* --- MÉTRICAS COMPACTAS COM SCROLL HORIZONTAL --- */
   #painel {
     display: flex !important;
     flex-direction: row !important;
@@ -3158,12 +2784,207 @@ input, select, textarea {
   .metrica-detalhe {
     font-size: 11px !important;
   }
-  /* Esconde o card "Por escola" (fica muito largo) */
+
+  #btnToggleListaMobile {
+    display: flex !important;
+    margin: 0 12px 8px;
+  }
+
+  body.lista-mobile-ativa #lista {
+    display: grid !important;
+    padding: 0 10px 20px !important;
+  }
+  body.lista-mobile-ativa #paginacao {
+    display: flex !important;
+    margin-bottom: 80px !important;
+  }
+  body.lista-mobile-ativa .filtros-container {
+    display: flex !important;
+    flex-direction: column;
+    padding: 10px;
+  }
+  body.lista-mobile-ativa #painel {
+    display: none !important;
+  }
+
+  /* ---- DOCK INFERIOR (atalhos) ---- */
+  #dockMobile {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-bg);
+    border-top: 1px solid var(--card-border);
+    padding: 8px 8px max(8px, var(--safe-bottom));
+    justify-content: space-around;
+    align-items: center;
+    z-index: 500;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+  }
+  .dock-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    padding: 4px 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .dock-item i {
+    font-size: 20px;
+    color: var(--btn-primary-bg);
+  }
+  .dock-item:active {
+    background: var(--card-border);
+  }
+
+  body {
+    padding-bottom: 80px;
+  }
+}
+
+@media (min-width: 601px) {
+  #dockMobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 600px) {
+
+  header {
+    background: #2e7d32 !important;
+    background-image: none !important;
+  }
+
+  .header-actions-right > *:not(#btnSair) {
+    display: none !important;
+  }
+
+  #btnSair {
+    display: flex !important;
+    margin-left: auto;
+  }
+
+  #btnToggleListaMobile {
+    display: none !important;
+  }
+
+  #btnSair i {
+    font-size: 20px;
+  }
+
+  #dockMobile {
+    z-index: 500;
+  }
+}
+
+@media (max-width: 600px) {
+
+  header {
+    background: #2e7d32 !important;
+    background-image: none !important;
+    height: auto !important;
+    min-height: 70px !important;
+    padding: 10px 12px !important;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  header::before {
+    display: none !important;
+  }
+
+  #headerActionsRight > *:not(#btnSair) {
+    display: none !important;
+  }
+  #btnSair {
+    display: flex !important;
+    margin-left: auto;
+  }
+
+  #btnToggleListaMobile {
+    display: none !important;
+  }
+
+  .dropdown .btn-icone.btn-menu-brilho {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 24px !important;
+    margin: 0 !important;
+  }
+
+  .header-right {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin-left: 0 !important;
+  }
+  #fotoPerfilImg,
+  #fotoPerfilIniciais {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 18px !important;
+  }
+  #emailUsuarioTexto {
+    font-size: 10px !important;
+  }
+  #perfilUsuarioTexto {
+    display: none;
+  }
+
+  #lista,
+  #paginacao,
+  .filtros-container,
+  #muralComunicados,
+  #toggleVisualizacao,
+  #indicadorUltimaAtualizacao {
+    display: none !important;
+  }
+
+  #painel {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 10px !important;
+    padding: 10px 12px !important;
+    margin: 0 !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .painel-metricas {
+    display: contents !important;
+  }
+  .metrica-card {
+    flex: 0 0 auto !important;
+    min-width: 120px !important;
+    padding: 12px 10px !important;
+    border-radius: 16px !important;
+    text-align: center !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .metrica-valor {
+    font-size: 28px !important;
+  }
+  .metrica-titulo {
+    font-size: 12px !important;
+    margin-bottom: 4px !important;
+  }
+  .metrica-detalhe {
+    font-size: 11px !important;
+  }
   .metrica-escola {
     display: none !important;
   }
 
-  /* --- MODAIS: BOTTOM SHEET --- */
   .modal-overlay {
     align-items: flex-end;
   }
@@ -3196,9 +3017,7 @@ input, select, textarea {
     font-size: 16px !important;
   }
 
-  /* --- DOCK INFERIOR (FIXO) --- */
   #dockMobile {
-    /*display: flex !important;*/
     position: fixed;
     bottom: 0;
     left: 0;
@@ -3227,12 +3046,10 @@ input, select, textarea {
     color: var(--btn-primary-bg);
   }
 
-  /* --- ESPAÇO PARA O DOCK NO FINAL DA PÁGINA --- */
   body {
     padding-bottom: 80px;
   }
 
-  /* --- LISTA ATIVA (QUANDO "ALUNOS" É TOCADO NO DOCK) --- */
   body.lista-mobile-ativa #lista {
     display: grid !important;
     padding: 0 10px 20px !important;
@@ -3250,11 +3067,11 @@ input, select, textarea {
     display: none !important;
   }
 
-  /* Remove regras conflitantes que reexibiam os botões ou a lista */
   .header-actions-right {
     display: none !important;
   }
 }
+
 #btnSair {
   background-color: transparent !important;
   color: #ef4444 !important;
@@ -3267,7 +3084,7 @@ input, select, textarea {
 #headerActionsRight {
   display: flex !important;
   align-items: center;
-  height: 44px;               /* mesma altura do botão menu */
+  height: 44px;
   margin: 0;
   padding: 0;
 }
@@ -3278,9 +3095,11 @@ input, select, textarea {
   height: auto;
   align-self: center;
 }
+
 .doc-icon.nao-declarado i {
-  color: #9ca3af; /* cinza neutro */
+  color: #9ca3af;
 }
+
 /* Bloqueia rolagem da página quando modal fullscreen está aberto */
 body.modal-fullscreen-aberto {
   overflow: hidden !important;
@@ -3324,21 +3143,6 @@ body.modal-fullscreen-aberto {
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
 }
 
-/* Modo escuro */
-[data-theme="dark"] .usuario-card input[type="checkbox"] {
-  background: #1e293b;
-  border-color: #475569;
-}
-
-[data-theme="dark"] .usuario-card input[type="checkbox"]:checked {
-  background: #3b82f6;
-  border-color: #60a5fa;
-}
-
-[data-theme="dark"] .usuario-card.ato-selecionado {
-  background-color: #1e3a8a !important;
-  border-left-color: #60a5fa !important;
-}
 /* Filtros dos Atos – lado a lado e compactos */
 #filtrosAtosContainer select {
   font-size: 13px;
@@ -3351,10 +3155,10 @@ body.modal-fullscreen-aberto {
   border: 1px solid var(--input-border);
 }
 
-/* Impede quebra de linha nos filtros */
 #modalLegalizacao .modal-body > div:first-child {
   flex-wrap: nowrap;
 }
+
 /* ==========================================
    ATOS – CARDS EM MÚLTIPLAS COLUNAS
    ========================================== */
@@ -3363,7 +3167,7 @@ body.modal-fullscreen-aberto {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 12px;
   align-items: start;
-  padding-right: 8px; /* espaço para a barra de rolagem */
+  padding-right: 8px;
 }
 
 #listaAtosContainer .usuario-card {
@@ -3372,7 +3176,6 @@ body.modal-fullscreen-aberto {
   box-sizing: border-box;
 }
 
-/* Ajuste para telas menores (ex.: celular na horizontal) */
 @media (max-width: 500px) {
   #listaAtosContainer {
     grid-template-columns: 1fr;
