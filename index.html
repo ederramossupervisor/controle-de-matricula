@@ -2104,10 +2104,21 @@
     <script src="js/dados-escolas.js"></script>
     <script src="js/monitoramento.js"></script>
     <script>
+      // Força a atualização do Service Worker quando detectar nova versão
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js')
-          .then(reg => console.log('✅ Service Worker registrado', reg.scope))
-          .catch(err => console.error('❌ Erro no Service Worker', err));
+          .then(reg => {
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'activated') {
+                  console.log('🔄 Novo Service Worker ativado. Recarregando...');
+                  window.location.reload();
+                }
+              });
+            });
+          })
+          .catch(err => console.error('SW erro:', err));
       }
     </script>
 </body>
