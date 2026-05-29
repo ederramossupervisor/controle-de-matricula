@@ -1,5 +1,5 @@
 let ultimaAcao = null;
-
+let atosSelecionados = new Set();
 // =========================
 // COMUNICAÇÃO COM A PLANILHA (GOOGLE SHEETS VIA API)
 // =========================
@@ -62,6 +62,14 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       window.escolasSupervisionadas = [];
     }
 
+    // Dentro de continuarCarregamentoAlunos, após a definição de window.escolasSupervisionadas, adicione:
+    const selectHistoricoEscola = document.getElementById('historicoFiltroEscola');
+    if (selectHistoricoEscola) {
+      selectHistoricoEscola.innerHTML = '<option value="">Todas as escolas</option>';
+      const escolas = getEscolasPermitidas();
+      escolas.forEach(esc => selectHistoricoEscola.appendChild(new Option(esc, esc)));
+    }
+
     perfilUsuario = dados.perfil;
     // Exibir o nome do perfil abaixo da foto
     const perfilSpan = document.getElementById('perfilUsuarioTexto');
@@ -112,6 +120,10 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     
     renderLista(dadosGlobais);
     renderizarPaginacao(totalPaginas, totalRegistros);
+
+    if (typeof aplicarEstadoInicialMobile === 'function') {
+      aplicarEstadoInicialMobile();
+    }
 
     document.getElementById("login").style.display = "none";
     document.getElementById("app").style.display = "block";
@@ -220,29 +232,35 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       btnAprovacao.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'block' : 'none';
     }
 
+    // 🔥 NOVO: Exibir botão de Monitoramento para Supervisor
+    const btnMonitoramento = document.getElementById('btnMonitoramento');
+    if (btnMonitoramento) {
+      btnMonitoramento.style.display = (perfilUsuario === 'SUPERVISOR') ? 'inline-block' : 'none';
+    }
+
     // =========================
     // OCULTAR SEÇÕES VAZIAS DO MENU
     // =========================
     function secaoTemBotoesVisiveis(colunaId) {
-  const coluna = document.getElementById(colunaId);
-  if (!coluna) return false;
-  const botoes = coluna.querySelectorAll('button');
-  for (const btn of botoes) {
-    if (btn.style.display !== 'none') return true;
-  }
-  return false;
-}
+      const coluna = document.getElementById(colunaId);
+      if (!coluna) return false;
+      const botoes = coluna.querySelectorAll('button');
+      for (const btn of botoes) {
+        if (btn.style.display !== 'none') return true;
+      }
+      return false;
+    }
 
     function esconderColunaMenu(colunaId) {
-  const coluna = document.getElementById(colunaId);
-  if (coluna) coluna.style.display = 'none';
-}
+      const coluna = document.getElementById(colunaId);
+      if (coluna) coluna.style.display = 'none';
+    }
 
-if (!secaoTemBotoesVisiveis('menuColunaAlunos')) esconderColunaMenu('menuColunaAlunos');
-if (!secaoTemBotoesVisiveis('menuColunaDocs')) esconderColunaMenu('menuColunaDocs');
-if (!secaoTemBotoesVisiveis('menuColunaGestao')) esconderColunaMenu('menuColunaGestao');
-if (!secaoTemBotoesVisiveis('menuColunaPlanoTatico')) esconderColunaMenu('menuColunaPlanoTatico');
-if (!secaoTemBotoesVisiveis('menuColunaAdmin')) esconderColunaMenu('menuColunaAdmin');
+    if (!secaoTemBotoesVisiveis('menuColunaAlunos')) esconderColunaMenu('menuColunaAlunos');
+    if (!secaoTemBotoesVisiveis('menuColunaDocs')) esconderColunaMenu('menuColunaDocs');
+    if (!secaoTemBotoesVisiveis('menuColunaGestao')) esconderColunaMenu('menuColunaGestao');
+    if (!secaoTemBotoesVisiveis('menuColunaPlanoTatico')) esconderColunaMenu('menuColunaPlanoTatico');
+    if (!secaoTemBotoesVisiveis('menuColunaAdmin')) esconderColunaMenu('menuColunaAdmin');
 
     esconderLoading();
   });
@@ -278,7 +296,16 @@ async function carregarTurmas(escola = "") {
     esconderLoading();
   });
 }
-
+function aplicarEstadoInicialMobile() {
+  if (window.innerWidth <= 600) {
+    const lista = document.getElementById('lista');
+    const paginacao = document.getElementById('paginacao');
+    const filtros = document.querySelector('.filtros-container');
+    if (lista) lista.style.display = 'none';
+    if (paginacao) paginacao.style.display = 'none';
+    if (filtros) filtros.style.display = 'none';
+  }
+}
 async function carregarTurmasParaFiltro() {
   const selectTurma = document.getElementById("filtroTurma");
   if (!selectTurma) return;
@@ -408,7 +435,7 @@ async function carregarAtos() {
   if (status) url += `&filtroStatus=${encodeURIComponent(status)}`;
   
   jsonp(url, function(atos) {
-    atosGlobais = atos;
+    atosGlobais = atos;   // <-- importante
     renderizarListaAtos(atos);
     esconderLoading();
   });
@@ -419,6 +446,8 @@ async function salvarAto() {
   const escola = document.getElementById("atoEscola").value;
   const tipoAto = document.getElementById("atoTipo").value;
   const cursoEtapa = document.getElementById("atoCursoEtapa").value;
+  const fundamentacao = document.getElementById("atoFundamentacao").value;
+  const cursoTecnico = document.getElementById("atoCursoTecnico").value;
   const numeroAto = document.getElementById("atoNumero").value;
   const dataPublicacao = document.getElementById("atoDataPublicacao").value;
   const dataHomologacao = document.getElementById("atoDataHomologacao").value;
@@ -427,7 +456,7 @@ async function salvarAto() {
   const arquivoInput = document.getElementById("atoArquivo");
   const file = arquivoInput.files[0];
 
-  if (!escola || !tipoAto || !numeroAto || !dataPublicacao || !dataHomologacao) {
+  if (!escola || !tipoAto || !cursoEtapa || !numeroAto || !dataPublicacao || !dataHomologacao) {
     mostrarToast("Preencha todos os campos obrigatórios.", "warning");
     return;
   }
@@ -460,6 +489,8 @@ async function salvarAto() {
       escola: escola,
       tipoAto: tipoAto,
       cursoEtapa: cursoEtapa,
+      fundamentacao: fundamentacao,
+      cursoTecnico: cursoTecnico,
       numeroAto: numeroAto,
       dataPublicacao: dataPublicacao,
       dataHomologacao: dataHomologacao,
@@ -800,6 +831,7 @@ async function salvarDadosAluno() {
   const edEspecial = document.getElementById("editEdEspecial").checked;
   const observacoes = document.getElementById("observacoesAluno")?.value || "";
   const cpfNumero = document.getElementById("editCpfNumero")?.value.trim() || "";
+  const racaCor = document.getElementById("editRacaCor")?.value || ""; // NOVO
   
   if (!nome) {
     mostrarToast("Nome do aluno é obrigatório.", "warning");
@@ -827,11 +859,12 @@ async function salvarDadosAluno() {
     edEspecial: edEspecial,
     observacoes: observacoes,
     cpfNumero: cpfNumero,
+    racaCor: racaCor,       // NOVO
     email: emailUsuario
   };
   
   postSemResposta(dados, "Dados atualizados com sucesso!", () => {
-    registrarUltimaAcao('Dados de aluno atualizados');   // 🔥
+    registrarUltimaAcao('Dados de aluno atualizados');
 
     dadosAlunoAtual.ALUNO = nome;
     dadosAlunoAtual.ID = idAluno;
@@ -841,6 +874,7 @@ async function salvarDadosAluno() {
     dadosAlunoAtual.ED_ESPECIAL = edEspecial;
     dadosAlunoAtual.OBSERVACOES = observacoes;
     dadosAlunoAtual.CPF_NUMERO = cpfNumero;
+    dadosAlunoAtual.RACA_COR = racaCor;   // atualiza localmente
     
     document.getElementById("detalhesTitulo").textContent = nome;
     
@@ -1153,11 +1187,13 @@ function processarCSV() {
         
         alunosImportados = dados.map(linha => {
           const dataMatricula = linha['Aluno: Data de matrícula'] || '';
-          const rawDef = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotaçăo'] || '').toLowerCase();
+          const rawDef = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotação'] || '').toLowerCase();
           const edEspecial = rawDef.includes('sim');
-          
+          const racaCorBruta = linha['Aluno: Raça'] || '';
+          const racaCor = normalizarRacaCor(racaCorBruta);  // NOVO
+
           return {
-            id: linha['id'] || '',               // ← ADICIONE ESTA LINHA
+            id: linha['id'] || '',
             nome: linha['Aluno: Nome'] || '',
             responsavel: linha['Aluno: Nome do responsável'] || '',
             telefone: extrairPrimeiroTelefone(linha['Aluno: Telefones']),
@@ -1170,6 +1206,7 @@ function processarCSV() {
             certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
             rg: linha['Aluno: Identidade'] || '',
             residencia: linha['Endereço: Código de instalação elétrica'] || '',
+            racaCor: racaCor,                           // NOVO
             observacaoExtra: ''
           };
         }).filter(a => a.nome && a.escola);
@@ -1555,11 +1592,12 @@ function processarCSVPromocao() {
         }
 
         alunosPromocao = dados.map(linha => {
-          // Captura o ID (a primeira coluna do CSV)
           const id = linha['id'] ? linha['id'].toString().trim() : '';
           const nome = linha['Aluno: Nome'] || '';
           const escola = linha['Escola: Nome'] || '';
           const turma = normalizarTexto(linha['Turma: Nome'] || '');
+          const racaCorBruta = linha['Aluno: Raça'] || '';
+          const racaCor = normalizarRacaCor(racaCorBruta);  // NOVO
 
           return {
             id: id,
@@ -1573,7 +1611,8 @@ function processarCSVPromocao() {
             sus: linha['Aluno: Cartão do SUS'] || '',
             certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
             rg: linha['Aluno: Identidade'] || '',
-            residencia: linha['Endereço: Código de instalação elétrica'] || ''
+            residencia: linha['Endereço: Código de instalação elétrica'] || '',
+            racaCor: racaCor                            // NOVO
           };
         }).filter(a => a.id && a.nome && a.escola);
 
@@ -1694,8 +1733,11 @@ function processarCSVAtualizar() {
           const nome = linha['Aluno: Nome'] || '';
           const escola = linha['Escola: Nome'] || '';
           const turma = normalizarTexto(linha['Turma: Nome'] || '');
-          const rawDef = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotaçăo'] || '').toLowerCase();
+          const rawDef = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotação'] || '').toLowerCase();
           const edEspecial = rawDef.includes('sim');
+          const racaCorBruta = linha['Aluno: Raça'] || '';
+          const racaCor = normalizarRacaCor(racaCorBruta);  // NOVO
+
           return {
             id, nome,
             responsavel: linha['Aluno: Nome do responsável'] || '',
@@ -1707,7 +1749,8 @@ function processarCSVAtualizar() {
             certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
             rg: linha['Aluno: Identidade'] || '',
             residencia: linha['Endereço: Código de instalação elétrica'] || '',
-            edEspecial: edEspecial
+            edEspecial: edEspecial,
+            racaCor: racaCor                            // NOVO
           };
         }).filter(a => a.id && a.nome && a.escola);
 
@@ -1888,5 +1931,60 @@ async function aceitarConsentimento() {
   postSemResposta(dados, 'Consentimento registrado!', () => {
     document.getElementById('modalConsentimento').style.display = 'none';
     carregarAlunos();
+  });
+}
+function preencherCursoEtapa() {
+  const select = document.getElementById('atoCursoEtapa');
+  select.innerHTML = '<option value="">Curso/Etapa</option>';
+  CURSOS_ETAPAS.forEach(curso => {
+    const opt = document.createElement('option');
+    opt.value = curso;
+    opt.textContent = curso;
+    select.appendChild(opt);
+  });
+}
+
+function atualizarFundamentacoes() {
+  const cursoSelecionado = document.getElementById('atoCursoEtapa').value;
+  const wrapper = document.getElementById('fundamentacaoWrapper');
+  const select = document.getElementById('atoFundamentacao');
+  const cursoTecnicoWrapper = document.getElementById('cursoTecnicoWrapper');
+
+  if (!cursoSelecionado) {
+    wrapper.style.display = 'none';
+    cursoTecnicoWrapper.style.display = 'none';
+    return;
+  }
+
+  // Preencher fundamentações
+  const fundamentacoes = FUNDAMENTACOES_POR_CURSO[cursoSelecionado] || [];
+  select.innerHTML = '<option value="">Selecione a fundamentação legal</option>';
+  fundamentacoes.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f;
+    opt.textContent = f;
+    select.appendChild(opt);
+  });
+  wrapper.style.display = 'block';
+
+  // Mostrar campo de curso técnico se for educação profissional
+  if (cursoSelecionado.toUpperCase().includes('EDUCAÇÃO PROFISSIONAL')) {
+    cursoTecnicoWrapper.style.display = 'block';
+    preencherCursosTecnicos(cursoSelecionado);
+  } else {
+    cursoTecnicoWrapper.style.display = 'none';
+  }
+}
+
+function preencherCursosTecnicos(cursoEtapa) {
+  const select = document.getElementById('atoCursoTecnico');
+  select.innerHTML = '<option value="">Nome do curso técnico (opcional)</option>';
+  Object.keys(CURSOS_TECNICOS).forEach(nomeCurso => {
+    if (CURSOS_TECNICOS[nomeCurso].includes(cursoEtapa)) {
+      const opt = document.createElement('option');
+      opt.value = nomeCurso;
+      opt.textContent = nomeCurso;
+      select.appendChild(opt);
+    }
   });
 }
