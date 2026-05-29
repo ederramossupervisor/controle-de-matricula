@@ -22,7 +22,7 @@ function abrirAluno(row) {
 }
 
 function abrirModalDetalhes(aluno) {
-  // 🔒 Trava COMPLETAMENTE a rolagem da página (técnica body scroll lock)
+  // 🔒 Trava rolagem da página
   document.body.style.position = 'fixed';
   document.body.style.width = '100%';
   document.body.style.top = `-${window.scrollY}px`;
@@ -31,14 +31,14 @@ function abrirModalDetalhes(aluno) {
   
   document.getElementById("detalhesTitulo").textContent = aluno.ALUNO;
   
-  // ---- Exibe a foto do aluno (se existir) ----
+  // Exibe foto (se existir)
   if (aluno.FOTO) {
     exibirFotoAluno(aluno.FOTO);
   } else {
     exibirFotoAluno(null);
   }
   
-  // ---- Monta a lista de checkboxes de documentos ----
+  // Monta checkboxes de documentos (código existente...)
   let html = `
     <p style="margin-top:0; color:#64748b; display:flex; gap:12px;">
       <span><i class="fas fa-school"></i> ${aluno.ESCOLA}</span>
@@ -135,6 +135,10 @@ function abrirModalDetalhes(aluno) {
   
   document.getElementById("editCpfNumero").value = aluno.CPF_NUMERO || '';
   document.getElementById("editCpfNumero").disabled = isPedagogico;
+
+  // NOVO CAMPO RAÇA/COR
+  document.getElementById("editRacaCor").value = aluno.RACA_COR || "";
+  document.getElementById("editRacaCor").disabled = isPedagogico;
   
   document.getElementById("btnSalvarInfoAluno").style.display = isPedagogico ? 'none' : '';
   document.getElementById("btnSalvarDetalhes").style.display = isPedagogico ? 'none' : '';
@@ -352,27 +356,41 @@ function fecharModalLegalizacao() {
   document.getElementById("modalLegalizacao").style.display = "none";
 }
 
+function preencherSelectEscolaAto() {
+  const select = document.getElementById('atoEscola');
+  if (!select) return;
+  const escolas = getEscolasPermitidas();
+  select.innerHTML = '<option value="">Selecione a escola</option>';
+  escolas.forEach(esc => {
+    const opt = document.createElement('option');
+    opt.value = esc;
+    opt.textContent = esc;
+    select.appendChild(opt);
+  });
+}
+
 function abrirFormAto() {
   document.getElementById("formAtoTitulo").textContent = "Novo Ato Autorizativo";
   document.getElementById("atoId").value = "";
   document.getElementById("atoEscola").value = "";
   document.getElementById("atoTipo").value = "";
   document.getElementById("atoCursoEtapa").value = "";
+  document.getElementById("atoFundamentacao").value = "";
+  document.getElementById("atoCursoTecnico").value = "";
   document.getElementById("atoNumero").value = "";
   document.getElementById("atoDataPublicacao").value = "";
   document.getElementById("atoValidadeAnos").value = "5";
   document.getElementById("atoObservacoes").value = "";
   document.getElementById("atoArquivo").value = "";
   document.getElementById("atoDataHomologacao").value = "";
-  const selectEscola = document.getElementById("atoEscola");
-  const escolas = getEscolasPermitidas();
-  selectEscola.innerHTML = '<option value="">Selecione a escola</option>';
-  escolas.forEach(esc => {
-    const opt = document.createElement("option");
-    opt.value = esc;
-    opt.textContent = esc;
-    selectEscola.appendChild(opt);
-  });
+  
+  // Esconde os campos de curso (aparecem só se tipo for Ato de curso)
+  document.getElementById('atoCursoEtapa').closest('.input-icon').style.display = 'none';
+  document.getElementById('fundamentacaoWrapper').style.display = 'none';
+  document.getElementById('cursoTecnicoWrapper').style.display = 'none';
+  
+  preencherCursoEtapa();
+  preencherSelectEscolaAto();
   document.getElementById("modalFormAto").style.display = "flex";
 }
 
@@ -387,13 +405,22 @@ function editarAto(id) {
   document.getElementById("atoId").value = ato.id;
   document.getElementById("atoEscola").value = ato.escola;
   document.getElementById("atoTipo").value = ato.tipoAto;
-  document.getElementById("atoCursoEtapa").value = ato.cursoEtapa || "";
+  document.getElementById("atoCursoEtapa").value = ato.cursoEtapa;
+  document.getElementById("atoFundamentacao").value = ato.fundamentacao || "";
+  document.getElementById("atoCursoTecnico").value = ato.cursoTecnico || "";
   document.getElementById("atoNumero").value = ato.numeroAto;
   document.getElementById("atoDataPublicacao").value = ato.dataPublicacao.split('T')[0];
   document.getElementById("atoValidadeAnos").value = ato.validadeAnos;
   document.getElementById("atoObservacoes").value = ato.observacoes || "";
   document.getElementById("atoArquivo").value = "";
   document.getElementById("atoDataHomologacao").value = ato.dataHomologacao ? ato.dataHomologacao.split('T')[0] : "";
+  
+  preencherCursoEtapa();
+  preencherSelectEscolaAto();
+  
+  // Exibe os campos de curso se for ato de curso
+  atualizarVisibilidadeCurso();
+  
   document.getElementById("modalFormAto").style.display = "flex";
 }
 
@@ -744,6 +771,8 @@ function voltarApp() {
   if (tel) tel.value = "";
   const edEspCheck = document.getElementById("alunoEdEspecial");
   if (edEspCheck) edEspCheck.checked = false;
+  const racaCad = document.getElementById('racaCorCadastro');
+  if (racaCad) racaCad.value = "";
 }
 async function salvarAluno() {
   const nomeInput = document.getElementById("nomeAluno");
@@ -754,6 +783,7 @@ async function salvarAluno() {
   const dataMatriculaInput = document.getElementById("dataMatricula").value;
   const observacoes = document.getElementById("observacoesNovoAluno")?.value || "";
   const cpfNumero = document.getElementById("cpfNumeroCadastro")?.value || "";
+  const racaCor = document.getElementById("racaCorCadastro")?.value || ""; // NOVO
 
   const nome = nomeInput ? nomeInput.value.trim() : "";
   const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
@@ -792,11 +822,12 @@ async function salvarAluno() {
     edEspecial: edEspecial,
     observacoes: observacoes,
     cpfNumero: cpfNumero,
+    racaCor: racaCor,       // NOVO
     email: emailUsuario
   };
 
   postSemResposta(dados, "Aluno cadastrado com sucesso!", () => {
-    registrarUltimaAcao('Novo aluno cadastrado');   // 🔥
+    registrarUltimaAcao('Novo aluno cadastrado');
 
     if (nomeInput) nomeInput.value = "";
     if (responsavelInput) responsavelInput.value = "";
@@ -805,8 +836,10 @@ async function salvarAluno() {
     document.getElementById("dataMatricula").value = "";
     const obsField = document.getElementById("observacoesNovoAluno");
     if (obsField) obsField.value = "";
-    const cpfField = document.getElementById("cpfNumero");
+    const cpfField = document.getElementById("cpfNumeroCadastro");
     if (cpfField) cpfField.value = "";
+    const racaField = document.getElementById("racaCorCadastro");
+    if (racaField) racaField.value = "";   // limpa
 
     document.getElementById("novoAluno").style.display = "none";
     document.getElementById("lista").style.display = "";
@@ -905,15 +938,32 @@ function toggleSenha(iconElement) {
 // ------ MENU DROPDOWN (USUÁRIO NO HEADER) ------
 function toggleMenu() {
   const menu = document.getElementById("menuDropdown");
-  // Verifica se o menu está realmente visível (considerando CSS inline e classes)
-  const style = window.getComputedStyle(menu);
-  const estaVisivel = style.display !== 'none' && menu.style.display !== 'none';
-
-  if (estaVisivel) {
-    menu.style.display = "none";
+  const overlay = document.getElementById("menuOverlay");
+  const header = document.querySelector("header");
+  
+  if (window.innerWidth <= 800) {
+    // Mobile: usa classe e ajusta z-index do header
+    menu.style.display = '';
+    const aberto = menu.classList.contains("menu-aberto");
+    
+    if (aberto) {
+      // Fechar
+      menu.classList.remove("menu-aberto");
+      overlay.classList.remove("ativo");
+      if (header) header.style.zIndex = '50';        // restaura padrão
+    } else {
+      // Abrir
+      menu.classList.add("menu-aberto");
+      overlay.classList.add("ativo");
+      if (header) header.style.zIndex = '10002';    // sobe acima do overlay
+    }
   } else {
-    // Remove qualquer estilo inline para que o CSS (flex-direction etc.) funcione
-    menu.style.display = "";
+    // Desktop: mantém lógica original
+    menu.classList.remove("menu-aberto");
+    overlay.classList.remove("ativo");
+    if (header) header.style.zIndex = '50';
+    const estaVisivel = menu.style.display !== "none" && menu.style.display !== "";
+    menu.style.display = estaVisivel ? "none" : "flex";
   }
 }
 // ------ COPIAR CÓDIGO DO PROCESSO ------
@@ -1932,4 +1982,350 @@ function atualizarCampoNomeTitular() {
   } else {
     campoNome.style.display = 'block';
   }
+}
+
+// Em modals.js, adicionar ou substituir:
+
+function abrirModalMonitoramento() {
+  document.body.style.overflow = 'hidden';
+  document.getElementById('modalMonitoramento').style.display = 'flex';
+  preencherSelectEscolaMonitoramento();
+  mostrarAbaMonitoramento('nova');
+}
+
+function fecharModalMonitoramento() {
+  document.body.style.overflow = '';
+  document.getElementById('modalMonitoramento').style.display = 'none';
+}
+
+function mostrarAbaMonitoramento(aba) {
+  const novaAba = document.getElementById('novaVisitaAba');
+  const histAba = document.getElementById('historicoVisitasAba');
+  if (aba === 'nova') {
+    novaAba.style.display = 'block';
+    histAba.style.display = 'none';
+    if (document.getElementById('monitoramentoEscola').value) renderizarChecklist();
+  } else {
+    novaAba.style.display = 'none';
+    histAba.style.display = 'block';
+    carregarListaVisitas();
+  }
+}
+function toggleListaAlunosMobile() {
+  const ativo = document.body.classList.toggle('lista-mobile-ativa');
+  const lista = document.getElementById('lista');
+  const paginacao = document.getElementById('paginacao');
+  const filtros = document.querySelector('.filtros-container');
+  const dockItem = document.getElementById('dockToggleAlunos');
+
+  if (ativo) {
+    if (dockItem) {
+      dockItem.querySelector('i').className = 'fas fa-times';
+      dockItem.querySelector('span').textContent = 'Ocultar';
+    }
+    if (lista) lista.style.display = '';
+    if (paginacao) paginacao.style.display = '';
+    if (filtros) filtros.style.display = '';
+    if (typeof carregarAlunos === 'function' && (!dadosGlobais || dadosGlobais.length === 0)) {
+      carregarAlunos();
+    }
+  } else {
+    if (dockItem) {
+      dockItem.querySelector('i').className = 'fas fa-users';
+      dockItem.querySelector('span').textContent = 'Alunos';
+    }
+    if (lista) lista.style.display = 'none';
+    if (paginacao) paginacao.style.display = 'none';
+    if (filtros) filtros.style.display = 'none';
+  }
+}
+
+function aplicarEstadoInicialMobile() {
+  if (window.innerWidth <= 600) {
+    const lista = document.getElementById('lista');
+    const paginacao = document.getElementById('paginacao');
+    const filtros = document.querySelector('.filtros-container');
+    if (lista) lista.style.display = 'none';
+    if (paginacao) paginacao.style.display = 'none';
+    if (filtros) filtros.style.display = 'none';
+  }
+}
+function abrirModalExportacaoAtos() {
+  document.getElementById('modalExportacaoAtos').style.display = 'flex';
+  preencherSelectEscolaExportAto();
+  preencherCursoEtapaExport();
+}
+
+function fecharModalExportacaoAtos() {
+  document.getElementById('modalExportacaoAtos').style.display = 'none';
+}
+
+function preencherSelectEscolaExportAto() {
+  const select = document.getElementById('exportAtoEscola');
+  select.innerHTML = '<option value="">Selecione a escola</option>';
+  const escolas = getEscolasPermitidas();
+  escolas.forEach(esc => select.appendChild(new Option(esc, esc)));
+}
+
+function preencherCursoEtapaExport() {
+  const select = document.getElementById('exportAtoCursoEtapa');
+  select.innerHTML = '<option value="">Todos os cursos/etapas</option>';
+  CURSOS_ETAPAS.forEach(curso => select.appendChild(new Option(curso, curso)));
+}
+
+function atualizarCursoTecnicoExport() {
+  const cursoEtapa = document.getElementById('exportAtoCursoEtapa').value;
+  const wrapper = document.getElementById('exportCursoTecnicoWrapper');
+  if (cursoEtapa && cursoEtapa.toUpperCase().includes('EDUCAÇÃO PROFISSIONAL')) {
+    wrapper.style.display = 'block';
+    preencherCursosTecnicosExport(cursoEtapa);
+  } else {
+    wrapper.style.display = 'none';
+  }
+}
+
+function preencherCursosTecnicosExport(cursoEtapa) {
+  const select = document.getElementById('exportAtoCursoTecnico');
+  select.innerHTML = '<option value="">Todos os cursos técnicos</option>';
+  Object.keys(CURSOS_TECNICOS).forEach(nomeCurso => {
+    if (CURSOS_TECNICOS[nomeCurso].includes(cursoEtapa)) {
+      select.appendChild(new Option(nomeCurso, nomeCurso));
+    }
+  });
+}
+
+function exportarRelatorioAtos() {
+  const escola = document.getElementById('exportAtoEscola').value;
+  const cursoEtapa = document.getElementById('exportAtoCursoEtapa').value;
+  const cursoTecnico = document.getElementById('exportAtoCursoTecnico')?.value || '';
+
+  if (!escola) {
+    mostrarToast('Selecione a escola.', 'warning');
+    return;
+  }
+
+  mostrarLoading();
+  let url = `${API_URL}?tipo=atos&email=${emailUsuario}`;
+  url += `&filtroEscola=${encodeURIComponent(escola)}`;
+  if (cursoEtapa) url += `&cursoEtapa=${encodeURIComponent(cursoEtapa)}`;
+  if (cursoTecnico) url += `&cursoTecnico=${encodeURIComponent(cursoTecnico)}`;
+
+  jsonp(url, function(atos) {
+    esconderLoading();
+    if (!atos.length) {
+      mostrarToast('Nenhum ato encontrado para os filtros selecionados.', 'warning');
+      return;
+    }
+
+    let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Atos Autorizativos</title>`;
+    html += `<style>
+      body { font-family: 'Segoe UI', Arial, sans-serif; margin: 30px; color: #333; }
+      h1 { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; }
+      .info { margin-bottom: 20px; }
+      table { width: 100%; border-collapse: collapse; }
+      th { background: #1e3a8a; color: white; padding: 8px; }
+      td { padding: 8px; border: 1px solid #ccc; }
+      @page { size: A4; margin: 15mm; }
+    </style></head><body>`;
+    html += `<h1>Relatório de Atos Autorizativos</h1>`;
+    html += `<p><strong>Escola:</strong> ${escola}</p>`;
+    if (cursoEtapa) html += `<p><strong>Curso/Etapa:</strong> ${cursoEtapa}</p>`;
+    if (cursoTecnico) html += `<p><strong>Curso Técnico:</strong> ${cursoTecnico}</p>`;
+    html += `<p><strong>Data de emissão:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>`;
+    html += `<table><thead><tr><th>Tipo</th><th>Número</th><th>Curso/Etapa</th><th>Curso Técnico</th><th>Fundação Legal</th><th>Publicação</th><th>Validade</th><th>Status</th></tr></thead><tbody>`;
+    atos.forEach(ato => {
+      html += `<tr>
+        <td>${ato.tipoAto}</td>
+        <td>${ato.numeroAto}</td>
+        <td>${ato.cursoEtapa}</td>
+        <td>${ato.cursoTecnico || '—'}</td>
+        <td>${ato.fundamentacao || '—'}</td>
+        <td>${new Date(ato.dataPublicacao).toLocaleDateString('pt-BR')}</td>
+        <td>${ato.validadeAnos} anos</td>
+        <td>${ato.status}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></body></html>`;
+
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.onload = () => printWindow.print();
+  });
+}
+function atualizarVisibilidadeCurso() {
+  const tipoAto = document.getElementById('atoTipo').value;
+  const isAtoCurso = tipoAto === 'Ato de curso (criação)' || tipoAto === 'Ato de curso (aprovação/renovação)';
+  
+  const cursoEtapaField = document.getElementById('atoCursoEtapa').closest('.input-icon');
+  const fundamentacaoWrapper = document.getElementById('fundamentacaoWrapper');
+  const cursoTecnicoWrapper = document.getElementById('cursoTecnicoWrapper');
+  
+  if (isAtoCurso) {
+    cursoEtapaField.style.display = 'block';
+    atualizarFundamentacoes(); // preenche fundamentações baseado no curso já selecionado
+  } else {
+    cursoEtapaField.style.display = 'none';
+    fundamentacaoWrapper.style.display = 'none';
+    cursoTecnicoWrapper.style.display = 'none';
+    // Limpa valores
+    document.getElementById('atoCursoEtapa').value = '';
+    document.getElementById('atoFundamentacao').value = '';
+    document.getElementById('atoCursoTecnico').value = '';
+  }
+}
+function abrirModalLegalizacao() {
+  document.body.classList.add('modal-fullscreen-aberto');
+  document.getElementById('modalLegalizacao').style.display = 'flex';
+  carregarEscolasParaFiltroAto();
+  carregarAtos();
+}
+function fecharModalLegalizacao() {
+  document.body.classList.remove('modal-fullscreen-aberto');
+  document.getElementById('modalLegalizacao').style.display = 'none';
+  atosSelecionados.clear();
+  document.getElementById('btnExportarSelecionados').style.display = 'none';
+}
+
+function exportarAtosSelecionados() {
+  if (atosSelecionados.size === 0) {
+    mostrarToast('Nenhum ato selecionado.', 'warning');
+    return;
+  }
+
+  // Filtra os atos globais pelos IDs selecionados
+  const atos = atosGlobais.filter(ato => atosSelecionados.has(ato.id));
+  if (atos.length === 0) return;
+
+  const isSupervisor = (perfilUsuario === 'SUPERVISOR');
+
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Atos Autorizativos</title>`;
+  html += `<style>
+    @page { size: A4 landscape; margin: 15mm; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 12px;
+      margin: 30px;
+      color: #333;
+    }
+    h1 {
+      color: #1e3a8a;
+      border-bottom: 2px solid #1e3a8a;
+      padding-bottom: 8px;
+      font-size: 18px;
+    }
+    h2 {
+      font-size: 14px;
+      margin-top: 20px;
+      background: #f1f5f9;
+      padding: 8px;
+      border-left: 4px solid #1e3a8a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+    th {
+      background: #1e3a8a;
+      color: white;
+      padding: 6px 8px;
+      font-size: 11px;
+    }
+    td {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      font-size: 10px;
+    }
+    @media print {
+      body { -webkit-print-color-adjust: exact; }
+    }
+  </style></head><body>`;
+
+  html += `<h1>Atos Autorizativos – Seleção</h1>`;
+  html += `<p>Data: ${new Date().toLocaleDateString('pt-BR')} | Selecionados: ${atos.length}</p>`;
+
+  if (isSupervisor) {
+    const porEscola = {};
+    atos.forEach(ato => {
+      if (!porEscola[ato.escola]) porEscola[ato.escola] = [];
+      porEscola[ato.escola].push(ato);
+    });
+    const escolas = Object.keys(porEscola).sort();
+    escolas.forEach(escola => {
+      html += `<h2>${escola}</h2>`;
+      html += gerarTabelaAtos(porEscola[escola]);
+    });
+  } else {
+    html += gerarTabelaAtos(atos);
+  }
+
+  html += `</body></html>`;
+
+  const printWindow = window.open('', '_blank', 'width=900,height=700');
+  printWindow.document.write(html);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.onload = () => printWindow.print();
+}
+
+function gerarTabelaAtos(atos) {
+  let html = `<table><thead><tr>
+    <th>Tipo</th><th>Número</th><th>Curso/Etapa</th><th>Curso Técnico</th><th>Fundamentação</th><th>Publicação</th><th>Validade</th><th>Status</th>
+  </tr></thead><tbody>`;
+  atos.forEach(ato => {
+    html += `<tr>
+      <td>${ato.tipoAto}</td>
+      <td>${ato.numeroAto}</td>
+      <td>${ato.cursoEtapa || '—'}</td>
+      <td>${ato.cursoTecnico || '—'}</td>
+      <td>${ato.fundamentacao || '—'}</td>
+      <td>${new Date(ato.dataPublicacao).toLocaleDateString('pt-BR')}</td>
+      <td>${ato.validadeAnos} anos</td>
+      <td>${ato.status}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  return html;
+}
+
+function gerarTabelaAtos(atos) {
+  let html = `<table><thead><tr>
+    <th>Tipo</th><th>Número</th><th>Curso/Etapa</th><th>Curso Técnico</th><th>Fundamentação</th><th>Publicação</th><th>Validade</th><th>Status</th>
+  </tr></thead><tbody>`;
+  atos.forEach(ato => {
+    html += `<tr>
+      <td>${ato.tipoAto}</td>
+      <td>${ato.numeroAto}</td>
+      <td>${ato.cursoEtapa || '—'}</td>
+      <td>${ato.cursoTecnico || '—'}</td>
+      <td>${ato.fundamentacao || '—'}</td>
+      <td>${new Date(ato.dataPublicacao).toLocaleDateString('pt-BR')}</td>
+      <td>${ato.validadeAnos} anos</td>
+      <td>${ato.status}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  return html;
+}
+
+function gerarTabelaAtos(atos) {
+  let html = `<table><thead><tr>
+    <th>Tipo</th><th>Número</th><th>Curso/Etapa</th><th>Curso Técnico</th><th>Fundamentação</th><th>Publicação</th><th>Validade</th><th>Status</th>
+  </tr></thead><tbody>`;
+  atos.forEach(ato => {
+    html += `<tr>
+      <td>${ato.tipoAto}</td>
+      <td>${ato.numeroAto}</td>
+      <td>${ato.cursoEtapa || '—'}</td>
+      <td>${ato.cursoTecnico || '—'}</td>
+      <td>${ato.fundamentacao || '—'}</td>
+      <td>${new Date(ato.dataPublicacao).toLocaleDateString('pt-BR')}</td>
+      <td>${ato.validadeAnos} anos</td>
+      <td>${ato.status}</td>
+    </tr>`;
+  });
+  html += `</tbody></table>`;
+  return html;
 }
