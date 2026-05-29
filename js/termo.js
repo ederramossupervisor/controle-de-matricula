@@ -3,19 +3,19 @@ let arquivoTermoSelecionado = null;
 
 function validarArquivoTermo(input) {
   const file = input.files[0];
-  const statusEl = document.getElementById('statusUploadTermo');
+  const statusEl = document.getElementById('statusUploadTermo') || document.getElementById('statusUploadTermoRecusado');
   if (!file) {
-    statusEl.innerHTML = '';
+    if (statusEl) statusEl.innerHTML = '';
     arquivoTermoSelecionado = null;
     return;
   }
   if (file.type !== 'application/pdf') {
-    statusEl.innerHTML = '<span style="color: #ef4444;">Apenas arquivos PDF são aceitos.</span>';
+    if (statusEl) statusEl.innerHTML = '<span style="color: #ef4444;">Apenas arquivos PDF são aceitos.</span>';
     input.value = '';
     arquivoTermoSelecionado = null;
     return;
   }
-  statusEl.innerHTML = `<span style="color: #10b981;">Arquivo selecionado: ${file.name}</span>`;
+  if (statusEl) statusEl.innerHTML = `<span style="color: #10b981;">Arquivo selecionado: ${file.name}</span>`;
   arquivoTermoSelecionado = file;
 }
 
@@ -169,5 +169,67 @@ function lerArquivoBase64(file) {
     reader.onload = () => resolve(reader.result.split(',')[1]);
     reader.onerror = reject;
     reader.readAsDataURL(file);
+  });
+}
+function exibirTelaRecusado(motivo) {
+  // Esconde a tela de espera e garante que o app esteja visível
+  const msgEspera = document.getElementById('mensagemEspera');
+  if (msgEspera) msgEspera.style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+
+  // Remove a tela de espera padrão e injeta a interface de reenvio
+  let tela = document.getElementById('telaTermoRecusado');
+  if (!tela) {
+    tela = document.createElement('div');
+    tela.id = 'telaTermoRecusado';
+    tela.style.cssText = 'text-align:center; padding:40px 20px; max-width:500px; margin:0 auto;';
+    document.getElementById('app').appendChild(tela);
+  }
+  tela.style.display = 'block';
+  tela.innerHTML = `
+    <h2 style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Termo Recusado</h2>
+    <p style="color: var(--text-secondary);">Seu termo de compromisso foi recusado pelo supervisor.</p>
+    ${motivo ? `<p style="background:#fee2e2; padding:12px; border-radius:8px; color:#991b1b;"><strong>Motivo:</strong> ${motivo}</p>` : ''}
+    <p style="color: var(--text-muted);">Por favor, corrija os apontamentos e reenvie o arquivo corrigido.</p>
+    <div style="margin-top: 24px;">
+      <input type="file" id="novoArquivoTermo" accept=".pdf" onchange="validarArquivoTermo(this)" style="display:block; margin: 0 auto 16px;">
+      <p id="statusUploadTermoRecusado" style="font-size:13px; color: var(--text-muted);"></p>
+      <button class="btn-salvar" id="btnReenviarTermo" onclick="reenviarTermo()">
+        <i class="fas fa-paper-plane"></i> Reenviar Termo Corrigido
+      </button>
+      <button class="btn-cancelar" onclick="logout()" style="margin-top: 12px;">Sair</button>
+    </div>
+  `;
+}
+
+function reenviarTermo() {
+  const fileInput = document.getElementById('novoArquivoTermo');
+  const file = fileInput.files[0];
+  if (!file) {
+    mostrarToast('Selecione o arquivo PDF corrigido.', 'warning');
+    return;
+  }
+  if (file.type !== 'application/pdf') {
+    mostrarToast('Apenas arquivos PDF são aceitos.', 'warning');
+    return;
+  }
+
+  const btn = document.getElementById('btnReenviarTermo');
+  showButtonLoading(btn);
+
+  lerArquivoBase64(file).then(base64 => {
+    postSemResposta({
+      acao: 'uploadTermoCompromisso',
+      email: emailUsuario,
+      fileBase64: base64
+    }, null, () => {
+      hideButtonLoading(btn);
+      mostrarToast('Termo reenviado com sucesso! Aguardando nova avaliação.', 'success');
+      // Volta para a tela de espera (verificação de status)
+      verificarStatusTermoEAcessar();
+    });
+  }).catch(() => {
+    mostrarToast('Erro ao ler o arquivo.', 'error');
+    hideButtonLoading(btn);
   });
 }
