@@ -302,3 +302,15 @@ function validarCPF(cpf) {
   
   return true;
 }
+function normalizarRacaCor(valor) {
+  if (!valor) return '';
+  const v = valor.trim().toUpperCase();
+  const mapa = {
+    'PARDA': 'Pardo',
+    'BRANCA': 'Branco',
+    'PRETA': 'Preto',
+    'INDÍGENA': 'Indígena',
+    'AMARELA': 'Amarelo'
+  };
+  return mapa[v] || ''; // retorna vazio se não reconhecer
+}
