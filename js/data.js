@@ -1375,6 +1375,7 @@ function executarExportacaoPDF(opcoes = {}) {
 
 // ------ LOGIN / LOGOUT ------
 function login() {
+  localStorage.removeItem('emailUsuario');
   const email = document.getElementById("email").value.trim();
   const senha = document.getElementById("senha").value;
 
