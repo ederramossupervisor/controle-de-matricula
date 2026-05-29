@@ -2103,22 +2103,23 @@
     <script src="js/gerador-documentos.js?v=29052026"></script>
     <script src="js/dados-escolas.js?v=29052026"></script>
     <script src="js/monitoramento.js?v=29052026"></script>
+    <link rel="stylesheet" href="style.css?v=29052025">
     <script>
-      // Força a atualização do Service Worker quando detectar nova versão
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js')
           .then(reg => {
+            // Se houver uma atualização pendente, recarrega a página automaticamente
             reg.addEventListener('updatefound', () => {
               const newWorker = reg.installing;
               newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'activated') {
-                  console.log('🔄 Novo Service Worker ativado. Recarregando...');
+                if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+                  // SW novo assumiu – recarrega para usar a versão atualizada
                   window.location.reload();
                 }
               });
             });
           })
-          .catch(err => console.error('SW erro:', err));
+          .catch(err => console.error('Erro ao registrar SW:', err));
       }
     </script>
 </body>
