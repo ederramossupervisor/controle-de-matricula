@@ -2968,7 +2968,7 @@ input, select, textarea {
 
   /* ---- DOCK INFERIOR (atalhos) ---- */
   #dockMobile {
-    display: flex !important;
+    /*display: flex !important;*/
     position: fixed;
     bottom: 0;
     left: 0;
@@ -3198,7 +3198,7 @@ input, select, textarea {
 
   /* --- DOCK INFERIOR (FIXO) --- */
   #dockMobile {
-    display: flex !important;
+    /*display: flex !important;*/
     position: fixed;
     bottom: 0;
     left: 0;
