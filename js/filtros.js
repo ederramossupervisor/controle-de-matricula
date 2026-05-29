@@ -275,3 +275,11 @@ function ajustarInterfacePorPerfil() {
     }
   }
 }
+
+function toggleFiltros() {
+  const container = document.querySelector('.filtros-container');
+  container.classList.toggle('expandido');
+}
+function toggleFiltros() {
+  document.querySelector('.filtros-container').classList.toggle('expandido');
+}
