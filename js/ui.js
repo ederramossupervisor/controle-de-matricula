@@ -118,6 +118,16 @@ function renderLista(dados) {
         </span>
       `;
     }
+
+    // 🔥 Ícone de Raça/Cor (sempre visível, opcional)
+    const racaCorPreenchida = aluno.RACA_COR && aluno.RACA_COR.trim() !== "";
+    const classeRacaCor = racaCorPreenchida ? 'info' : 'nao-declarado';
+    const tooltipRacaCor = racaCorPreenchida ? `Raça/Cor: ${aluno.RACA_COR}` : 'Raça/Cor: não declarada';
+    docsIconsHtml += `
+      <span class="doc-icon ${classeRacaCor}" data-tooltip="${tooltipRacaCor}">
+        <i class="fa-solid fa-person"></i>
+      </span>
+    `;
     
     docsIconsHtml += '</div>';
 
@@ -650,38 +660,108 @@ function renderUsuarios(usuarios) {
 
 // ------ ATOS AUTORIZATIVOS ------
 function renderizarListaAtos(atos) {
-  const container = document.getElementById("listaAtosContainer");
-  container.innerHTML = "";
-  if (!atos.length) {
-    container.innerHTML = "<p>Nenhum ato cadastrado.</p>";
+  const container = document.getElementById('listaAtosContainer');
+  container.innerHTML = '';
+  atosSelecionados.clear();  // limpa seleções anteriores
+  atualizarBotaoExportarSelecionados();
+
+  if (!atos || atos.length === 0) {
+    container.innerHTML = '<p>Nenhum ato cadastrado.</p>';
     return;
   }
-  atos.forEach(ato => {
-    const card = document.createElement("div");
-    card.className = "usuario-card";
-    let statusClass = "";
-    if (ato.status === "Válido") statusClass = "status-completo";
-    else if (ato.status === "Vencendo (até 90 dias)") statusClass = "status-pendente";
-    else if (ato.status === "Vencido") statusClass = "status-vencido";
 
-    card.innerHTML = `
-      <div class="usuario-avatar"><i class="fas fa-file-contract"></i></div>
-      <div class="usuario-info">
-        <strong>${ato.numeroAto}</strong>
-        <p><i class="fas fa-school"></i> ${ato.escola} | <i class="fas fa-tag"></i> ${ato.tipoAto}</p>
-        <p><i class="fas fa-graduation-cap"></i> ${ato.cursoEtapa || "—"} | 
-        <i class="fas fa-calendar-alt"></i> Homologação: ${new Date(ato.dataHomologacao).toLocaleDateString('pt-BR')} | 
-        <i class="fas fa-calendar-check"></i> Publicação: ${new Date(ato.dataPublicacao).toLocaleDateString('pt-BR')}</p>
-        <p><span class="status-badge ${statusClass}">${ato.status}</span></p>
-        <div style="margin-top:8px;">
-          ${ato.arquivoId ? `<a href="https://drive.google.com/file/d/${ato.arquivoId}/view" target="_blank" class="btn-pequeno"><i class="fas fa-file-pdf"></i> Ver Ato</a>` : ''}
-          <button class="btn-pequeno" onclick="editarAto('${ato.id}')"><i class="fas fa-edit"></i> Editar</button>
-          <button class="btn-pequeno" onclick="excluirAto('${ato.id}')"><i class="fas fa-trash"></i> Excluir</button>
-        </div>
-      </div>
-    `;
-    container.appendChild(card);
+  const isSupervisor = (perfilUsuario === 'SUPERVISOR');
+
+  // Se for supervisor, agrupa por escola
+  if (isSupervisor) {
+    const atosPorEscola = {};
+    atos.forEach(ato => {
+      if (!atosPorEscola[ato.escola]) atosPorEscola[ato.escola] = [];
+      atosPorEscola[ato.escola].push(ato);
+    });
+    const escolasOrdenadas = Object.keys(atosPorEscola).sort();
+    escolasOrdenadas.forEach(escola => {
+      container.appendChild(criarTituloEscola(escola));
+      atosPorEscola[escola].forEach(ato => {
+        container.appendChild(criarCardAto(ato, isSupervisor));
+      });
+    });
+  } else {
+    atos.forEach(ato => {
+      container.appendChild(criarCardAto(ato, false));
+    });
+  }
+}
+
+function criarTituloEscola(escola) {
+  const div = document.createElement('div');
+  div.style.cssText = 'font-weight: 600; font-size: 16px; margin: 16px 0 4px; padding: 8px 12px; background: var(--card-border); border-radius: 8px; display: flex; align-items: center; gap: 8px; grid-column: 1 / -1;';
+  div.innerHTML = `<i class="fas fa-school"></i> ${escola}`;
+  return div;
+}
+
+function criarCardAto(ato, mostrarEscola) {
+  const div = document.createElement('div');
+  div.className = 'usuario-card';
+  div.style.position = 'relative';
+  div.style.paddingLeft = '52px'; // espaço para checkbox
+
+  let statusClass = '';
+  if (ato.status === 'Válido') statusClass = 'status-completo';
+  else if (ato.status.includes('Vencendo')) statusClass = 'status-pendente';
+  else if (ato.status === 'Vencido') statusClass = 'status-vencido';
+
+  // Checkbox de seleção
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.style.cssText = 'position: absolute; left: 16px; top: 24px; width: 24px; height: 24px; cursor: pointer;';
+  checkbox.addEventListener('change', function() {
+    if (this.checked) {
+      atosSelecionados.add(ato.id);
+      div.classList.add('ato-selecionado');   // destaque visual
+    } else {
+      atosSelecionados.delete(ato.id);
+      div.classList.remove('ato-selecionado'); // remove destaque
+    }
+    atualizarBotaoExportarSelecionados();
   });
+  div.appendChild(checkbox);
+
+  const conteudo = document.createElement('div');
+  conteudo.style.flex = '1';
+  conteudo.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">
+      <strong>${ato.numeroAto}</strong>
+      <span class="status-badge ${statusClass}">${ato.status}</span>
+    </div>
+    <p style="margin: 4px 0;">
+      <i class="fas fa-tag"></i> ${ato.tipoAto}
+      ${mostrarEscola ? ` | <i class="fas fa-school"></i> ${ato.escola}` : ''}
+    </p>
+    ${ato.cursoEtapa ? `<p style="margin: 4px 0;"><i class="fas fa-book"></i> ${ato.cursoEtapa}</p>` : ''}
+    ${ato.cursoTecnico ? `<p style="margin: 4px 0;"><i class="fas fa-graduation-cap"></i> Curso: ${ato.cursoTecnico}</p>` : ''}
+    <p style="margin: 4px 0;"><i class="fas fa-calendar-alt"></i> Publicação: ${new Date(ato.dataPublicacao).toLocaleDateString('pt-BR')}</p>
+    <p style="margin: 4px 0;"><i class="fas fa-calendar-check"></i> Homologação: ${new Date(ato.dataHomologacao).toLocaleDateString('pt-BR')}</p>
+    <p style="margin: 4px 0;"><i class="fas fa-hourglass-half"></i> Validade: ${ato.validadeAnos} anos</p>
+    ${ato.fundamentacao ? `<p style="margin: 4px 0; font-size: 12px;"><i class="fas fa-gavel"></i> Fund.: ${ato.fundamentacao}</p>` : ''}
+    <div style="margin-top: 8px;">
+      ${ato.arquivoId ? `<a href="https://drive.google.com/file/d/${ato.arquivoId}/view" target="_blank" class="btn-pequeno"><i class="fas fa-file-pdf"></i> Ver Ato</a>` : ''}
+      <button class="btn-pequeno" onclick="event.stopPropagation(); editarAto('${ato.id}')"><i class="fas fa-edit"></i> Editar</button>
+      <button class="btn-pequeno" onclick="event.stopPropagation(); excluirAto('${ato.id}')"><i class="fas fa-trash"></i> Excluir</button>
+    </div>
+  `;
+  div.appendChild(conteudo);
+  return div;
+}
+
+function atualizarBotaoExportarSelecionados() {
+  const btn = document.getElementById('btnExportarSelecionados');
+  if (atosSelecionados.size > 0) {
+    btn.style.display = 'inline-block';
+    btn.textContent = `Exportar Selecionados (${atosSelecionados.size})`;
+  } else {
+    btn.style.display = 'none';
+  }
 }
 
 // ------ PREVIEW DE IMPORTAÇÃO CSV ------
