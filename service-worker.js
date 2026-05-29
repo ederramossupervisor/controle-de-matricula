@@ -1,15 +1,13 @@
-const CACHE_NAME = 'matriculas-v2'; // 🔥 aumente a versão a cada deploy
+const CACHE_NAME = 'matriculas-v3'; // 🔥 Aumente a versão (v3)
 
-// Arquivos estáticos que podem ser cacheados com segurança
+// Apenas arquivos essenciais que nunca bloqueiam a API
 const urlsToCache = [
   './',
   './index.html',
   './style.css',
   './manifest.json',
-  // ícones e imagens comuns
   './icons/icon-192.png',
   './fundos/default.png'
-  // Não liste todos os JS aqui – eles serão cacheados sob demanda
 ];
 
 // ============================
@@ -23,13 +21,18 @@ self.addEventListener('install', event => {
 });
 
 // ============================
-// ATIVAÇÃO (limpa caches antigos)
+// ATIVAÇÃO – LIMPEZA TOTAL DE CACHES ANTIGOS
 // ============================
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.filter(name => name !== CACHE_NAME).map(name => caches.delete(name))
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('🗑️ Removendo cache antigo:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
       );
     })
   );
@@ -37,42 +40,30 @@ self.addEventListener('activate', event => {
 });
 
 // ============================
-// INTERCEPTAÇÃO DE REQUISIÇÕES
+// FETCH – NUNCA CACHEIA A API
 // ============================
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // 1️⃣ NUNCA cacheia chamadas à API do Google Scripts
+  // 1️⃣ Ignora completamente requisições ao Google Scripts
   if (url.hostname === 'script.google.com') {
-    // Apenas deixa a requisição seguir normalmente (network only)
-    return;
+    return; // deixa o navegador buscar normalmente
   }
 
-  // 2️⃣ Para arquivos estáticos (HTML, CSS, JS, imagens, fontes)
-  //    usamos Cache First com atualização em segundo plano.
+  // 2️⃣ Para outras requisições, tenta rede primeiro, cache depois
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        // Atualiza o cache em segundo plano (stale-while-revalidate)
-        const fetchPromise = fetch(event.request).then(networkResponse => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
-          }
-          return networkResponse;
-        }).catch(() => cachedResponse);
-        // Retorna imediatamente o cache
-        return cachedResponse;
-      }
-      // Se não está em cache, busca da rede e armazena
-      return fetch(event.request).then(networkResponse => {
-        if (!networkResponse || networkResponse.status !== 200) {
-          return networkResponse;
+    fetch(event.request)
+      .then(networkResponse => {
+        // Se for resposta válida, atualiza o cache em segundo plano
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
         }
-        const responseClone = networkResponse.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
         return networkResponse;
-      });
-    })
+      })
+      .catch(() => {
+        // Se falhar (offline), tenta o cache
+        return caches.match(event.request);
+      })
   );
 });
