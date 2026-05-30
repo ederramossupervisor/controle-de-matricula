@@ -314,3 +314,4 @@ function normalizarRacaCor(valor) {
   };
   return mapa[v] || ''; // retorna vazio se não reconhecer
 }
+
