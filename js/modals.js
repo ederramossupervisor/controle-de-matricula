@@ -112,6 +112,57 @@ function abrirModalDetalhes(aluno) {
   `;
   
   document.getElementById("detalhesConteudo").innerHTML = html;
+
+    // Seção Termo de Responsabilidade
+  const termoHtml = `
+    <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
+      <h3><i class="fas fa-file-signature"></i> Termo de Responsabilidade</h3>
+      <p style="font-size:13px; color: var(--text-muted);">Quando há pendência de documentos, os pais/responsáveis devem assinar este termo.</p>
+      <a href="https://docs.google.com/document/d/1yviCGA04nu08cKl8vmPwbny4JswycqCv/edit?usp=sharing&ouid=105884198619872219066&rtpof=true&sd=true" target="_blank" class="btn-pequeno">
+        <i class="fas fa-download"></i> Baixar modelo
+      </a>
+      <input type="file" id="inputTermoResp" accept=".pdf,.jpg,.jpeg,.png" onchange="uploadTermoResp(${aluno._row}, '${aluno.ESCOLA}')" style="margin-left: 8px;">
+      <button class="btn-pequeno" onclick="visualizarTermo()" style="margin-left:8px;" id="btnVisualizarTermo">
+        <i class="fas fa-eye"></i> Visualizar
+      </button>
+      <button class="btn-pequeno btn-perigo" onclick="removerTermo(${aluno._row}, '${aluno.ESCOLA}')" style="margin-left:8px;" id="btnRemoverTermo">
+        <i class="fas fa-trash"></i> Remover
+      </button>
+      <span id="statusTermoResp" style="margin-left:8px;"></span>
+    </div>
+  `;
+  document.getElementById("detalhesConteudo").innerHTML += termoHtml;
+
+    // Seção Declaração de Educação Especial
+  const declEdEspHtml = `
+    <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
+      <h3><i class="fas fa-wheelchair"></i> Declaração para Educação Especial</h3>
+      <p style="font-size:13px; color: var(--text-muted);">Documento obrigatório para alunos público da Educação Especial (Decreto 12.686/2025).</p>
+      <a href="https://docs.google.com/document/d/1lB4Cqp-ZZ2sfVUmSg3RSNCvhIEg-nCqo/export?format=docx" target="_blank" class="btn-pequeno">
+        <i class="fas fa-download"></i> Baixar modelo
+      </a>
+      <span id="acoesDeclEdEsp" style="display: ${aluno.ED_ESPECIAL ? 'inline' : 'none'};">
+        <input type="file" id="inputDeclEdEsp" accept=".pdf,.jpg,.jpeg,.png" onchange="uploadDeclEdEsp(${aluno._row}, '${aluno.ESCOLA}')" style="margin-left: 8px;">
+        <button class="btn-pequeno" onclick="visualizarDeclEdEsp()" style="margin-left:8px;" id="btnVisualizarDeclEdEsp">
+          <i class="fas fa-eye"></i> Visualizar
+        </button>
+        <button class="btn-pequeno btn-perigo" onclick="removerDeclEdEsp(${aluno._row}, '${aluno.ESCOLA}')" style="margin-left:8px;" id="btnRemoverDeclEdEsp">
+          <i class="fas fa-trash"></i> Remover
+        </button>
+      </span>
+      <span id="statusDeclEdEsp" style="margin-left:8px;"></span>
+      <p id="msgEdEspOpcional" style="font-size:12px; color: var(--text-muted); margin-top:4px;">
+        ${aluno.ED_ESPECIAL === true ? 'Este aluno é público da Educação Especial.' : 'Disponível apenas para alunos marcados como Educação Especial.'}
+      </p>
+    </div>
+  `;
+  document.getElementById("detalhesConteudo").innerHTML += declEdEspHtml;
+
+  // Atualiza botões conforme a declaração existente (mesmo se não for ED_ESPECIAL, para manter estado)
+  atualizarBotoesDeclEdEsp(aluno);
+
+  // Atualiza os botões conforme o termo já anexado
+  atualizarBotoesTermo(aluno);
   
   // ---- Preenche os campos editáveis ----
   const isPedagogico = (perfilUsuario === 'PEDAGOGICO');
@@ -2328,4 +2379,169 @@ function gerarTabelaAtos(atos) {
   });
   html += `</tbody></table>`;
   return html;
+}
+// =========================
+// TERMO DE RESPONSABILIDADE
+// =========================
+
+function atualizarBotoesTermo(aluno) {
+  const termoId = aluno._TERMO_RESP_ID;
+  const btnVis = document.getElementById('btnVisualizarTermo');
+  const btnRem = document.getElementById('btnRemoverTermo');
+  const status = document.getElementById('statusTermoResp');
+  if (termoId) {
+    if (btnVis) btnVis.style.display = 'inline-block';
+    if (btnRem) btnRem.style.display = 'inline-block';
+    if (status) status.innerHTML = '<span style="color:#10b981;">✓ Termo anexado</span>';
+  } else {
+    if (btnVis) btnVis.style.display = 'none';
+    if (btnRem) btnRem.style.display = 'none';
+    if (status) status.innerHTML = '<span style="color:#ef4444;">✗ Nenhum termo anexado</span>';
+  }
+}
+
+async function uploadTermoResp(row, escola) {
+  const fileInput = document.getElementById('inputTermoResp');
+  const file = fileInput.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    mostrarToast("Arquivo muito grande (máx. 5 MB)", "error");
+    return;
+  }
+
+  const base64 = await new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+
+  const dados = {
+    acao: "uploadTermoResponsabilidade",
+    email: emailUsuario,
+    row: row,
+    escola: escola,
+    fileName: file.name,
+    mimeType: file.type,
+    fileBase64: base64
+  };
+
+  postSemResposta(dados, "Termo enviado!", () => {
+    // Busca a URL atualizada após 2 segundos
+    setTimeout(() => {
+      const urlBusca = `${API_URL}?tipo=obterTermoResp&email=${emailUsuario}&escola=${escola}&row=${row}`;
+      jsonp(urlBusca, function(resp) {
+        const novoId = resp.url ? resp.url.split('/d/')[1].split('/')[0] : null;
+        dadosAlunoAtual._TERMO_RESP_ID = novoId;
+        atualizarBotoesTermo(dadosAlunoAtual);
+      });
+    }, 2000);
+  });
+}
+
+function visualizarTermo() {
+  const id = dadosAlunoAtual._TERMO_RESP_ID;
+  if (id) window.open(`https://drive.google.com/file/d/${id}/view`, '_blank');
+}
+
+function removerTermo(row, escola) {
+  if (!confirm("Remover o termo de responsabilidade anexado?")) return;
+  const dados = {
+    acao: "uploadTermoResponsabilidade",
+    email: emailUsuario,
+    row: row,
+    escola: escola,
+    fileBase64: null,
+    fileName: null
+  };
+  postSemResposta(dados, "Termo removido.", () => {
+    dadosAlunoAtual._TERMO_RESP_ID = null;
+    atualizarBotoesTermo(dadosAlunoAtual);
+  });
+}
+// =========================
+// DECLARAÇÃO DE EDUCAÇÃO ESPECIAL
+// =========================
+
+function atualizarBotoesDeclEdEsp(aluno) {
+  const declId = aluno._DECL_ED_ESPECIAL_ID;
+  const temDecl = declId && declId.toString().trim() !== '';
+  const btnVis = document.getElementById('btnVisualizarDeclEdEsp');
+  const btnRem = document.getElementById('btnRemoverDeclEdEsp');
+  const status = document.getElementById('statusDeclEdEsp');
+
+  if (temDecl) {
+    if (btnVis) btnVis.style.display = 'inline-block';
+    if (btnRem) btnRem.style.display = 'inline-block';
+    if (status) status.innerHTML = '<span style="color:#10b981;">✓ Declaração anexada</span>';
+  } else {
+    if (btnVis) btnVis.style.display = 'none';
+    if (btnRem) btnRem.style.display = 'none';
+    if (status) status.innerHTML = '<span style="color:#ef4444;">✗ Nenhuma declaração anexada</span>';
+  }
+}
+
+async function uploadDeclEdEsp(row, escola) {
+  const fileInput = document.getElementById('inputDeclEdEsp');
+  const file = fileInput.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    mostrarToast("Arquivo muito grande (máx. 5 MB)", "error");
+    return;
+  }
+
+  const base64 = await new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+
+  const dados = {
+    acao: "uploadDeclaracaoEdEspecial",
+    email: emailUsuario,
+    row: row,
+    escola: escola,
+    fileName: file.name,
+    mimeType: file.type,
+    fileBase64: base64
+  };
+
+  postSemResposta(dados, "Declaração enviada!", () => {
+    setTimeout(() => {
+      const urlBusca = `${API_URL}?tipo=obterDeclEdEspecial&email=${emailUsuario}&escola=${encodeURIComponent(escola)}&row=${row}`;
+      jsonp(urlBusca, function(resp) {
+        let novoId = null;
+        if (resp.url) {
+          const partes = resp.url.split('/d/');
+          if (partes.length > 1) novoId = partes[1].split('/')[0];
+        }
+        if (dadosAlunoAtual) {
+          dadosAlunoAtual._DECL_ED_ESPECIAL_ID = novoId;
+          atualizarBotoesDeclEdEsp(dadosAlunoAtual);
+        }
+        if (novoId) mostrarToast("Declaração anexada com sucesso!", "success");
+        else mostrarToast("Erro ao recuperar o ID. Recarregue a página.", "warning");
+      });
+    }, 2000);
+  });
+}
+
+function visualizarDeclEdEsp() {
+  const id = dadosAlunoAtual._DECL_ED_ESPECIAL_ID;
+  if (id) window.open(`https://drive.google.com/file/d/${id}/view`, '_blank');
+}
+
+function removerDeclEdEsp(row, escola) {
+  if (!confirm("Remover a declaração de educação especial?")) return;
+  const dados = {
+    acao: "uploadDeclaracaoEdEspecial",
+    email: emailUsuario,
+    row: row,
+    escola: escola,
+    fileBase64: null,
+    fileName: null
+  };
+  postSemResposta(dados, "Declaração removida.", () => {
+    dadosAlunoAtual._DECL_ED_ESPECIAL_ID = null;
+    atualizarBotoesDeclEdEsp(dadosAlunoAtual);
+  });
 }
