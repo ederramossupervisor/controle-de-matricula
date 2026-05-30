@@ -128,6 +128,27 @@ function renderLista(dados) {
         <i class="fa-solid fa-person"></i>
       </span>
     `;
+
+    // 🔥 Ícone de Termo de Responsabilidade (se existir)
+    if (aluno._TERMO_RESP_ID) {
+      docsIconsHtml += `
+        <span class="doc-icon info" data-tooltip="Termo de Responsabilidade anexado">
+          <i class="fas fa-file-signature"></i>
+        </span>
+      `;
+    }
+
+        // Ícone de Declaração de Ed. Especial (apenas se o aluno for ED_ESPECIAL)
+    if (aluno.ED_ESPECIAL === true) {
+      const temDecl = aluno._DECL_ED_ESPECIAL_ID ? true : false;
+      const classe = temDecl ? 'info' : 'pendente';
+      const tooltip = temDecl ? 'Declaração de Ed. Especial anexada' : 'Declaração de Ed. Especial pendente';
+      docsIconsHtml += `
+        <span class="doc-icon ${classe}" data-tooltip="${tooltip}">
+          <i class="fas fa-wheelchair"></i>
+        </span>
+      `;
+    }
     
     docsIconsHtml += '</div>';
 
