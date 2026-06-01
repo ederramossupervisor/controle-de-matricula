@@ -3198,3 +3198,16 @@ body.modal-fullscreen-aberto {
 td:has(.check-doc-individual:checked) {
   background-color: #d4edda !important; /* verde claro */
 }
+#badgeTermosPendentes {
+  display: inline-block;
+  background: #dc2626;
+  color: white;
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  margin-left: 6px;
+}
