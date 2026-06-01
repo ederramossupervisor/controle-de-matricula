@@ -755,6 +755,7 @@ async function carregarAlunosParaChecklist() {
                    data-col="${doc.col}"
                    data-original="${valor}"
                    ${valor ? 'checked' : ''}
+                   onchange="this.parentElement.style.background=this.checked?'#d4edda':'#fff';"
                    style="transform:scale(1.1); cursor:pointer;">
           </div>`;
         }
@@ -2544,4 +2545,13 @@ function removerDeclEdEsp(row, escola) {
     dadosAlunoAtual._DECL_ED_ESPECIAL_ID = null;
     atualizarBotoesDeclEdEsp(dadosAlunoAtual);
   });
+}
+
+function atualizarCelulaChecklist(checkbox) {
+  const td = checkbox.closest('div'); // ou 'td' se estiver em tabela
+  if (checkbox.checked) {
+    td.style.backgroundColor = '#d4edda';
+  } else {
+    td.style.backgroundColor = '#fff';
+  }
 }
