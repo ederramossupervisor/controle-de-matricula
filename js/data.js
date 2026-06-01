@@ -2003,3 +2003,22 @@ function esconderDockMobile() {
   const dock = document.getElementById('dockMobile');
   if (dock) dock.style.display = 'none';
 }
+function atualizarBadgeTermosPendentes() {
+  if (emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') return;
+  
+  const url = `${API_URL}?tipo=contarTermosPendentes&email=${encodeURIComponent(emailUsuario)}`;
+  jsonp(url, function(res) {
+    const badge = document.getElementById('badgeTermosPendentes');
+    if (badge) {
+      if (res.pendentes > 0) {
+        badge.textContent = res.pendentes;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  });
+}
+
+// Iniciar verificação ao carregar o sistema e depois a cada 60 segundos
+setInterval(atualizarBadgeTermosPendentes, 60000);
