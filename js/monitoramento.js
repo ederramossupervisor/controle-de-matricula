@@ -97,6 +97,7 @@ function mostrarAbaMonitoramento(aba) {
     novaAba.style.display = 'none';
     histAba.style.display = 'block';
     carregarListaVisitas();
+    ativarEnterNoModal('#modalMonitoramento', carregarListaVisitas);
   }
 }
 
