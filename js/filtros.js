@@ -23,7 +23,6 @@ function inicializarFiltros() {
   const selectEscola = document.getElementById("filtroEscola");
   if (selectEscola) {
     const valorSelecionado = selectEscola.value;
-    
     const escolas = getEscolasPermitidas();
     selectEscola.innerHTML = '<option value="">Todas as escolas</option>';
     escolas.forEach(esc => {
@@ -32,7 +31,6 @@ function inicializarFiltros() {
       opt.textContent = esc;
       selectEscola.appendChild(opt);
     });
-    
     if (valorSelecionado) {
       selectEscola.value = valorSelecionado;
     }
@@ -45,9 +43,18 @@ function inicializarFiltros() {
     campoBusca.addEventListener("input", buscarDebounced);
   }
 
+  // Aplicar filtros ao pressionar Enter em qualquer campo de filtro
+  document.querySelectorAll('#filtroEscola, #filtroTurma, #filtroStatus, #filtroSituacao, #pesquisaNome').forEach(el => {
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        aplicarFiltros();
+      }
+    });
+  });
+
   carregarTurmasParaFiltro();
 }
-
 // ------ SELECT DE ESCOLAS PARA FILTRO DE ATOS ------
 function carregarEscolasParaFiltroAto() {
   const escolas = getEscolasPermitidas();
