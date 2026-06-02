@@ -260,6 +260,7 @@ function abrirModalInativos() {
   document.getElementById("modalInativos").style.display = "flex";
   carregarTurmasParaFiltroInativos();
   buscarInativos(1);
+  ativarEnterNoModal('#modalInativos', () => buscarInativos(1));
 }
 
 function fecharModalInativos() {
@@ -523,6 +524,7 @@ function abrirModalDocumentos() {
   document.getElementById("modalDocumentos").style.display = "flex";
   preencherSelectEscolasDoc();
   mostrarAbaUpload();
+  ativarEnterNoModal('#modalDocumentos', buscarDocumentos);
 }
 
 function fecharModalDocumentos() {
@@ -545,6 +547,7 @@ function abrirModalProcessos() {
   document.getElementById("modalProcessos").style.display = "flex";
   preencherSelectsProcessos();
   mostrarAbaCadastroProcesso();
+  ativarEnterNoModal('#modalProcessos', buscarProcessos);
 }
 
 function fecharModalProcessos() {
@@ -1160,13 +1163,12 @@ function abrirModalLegislacao() {
     "ecramos@sedu.es.gov.br"
   ];
   
-  // Exibe ou oculta o botão de cadastro conforme permissão
   if (abaCadastroBtn) {
     abaCadastroBtn.style.display = emailsPermitidos.includes(emailUsuario) ? 'inline-block' : 'none';
   }
   
-  // 🔥 Sempre abre na aba de consulta
   mostrarAbaConsultaLegislacao();
+  ativarEnterNoModal('#modalLegislacao', buscarLegislacao);
 }
 
 function fecharModalLegislacao() {
@@ -2228,10 +2230,10 @@ function atualizarVisibilidadeCurso() {
   }
 }
 function abrirModalLegalizacao() {
-  document.body.classList.add('modal-fullscreen-aberto');
-  document.getElementById('modalLegalizacao').style.display = 'flex';
+  document.getElementById("modalLegalizacao").style.display = "flex";
   carregarEscolasParaFiltroAto();
   carregarAtos();
+  ativarEnterNoModal('#modalLegalizacao', carregarAtos);
 }
 function fecharModalLegalizacao() {
   document.body.classList.remove('modal-fullscreen-aberto');
