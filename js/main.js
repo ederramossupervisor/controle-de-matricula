@@ -172,10 +172,19 @@ if (e.key === 'Escape') {
     }
   }
 
-  // Se nenhum modal foi fechado, tenta fechar o menu dropdown
-  if (!modalFechado && menuDropdown && menuDropdown.style.display === 'block') {
-    e.preventDefault();
-    menuDropdown.style.display = 'none';
+    // Se nenhum modal foi fechado, tenta fechar o menu dropdown
+  if (!modalFechado && menuDropdown) {
+    const menuVisivel = (menuDropdown.style.display !== 'none') || menuDropdown.classList.contains('menu-aberto');
+    if (menuVisivel) {
+      e.preventDefault();
+      if (menuDropdown.classList.contains('menu-aberto')) {
+        menuDropdown.classList.remove('menu-aberto');
+        const overlay = document.getElementById('menuOverlay');
+        if (overlay) overlay.classList.remove('ativo');
+      } else {
+        menuDropdown.style.display = 'none';
+      }
+    }
   }
 }
   });
