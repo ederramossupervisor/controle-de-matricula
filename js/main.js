@@ -120,39 +120,46 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
-        // Esc: Fechar menu dropdown ou modais abertos
-    if (e.key === 'Escape') {
+// Esc: Fechar menu dropdown ou modais abertos
+if (e.key === 'Escape') {
   const menuDropdown = document.getElementById('menuDropdown');
-  
-  // 1️⃣ Tenta fechar um modal aberto primeiro
+
+  // Lista de modais em ordem de fechamento: filhos primeiro, depois pais
   const modaisAbertos = [
+    // Filhos (formulários sobre listas)
+    { element: document.getElementById('modalFormAto'), close: fecharFormAto },
+    { element: document.getElementById('modalCadastroTurma'), close: fecharModalCadastroTurma },
+    { element: document.getElementById('modalCadastroUsuario'), close: fecharModalCadastroUsuario },
+    { element: document.getElementById('modalEditarLegislacao'), close: fecharEdicaoLegislacao },
+    { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
+    { element: document.getElementById('modalAlterarSenha'), close: fecharModalAlterarSenha },
+    { element: document.getElementById('modalImportacao'), close: fecharModalImportacao },
+    { element: document.getElementById('modalExportacao'), close: fecharModalExportacao },
+    { element: document.getElementById('modalPromocao'), close: fecharModalPromocao },
+    { element: document.getElementById('modalAtualizarMatriculados'), close: fecharModalAtualizarMatriculados },
+    { element: document.getElementById('modalConsentimento'), close: logout }, // logout fecha o consentimento
+    { element: document.getElementById('modalGeradorDocumentos'), close: fecharModalGeradorDocumentos },
+    { element: document.getElementById('modalPlanoTaticoMensal'), close: fecharModalPlanoTaticoMensal },
+    { element: document.getElementById('modalPlanoTaticoTrimestral'), close: fecharModalPlanoTaticoTrimestral },
+    { element: document.getElementById('modalAcompanhamentoPT'), close: fecharModalAcompanhamentoPT },
+    
+    // Pais (listas e modais principais)
     { element: document.getElementById('modalDetalhes'), close: fecharModalDetalhes },
     { element: document.getElementById('modalChecklistLote'), close: fecharModalChecklistLote },
     { element: document.getElementById('modalDocumentos'), close: fecharModalDocumentos },
     { element: document.getElementById('modalModelos'), close: fecharModalModelos },
     { element: document.getElementById('modalInativos'), close: fecharModalInativos },
     { element: document.getElementById('modalProcessos'), close: fecharModalProcessos },
-    { element: document.getElementById('modalFormAto'), close: fecharFormAto },
     { element: document.getElementById('modalLegalizacao'), close: fecharModalLegalizacao },
+    { element: document.getElementById('modalLegislacao'), close: fecharModalLegislacao },
     { element: document.getElementById('modalTurmas'), close: fecharModalTurmas },
-    { element: document.getElementById('modalCadastroTurma'), close: fecharModalCadastroTurma },
     { element: document.getElementById('modalListaUsuarios'), close: fecharModalListaUsuarios },
-    { element: document.getElementById('modalCadastroUsuario'), close: fecharModalCadastroUsuario },
-    { element: document.getElementById('modalAlterarSenha'), close: fecharModalAlterarSenha },
-    { element: document.getElementById('modalImportacao'), close: fecharModalImportacao },
-    { element: document.getElementById('modalExportacao'), close: fecharModalExportacao },
     { element: document.getElementById('modalNotificacoes'), close: fecharNotificacoes },
     { element: document.getElementById('modalAgenda'), close: fecharModalAgenda },
-    { element: document.getElementById('novoAluno'), close: voltarApp },
     { element: document.getElementById('modalDashboard'), close: fecharModalDashboard },
-    { element: document.getElementById('modalEditarLegislacao'), close: fecharEdicaoLegislacao },
-    { element: document.getElementById('modalLegislacao'), close: fecharModalLegislacao },
-    { element: document.getElementById('modalAtualizarMatriculados'), close: fecharModalAtualizarMatriculados },
-    { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
-    { element: document.getElementById('modalPromocao'), close: fecharModalPromocao },
     { element: document.getElementById('modalAprovacaoTermos'), close: fecharModalAprovacaoTermos },
-    { element: document.getElementById('modalGeradorDocumentos'), close: fecharModalGeradorDocumentos },
-    { element: document.getElementById('modalConsentimento'), close: logout }
+    { element: document.getElementById('modalMonitoramento'), close: fecharModalMonitoramento },
+    { element: document.getElementById('novoAluno'), close: voltarApp }
   ];
 
   let modalFechado = false;
@@ -161,11 +168,11 @@ document.addEventListener('DOMContentLoaded', function() {
       e.preventDefault();
       modal.close();
       modalFechado = true;
-      break;
+      break; // Fecha apenas o primeiro encontrado (o mais interno)
     }
   }
 
-  // 2️⃣ Se nenhum modal foi fechado, tenta fechar o menu dropdown
+  // Se nenhum modal foi fechado, tenta fechar o menu dropdown
   if (!modalFechado && menuDropdown && menuDropdown.style.display === 'block') {
     e.preventDefault();
     menuDropdown.style.display = 'none';
@@ -234,31 +241,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
   observer.observe(document.body, { childList: true, subtree: true });
-});
-// Fechar os modais do Plano Tático com a tecla ESC
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    const modais = [
-      { id: 'modalPlanoTaticoMensal', fechar: fecharModalPlanoTaticoMensal },
-      { id: 'modalPlanoTaticoTrimestral', fechar: fecharModalPlanoTaticoTrimestral },
-      { id: 'modalAcompanhamentoPT', fechar: fecharModalAcompanhamentoPT }
-    ];
-
-    for (const modal of modais) {
-      const el = document.getElementById(modal.id);
-      if (el && el.style.display === 'flex') {
-        modal.fechar();
-        break;
-      }
-    }
-  }
-});
-// Fecha o menu dropdown ao pressionar ESC
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    const menu = document.getElementById('menuDropdown');
-    if (menu && window.getComputedStyle(menu).display !== 'none') {
-      menu.style.display = 'none';
-    }
-  }
 });
