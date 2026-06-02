@@ -315,3 +315,25 @@ function normalizarRacaCor(valor) {
   return mapa[v] || ''; // retorna vazio se não reconhecer
 }
 
+/**
+ * Ativa o acionamento de busca/filtro ao pressionar Enter nos campos de um container.
+ * @param {string} containerSelector - Seletor CSS do modal (ex.: '#modalDocumentos')
+ * @param {function} callback - Função a ser chamada ao pressionar Enter
+ */
+function ativarEnterNoModal(containerSelector, callback) {
+  const container = document.querySelector(containerSelector);
+  if (!container) return;
+  
+  container.querySelectorAll('input, select').forEach(el => {
+    // Evita adicionar múltiplos listeners no mesmo elemento
+    if (el.dataset.enterListener === 'true') return;
+    el.dataset.enterListener = 'true';
+    
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (typeof callback === 'function') callback();
+      }
+    });
+  });
+}
