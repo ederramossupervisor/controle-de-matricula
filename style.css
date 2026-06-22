@@ -51,8 +51,8 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  scrollbar-gutter: stable;  /* ← adicione esta linha */
 }
-
 body {
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
   background: #82babe44 !important;
@@ -662,8 +662,12 @@ button:active { transform: scale(0.98); }
 
 #lista.modo-lista {
   display: block !important;
-  overflow-x: auto;
-  padding: 0 20px 20px;
+  max-width: none !important;        /* remove qualquer limite de largura */
+  width: 100% !important;            /* ocupa toda a largura disponível */
+  padding: 0 16px 20px;             /* padding lateral reduzido para aproveitar espaço */
+  box-sizing: border-box;
+  overflow-x: auto;                      /* ROLAGEM HORIZONTAL SE NECESSÁRIO */
+  -webkit-overflow-scrolling: touch;     /* SUAVIZA NO iOS */
 }
 
 #lista > div {
@@ -695,6 +699,11 @@ button:active { transform: scale(0.98); }
     0 4px 6px rgba(0,0,0,0.05),
     inset 0 -1px 3px rgba(0,0,0,0.05),
     inset 0 2px 6px rgba(255,255,255,0.8);
+}
+
+#lista > div:active {
+  transform: scale(0.97) !important;
+  transition: transform 0.1s;
 }
 
 /* Faixas de status */
@@ -1142,10 +1151,10 @@ button:active { transform: scale(0.98); }
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100vh;
-  background-image: url('imagens/login-bg.jpg');
-  background-size: 110%;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-image: url('img/splash-login-bg.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -1154,15 +1163,17 @@ button:active { transform: scale(0.98); }
 }
 
 #login::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.25);
-  z-index: 1;
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: rgba(236, 41, 41, 0) !important;
+  z-index: 1 !important;
 }
 
-#login .login-container {
+.login-container {
   position: relative;
   z-index: 2;
 }
@@ -1208,8 +1219,8 @@ button:active { transform: scale(0.98); }
 }
 
 .login-subtitle {
-  color: var(--text-muted);
-  margin-bottom: 30px;
+  color: #171212;      /* troque pelo código da cor desejada */
+  margin-bottom: 16px;
   font-size: 15px;
 }
 
@@ -1238,7 +1249,7 @@ button:active { transform: scale(0.98); }
 
 .login-footer {
   margin-top: 24px;
-  color: var(--text-muted);
+  color: #171212;
   font-size: 13px;
 }
 
@@ -1256,7 +1267,7 @@ button:active { transform: scale(0.98); }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #3b82f6;
+  color: #02245b;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
@@ -1521,11 +1532,11 @@ select.btn-paginacao { background-color: var(--card-bg); cursor: pointer; }
    ÍCONES DE DOCUMENTOS
    ========================================== */
 .docs-icons {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
   margin: 6px 0 4px 0;
+  justify-items: center;
 }
 
 .doc-icon {
@@ -1638,38 +1649,48 @@ body.fundo-personalizado {
 /* ==========================================
    TOGGLE SWITCH
    ========================================== */
+/* ==========================================
+   TOGGLE SWITCH (CARDS/LISTA) – MODERNO
+   ========================================== */
 .toggle-switch {
-  background: var(--card-border);
+  background: #e2e8f0;
   border: none;
   border-radius: 30px;
-  width: 52px; height: 26px;
+  width: 60px;
+  height: 30px;
   display: flex;
   align-items: center;
-  padding: 2px;
   cursor: pointer;
-  transition: background 0.2s;
-  color: var(--text-muted);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
   position: relative;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
   -webkit-tap-highlight-color: transparent;
+  padding: 0;
 }
-
 .toggle-switch i {
-  background: white;
+  background: #ffffff;
   border-radius: 50%;
-  width: 22px; height: 22px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease;
+  font-size: 14px;
+  color: #64748b;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), color 0.3s;
   position: absolute;
   left: 2px;
-  transform: translateX(0);
 }
-
-.toggle-switch.ativo { background: var(--btn-primary-bg); }
-.toggle-switch.ativo i { transform: translateX(26px); }
+.toggle-switch.ativo {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 0 8px rgba(235, 37, 37, 0.3);
+}
+.toggle-switch.ativo i {
+  transform: translateX(30px);
+  color: #2563eb;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
 
 /* ==========================================
    TABELA DE ALUNOS
@@ -1677,11 +1698,57 @@ body.fundo-personalizado {
 .tabela-alunos {
   background: var(--card-bg);
   border-radius: 16px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   border: 1px solid var(--card-border);
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  table-layout: auto;
+  display: table;            /* VOLTA AO PADRÃO DE TABELA */
+  min-width: 100%;           /* GARANTE QUE OCUPE 100% DO CONTAINER */
+}
+
+/* Cabeçalho */
+.tabela-alunos thead th {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-weight: 600;
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+/* Linhas */
+.tabela-alunos tbody td {
+  padding: 12px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #334155;
+  vertical-align: middle;
+}
+
+/* Zebrado */
+.tabela-alunos tbody tr:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+/* Hover */
+.tabela-alunos tbody tr:hover {
+  background-color: #eef2ff;
+  transition: background 0.2s;
+}
+
+/* Última linha sem borda */
+.tabela-alunos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Células de ação centralizadas */
+.tabela-alunos td:last-child {
+  text-align: center;
 }
 
 .tabela-alunos th {
@@ -1822,8 +1889,9 @@ body.fundo-personalizado {
 #muralComunicados { background: #b0c9ba !important; }
 
 body.perfil-secretaria .dropdown-content .btn-header[onclick*="abrirModalListaUsuarios"],
-body.perfil-secretaria .dropdown-content .btn-header[onclick*="abrirModalCadastroUsuario"],
-body.perfil-secretaria #btnLegalizacao { display: none !important; }
+body.perfil-secretaria .dropdown-content .btn-header[onclick*="abrirModalCadastroUsuario"] {
+  display: none !important;
+}
 
 /* ==========================================
    MINI MODAL DE EDIÇÃO
@@ -1978,6 +2046,10 @@ body.perfil-secretaria #btnLegalizacao { display: none !important; }
   border-radius: 4px;
 }
 
+/* Evita que selects muito largos quebrem o layout do modal */
+select {
+  max-width: 100%;
+}
 /* ==========================================
    BUSCA GLOBAL
    ========================================== */
@@ -2549,12 +2621,12 @@ button i, .input-icon .icon i {
    ELIMINAR ROLAGEM HORIZONTAL EM TUDO
    ========================================== */
 html, body {
-  max-width: 100%;
+  width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
 }
 
 *, *::before, *::after {
-  max-width: 100%;
   box-sizing: border-box;
 }
 
@@ -2563,14 +2635,6 @@ html, body {
 .dropdown-content,
 #dropdownBuscaGlobal {
   max-width: none;
-}
-
-.tabela-alunos,
-table {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
 }
 
 .header-actions {
@@ -3210,4 +3274,474 @@ td:has(.check-doc-individual:checked) {
   font-size: 11px;
   font-weight: bold;
   margin-left: 6px;
+}
+.modal-card--fullscreen {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100vh !important;
+  border-radius: 0 !important;
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
+}
+
+.modal-card--fullscreen .modal-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: none !important;
+}
+
+.modal-card--fullscreen .modal-header {
+  padding: 20px 24px 10px;
+}
+/* Grid para as organizações curriculares */
+#listaOrgsAdicionadas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+/* =========================
+   SPLASH SCREEN
+   ========================= */
+#splash {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image: url('img/splash-login-bg.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity 0.3s ease;
+}
+
+/* Véu escuro com !important para não ser sobrescrito */
+#splash::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
+  z-index: 1 !important;
+}
+
+/* Garante que o conteúdo fique acima do véu */
+.splash-content {
+  position: relative;
+  z-index: 2;
+}
+.splash-content {
+  text-align: center;
+}
+
+#importProgressContainer {
+  transition: all 0.3s ease;
+}
+#importProgressBar {
+  background: linear-gradient(90deg, #2563eb, #10b981);
+}
+
+/* Garantir que a secretária não veja Parecer Supervisão e Aprovar Termos */
+body.perfil-secretaria #btnGeradorDocumentos,
+body.perfil-secretaria #btnAprovacaoTermos {
+  display: none !important;
+}
+
+/* ==========================================
+   HEADER FUTURISTA – FUNDO ANIMADO
+   ========================================== */
+header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 20%, #3b82f6 40%, #8b5cf6 60%, #ec4899 80%, #0f172a 100%) !important;
+  background-size: 600% 100% !important;
+  animation: headerGradient 15s ease infinite !important;
+  position: relative !important;
+}
+
+@keyframes headerGradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Círculos decorativos flutuantes */
+header::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.08) 0%, transparent 50%),
+              radial-gradient(circle at 70% 30%, rgba(255,255,255,0.05) 0%, transparent 50%);
+  animation: headerShapes 20s linear infinite;
+  pointer-events: none; /* não atrapalha os cliques */
+}
+
+@keyframes headerShapes {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+#headerTitulo {
+  flex-basis: 100%;
+  order: -1; /* Garante que fique no topo do header, acima dos outros elementos */
+}
+
+#nomeEscolaHeader {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  #headerTitulo {
+    padding: 8px 12px !important;
+  }
+  #nomeEscolaHeader {
+    font-size: 22px !important;
+  }
+}
+
+#headerTitulo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 1;
+  pointer-events: none; /* permite clicar nos botões através do título */
+  width: 90%;
+  max-width: 600px;
+}
+
+/* Ícones flutuantes no header (Font Awesome) */
+header::before,
+header::after,
+#headerTitulo::before,
+#headerTitulo::after {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  color: rgba(255,255,255,0.15);
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  animation: iconeFlutua 6s ease-in-out infinite alternate;
+}
+
+header::before {
+  content: "\f02d"; /* livro */
+  font-size: 50px;
+  top: 15%;
+  left: 8%;
+  animation-delay: 0s;
+}
+
+header::after {
+  content: "\f19d"; /* capelo */
+  font-size: 55px;
+  bottom: 20%;
+  right: 10%;
+  animation-delay: 1s;
+}
+
+#headerTitulo::before {
+  content: "\f303"; /* lápis */
+  font-size: 45px;
+  top: 10%;
+  right: 15%;
+  animation-delay: 2s;
+}
+
+#headerTitulo::after {
+  content: "\f0c3"; /* frasco */
+  font-size: 48px;
+  bottom: 15%;
+  left: 12%;
+  animation-delay: 3s;
+}
+
+@keyframes iconeFlutua {
+  0% { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-10px) rotate(3deg); }
+}
+
+/* Novos ícones flutuantes (via elementos HTML) */
+.icone-flutuante {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.1);
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  animation: iconeFlutua 8s ease-in-out infinite alternate;
+}
+
+/* Globo */
+#iconeGlobo::before {
+  content: "\f0ac";
+  font-size: 52px;
+}
+#iconeGlobo {
+  top: 8%;
+  left: 30%;
+  animation-delay: 2s;
+}
+
+/* Ampulheta */
+#iconeAmpulheta::before {
+  content: "\f253";
+  font-size: 46px;
+}
+#iconeAmpulheta {
+  bottom: 12%;
+  right: 25%;
+  animation-delay: 5s;
+}
+
+/* Animação (mesma dos anteriores, mas com leve variação para não ficar igual) */
+@keyframes iconeFlutua {
+  0%   { transform: translateY(0px) rotate(0deg); }
+  100% { transform: translateY(-10px) rotate(3deg); }
+}
+
+/* ==========================================
+   NOVA PALETA – FUNDO E MURAL
+   ========================================== */
+body {
+  background: #f0f4f8 !important;
+}
+
+#muralComunicados {
+  background: #ffffff !important;
+  border-bottom: 1px solid #dce3eb !important;
+  box-shadow: 0 2px 8px rgba(100, 130, 180, 0.08) !important;
+  border-radius: 0 0 16px 16px !important;
+}
+
+/* ==========================================
+   GRADE FIXA 11x6 COM PADRÃO ALTERNADO (XADREZ)
+   ========================================== */
+.escola-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly; /* distribui as linhas uniformemente na tela */
+  padding: 20px;
+  box-sizing: border-box;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Cada linha */
+.escola-linha {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  transition: margin-left 0.3s;
+}
+
+/* Efeito tijolo: desloca as linhas pares (índice ímpar) */
+.escola-linha:nth-child(even) {
+  margin-left: 30px;
+}
+
+.escola-grid-item {
+  flex: 1 1 0;
+  max-width: 360px;    /* antes 180px – mais espaço para o texto */
+  min-width: 110px;    /* antes 100px – garante que não fique muito estreito */
+  text-align: center;
+  font-size: 0.9rem;     /* antes 0.9rem – aumentamos um pouco */
+  font-weight: 600;    /* antes 500 – um pouco mais negrito para destacar */
+  color: rgba(177, 175, 175, 0.95); /* um pouco mais branco */
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 8px 6px;
+  background: transparent;
+  border-radius: 40px;
+  transition: opacity 1s ease, transform 0.3s ease;
+}
+
+/* Células vazias: invisíveis mas ocupam espaço */
+.escola-grid-item.empty {
+  visibility: hidden;
+  color: transparent;
+  text-shadow: none;
+}
+
+/* Responsivo */
+@media (max-width: 700px) {
+  .escola-linha {
+    gap: 8px;
+  }
+  .escola-grid-item {
+    font-size: 0.7rem;
+    padding: 4px 2px;
+    min-width: 70px;
+  }
+  .escola-linha:nth-child(even) {
+    margin-left: 15px;
+  }
+}
+
+/* Ajuste para telas muito pequenas */
+@media (max-width: 500px) {
+  .escola-grid-item {
+    font-size: 0.6rem;
+    min-width: 60px;
+  }
+}
+/* Esconde o parágrafo "Carregando..." da splash */
+.splash-content p {
+  display: none;
+}
+/* Animação de pulsação na logo da splash */
+.splash-content img {
+  animation: logoPulse 2s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 0.9; 
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); 
+  }
+  50% { 
+    transform: scale(1.05); 
+    opacity: 1; 
+    filter: drop-shadow(0 0 20px rgba(255,255,255,0.7)); 
+  }
+}
+.splash-content p {
+  text-shadow: 0 1px 1px rgb(10, 6, 17);
+}
+#footerPrincipal {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #1e293b;
+  color: #e2e8f0;
+  text-align: center;
+  padding: 12px 16px;
+  font-size: 14px;
+  z-index: 40;
+  border-top: 2px solid #2563eb;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+}
+
+#app {
+  padding-bottom: 60px;   /* espaço extra no conteúdo para não ficar atrás do rodapé */
+}
+
+@media (max-width: 600px) {
+  #footerPrincipal {
+    display: none;
+  }
+  #app {
+    padding-bottom: 0;
+  }
+}
+/* Faixa de campanha no header */
+#faixaCampanha {
+  transition: all 0.3s ease;
+}
+#faixaCampanha:hover {
+  background: rgba(0,0,0,0.5);
+}
+/* ==========================================
+   BARRA DE PROGRESSO NO TOPO (NPROGRESS)
+   ========================================== */
+#nprogress {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 10001;
+}
+#nprogress .bar {
+  background: linear-gradient(90deg, #2563eb, #10b981);
+  width: 0%;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+#nprogress .peg {
+  display: none; /* sem brilho móvel para simplicidade */
+}
+/* Barra de progresso NProgress-like */
+#nprogress-bar {
+  animation: nprogress-slide 2s linear infinite;
+}
+@keyframes nprogress-slide {
+  0% { background-position: 0% 0%; }
+  100% { background-position: -200% 0%; }
+}
+#loading[style*="display: flex"] ~ #nprogress {
+  display: none;
+}
+/* Modo Foco */
+body.modo-foco header,
+body.modo-foco #muralComunicados,
+body.modo-foco #painel,
+body.modo-foco #indicadorUltimaAtualizacao,
+body.modo-foco #toggleVisualizacao,
+body.modo-foco .metrica-escola {
+  display: none !important;
+}
+body.modo-foco #lista {
+  height: calc(100vh - 160px);   /* ajuste conforme altura dos filtros */
+  overflow-y: auto;
+}
+#btnModoFoco:hover {
+  opacity: 1 !important;
+}
+/* Garante que modais fullscreen tenham rolagem própria e não afetem o fundo */
+.modal-card--fullscreen {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Remove qualquer scroll indesejado do fundo quando um modal fullscreen está ativo */
+body.modal-fullscreen-aberto {
+  overflow: hidden !important;
+}
+/* Deixar o card de login mais compacto */
+.login-card {
+  padding: 30px 20px !important;   /* antes era 40px 30px */
+}
+.login-card h2 {
+  margin-bottom: 4px !important;   /* reduz espaço abaixo do título */
+}
+.login-subtitle {
+  margin-bottom: 16px !important;  /* menos espaço entre subtítulo e campos */
+}
+.input-icon {
+  margin-bottom: 4px !important;   /* campos mais próximos */
+}
+#login button {
+  margin-top: 8px !important;      /* botão mais perto dos campos */
+}
+.login-footer {
+  margin-top: 16px !important;     /* rodapé do card mais próximo */
+}
+.login-avatar {
+  width: 64px !important;          /* logo um pouco menor (opcional) */
+  height: 64px !important;
 }
