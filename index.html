@@ -21,13 +21,34 @@
 </head>
 
 <body>
-  <div id="fundoOverlay"></div>
+  <!-- Barra de progresso sutil (NProgress-like) -->
+<div id="nprogress" style="position:fixed;top:0;left:0;width:100%;height:3px;z-index:9999;pointer-events:none;">
+  <div id="nprogress-bar" style="width:0%;height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa,#2563eb);background-size:200% 100%;transition:width 0.3s ease;"></div>
+</div>
+  <body>
   <div id="loading">
     <div class="spinner"></div>
   </div>
 
+  <!-- SPLASH SCREEN -->
+  <div id="splash" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(145deg, #1e3a8a, #2563eb); display: flex; align-items: center; justify-content: center; z-index: 9999; overflow: hidden;">
+    <!-- Partículas com nomes das escolas -->
+    <div id="splashEscolas" class="escola-grid"></div>
+    
+    <!-- Conteúdo central (logo, spinner, etc.) -->
+    <div class="splash-content" style="position: relative; z-index: 2; text-align: center;">
+      <img src="img/logo-sre-ac.png" alt="SRE Afonso Cláudio" style="width: 120px; margin-bottom: 8px;">
+      <p style="color: #c4c2b3; font-weight: 500; font-size: 1.4rem; margin-top: 0.5px;">
+        Carregando<span class="pontos-animados">...</span>
+      </p>
+      <p id="splashDica" style="color: rgba(0,0,0,0.7); margin-top: 20px; font-size: 14px; max-width: 280px; line-height: 1.4;"></p>
+    </div>
+    <div class="splash-particles" id="splashParticles"></div>
+  </div>
+
   <!-- 🔐 LOGIN -->
   <div id="login">
+      <div id="loginParticles" class="escola-grid"></div>
     <div class="login-container">
       <div class="login-card">
         <div class="login-avatar" style="background-image: url('img/logo-sre-ac.png'); background-size: contain; background-repeat: no-repeat; background-position: center;">
@@ -49,14 +70,14 @@
         </span>
       </div>
       <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Entrar no sistema</button>
-      <p style="font-size:12px; color: var(--text-muted); margin-top:8px; cursor:pointer;" onclick="recuperarSenha()">
+      <p style="font-size:12px; color: #171212; margin-top:8px; cursor:pointer;" onclick="recuperarSenha()">
         <i class="fas fa-question-circle"></i> Esqueci minha senha
       </p>
   
         <!-- Seção de Ajuda -->
         <div class="login-ajuda">
-          <a href="docs/tutorial.pdf" target="_blank" class="link-ajuda">
-            <i class="fas fa-file-pdf"></i> Tutorial em PDF
+          <a href="manual.html" target="_blank" class="link-ajuda">
+            <i class="fas fa-question-circle"></i> Manual do Sistema
           </a>
           </div>
   
@@ -139,6 +160,69 @@
               <option value="Amarela">Amarela</option>
             </select>
           </div>
+
+          <!-- FILIAÇÃO 1 -->
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-user-friends"></i></span>
+            <input type="text" id="filiacao1Cadastro" placeholder="Filiação 1 (ex.: Mãe)">
+          </div>
+          <!-- FILIAÇÃO 2 -->
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-user-friends"></i></span>
+            <input type="text" id="filiacao2Cadastro" placeholder="Filiação 2 (ex.: Pai)">
+          </div>
+          <!-- DATA DE NASCIMENTO -->
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+            <input type="date" id="dataNascimentoCadastro">
+            <small style="display: block; margin-top: 2px; font-size: 11px; color: var(--text-muted);">
+              Data de nascimento do estudante
+            </small>
+          </div>
+          <!-- NATURALIDADE -->
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+            <input type="text" id="naturalidadeCadastro" placeholder="Naturalidade (cidade)">
+          </div>
+          <!-- UF DE NASCIMENTO -->
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-flag"></i></span>
+            <select id="ufNascimentoCadastro">
+              <option value="">UF de nascimento</option>
+              <option value="AC">AC</option>
+              <option value="AL">AL</option>
+              <option value="AP">AP</option>
+              <option value="AM">AM</option>
+              <option value="BA">BA</option>
+              <option value="CE">CE</option>
+              <option value="DF">DF</option>
+              <option value="ES">ES</option>
+              <option value="GO">GO</option>
+              <option value="MA">MA</option>
+              <option value="MT">MT</option>
+              <option value="MS">MS</option>
+              <option value="MG">MG</option>
+              <option value="PA">PA</option>
+              <option value="PB">PB</option>
+              <option value="PR">PR</option>
+              <option value="PE">PE</option>
+              <option value="PI">PI</option>
+              <option value="RJ">RJ</option>
+              <option value="RN">RN</option>
+              <option value="RS">RS</option>
+              <option value="RO">RO</option>
+              <option value="RR">RR</option>
+              <option value="SC">SC</option>
+              <option value="SP">SP</option>
+              <option value="SE">SE</option>
+              <option value="TO">TO</option>
+            </select>
+          </div>
+          <!-- NACIONALIDADE -->
+          <div class="input-icon">
+            <span class="icon"><i class="fas fa-globe"></i></span>
+            <input type="text" id="nacionalidadeCadastro" placeholder="Nacionalidade (ex.: Brasileira)">
+          </div>
   
           <div class="checkbox-moderno" style="margin-top: 16px;">
             <input type="checkbox" id="alunoEdEspecial">
@@ -182,13 +266,17 @@
               <input type="text" id="editNomeAluno" placeholder="Nome completo">
             </div>
 
-            <!-- Foto do Aluno -->
             <div style="display: flex; align-items: center; gap: 12px; margin: 12px 0;">
-              <img id="fotoAlunoPreview" src="" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--card-border); display: none;" alt="Foto do aluno">
-              <div id="fotoAlunoInicial" style="width: 64px; height: 64px; border-radius: 50%; background: #e0e7ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; border: 2px solid var(--card-border);"></div>
-              <div>
+              <div id="fotoAlunoContainer" style="position: relative; cursor: pointer; width: 64px; height: 64px;" title="Clique para alterar a foto">
+                <img id="fotoAlunoPreview" src="" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--card-border); display: none;" alt="Foto do aluno">
+                <div id="fotoAlunoInicial" style="width: 64px; height: 64px; border-radius: 50%; background: #e0e7ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; border: 2px solid var(--card-border);"></div>
+                <!-- Ícone de câmera sobrepondo a foto/inicial -->
+                <div style="position: absolute; bottom: 0; right: 0; background: rgba(0,0,0,0.5); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                  <i class="fas fa-camera" style="color: white; font-size: 12px;"></i>
+                </div>
                 <input type="file" id="uploadFotoAluno" accept="image/*" style="display: none;" onchange="alterarFotoAluno()">
-                <button type="button" class="btn-pequeno" onclick="document.getElementById('uploadFotoAluno').click()"><i class="fas fa-camera"></i> Foto</button>
+              </div>
+              <div>
                 <button type="button" class="btn-pequeno" onclick="removerFotoAluno()"><i class="fas fa-trash"></i></button>
               </div>
             </div>
@@ -224,6 +312,66 @@
                 <option value="Amarela">Amarela</option>
               </select>
             </div>
+
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-user-friends"></i></span>
+              <input type="text" id="editFiliacao1" placeholder="Filiação 1">
+            </div>
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-user-friends"></i></span>
+              <input type="text" id="editFiliacao2" placeholder="Filiação 2">
+            </div>
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+              <input type="date" id="editDataNascimento">
+              <small style="display: block; margin-top: 2px; font-size: 11px; color: var(--text-muted);">
+                Data de nascimento do estudante
+              </small>
+            </div>
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+              <input type="text" id="editNaturalidade" placeholder="Naturalidade">
+            </div>
+            <!-- UF DE NASCIMENTO -->
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-flag"></i></span>
+              <select id="editUfNascimento">
+                <option value="">UF de nascimento</option>
+                <option value="AC">AC</option>
+                <option value="AL">AL</option>
+                <option value="AP">AP</option>
+                <option value="AM">AM</option>
+                <option value="BA">BA</option>
+                <option value="CE">CE</option>
+                <option value="DF">DF</option>
+                <option value="ES">ES</option>
+                <option value="GO">GO</option>
+                <option value="MA">MA</option>
+                <option value="MT">MT</option>
+                <option value="MS">MS</option>
+                <option value="MG">MG</option>
+                <option value="PA">PA</option>
+                <option value="PB">PB</option>
+                <option value="PR">PR</option>
+                <option value="PE">PE</option>
+                <option value="PI">PI</option>
+                <option value="RJ">RJ</option>
+                <option value="RN">RN</option>
+                <option value="RS">RS</option>
+                <option value="RO">RO</option>
+                <option value="RR">RR</option>
+                <option value="SC">SC</option>
+                <option value="SP">SP</option>
+                <option value="SE">SE</option>
+                <option value="TO">TO</option>
+              </select>
+            </div>
+
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-globe"></i></span>
+              <input type="text" id="editNacionalidade" placeholder="Nacionalidade">
+            </div>
+
             <div class="input-icon">
               <span class="icon"><i class="fas fa-book"></i></span>
               <select id="editTurma" style="padding-left: 50px;">
@@ -599,9 +747,156 @@
     </div>
   </div>
 </div>
+
+<!-- MODAL DADOS DA ESCOLA -->
+<div id="modalDadosEscola" class="modal-overlay" style="display:none;">
+  <div class="modal-card modal-card--grande modal-card--fullscreen">
+    <div class="modal-header">
+      <h2><i class="fas fa-school"></i> Dados da Escola</h2>
+      <button class="close-btn" onclick="fecharModalDadosEscola()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <!-- Seleção da Escola -->
+      <div class="input-icon">
+        <span class="icon"><i class="fas fa-school"></i></span>
+        <select id="selectEscolaDados" onchange="carregarDadosEscola()">
+          <option value="">Selecione a escola</option>
+        </select>
+      </div>
+
+      <!-- Card com os dados atuais -->
+      <div id="cardDadosEscola" style="display:none; margin-top: 16px;">
+        <div class="usuario-card">
+          <div class="usuario-avatar"><i class="fas fa-school"></i></div>
+          <div class="usuario-info">
+            <strong>Dados atuais</strong>
+            <p id="resumoEndereco" style="margin:4px 0;"></p>
+            <p id="resumoContato" style="margin:4px 0;"></p>
+            <p id="resumoAtos" style="margin:4px 0;"></p>
+            <button class="btn-pequeno" onclick="mostrarFormEdicaoDadosEscola()">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="btn-pequeno" onclick="exportarDadosEscolaPDF()">
+              <i class="fas fa-file-pdf"></i> Exportar PDF
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulário de edição (oculto por padrão) -->
+      <div id="formDadosEscola" style="display:none; margin-top: 16px;">
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-road"></i></span>
+          <input type="text" id="editLogradouro" placeholder="Logradouro (Rua, Av., etc.)">
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-hashtag"></i></span>
+          <input type="text" id="editNumero" placeholder="Número">
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-map"></i></span>
+          <input type="text" id="editBairro" placeholder="Bairro">
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-city"></i></span>
+          <input type="text" id="editCidade" placeholder="Cidade">
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-flag"></i></span>
+          <select id="editUfEscola">
+            <option value="">UF</option>
+            <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+            <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+            <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+            <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+            <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+            <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+            <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+            <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+            <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+          </select>
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-mailbox"></i></span>
+          <input type="text" id="editCep" placeholder="CEP">
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-envelope"></i></span>
+          <input type="email" id="editEmailEscola" placeholder="E-mail institucional">
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-phone"></i></span>
+          <input type="tel" id="editTelefone" placeholder="Telefone" oninput="aplicarMascaraTelefone(event)">
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-file-contract"></i></span>
+          <input type="text" id="editAtoCriacao" placeholder="Ato de Criação">
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+          <input type="date" id="editPublicacaoCriacao" placeholder="Data de publicação">
+          <small style="display: block; margin-top: 2px; font-size: 11px; color: var(--text-muted);">
+            Data de publicação
+          </small>
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-file-contract"></i></span>
+          <input type="text" id="editAtoAprovacao" placeholder="Ato de Aprovação/Credenciamento">
+        </div>
+        <div class="input-icon">
+          <span class="icon"><i class="fas fa-calendar-alt"></i></span>
+          <input type="date" id="editPublicacaoAprovacao" placeholder="Data de publicação">
+          <small style="display: block; margin-top: 2px; font-size: 11px; color: var(--text-muted);">
+            Data de publicação
+          </small>
+        </div>
+        <!-- Seção de Organizações Curriculares -->
+        <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
+          <h3><i class="fas fa-book"></i> Organizações Curriculares</h3>
+          <p style="font-size:13px; color: var(--text-muted);">Vincule as OCEBs/OCTs desta escola.</p>
+
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <select id="selectEtapaModalidade" onchange="atualizarSelectOCs()" style="flex: 1;">
+              <option value="">Selecione a Etapa/Modalidade</option>
+            </select>
+            <select id="selectOrganizacao" style="flex: 2;" disabled>
+              <option value="">Primeiro selecione a etapa</option>
+            </select>
+            <button class="btn-pequeno" onclick="adicionarOrganizacao()"><i class="fas fa-plus"></i></button>
+          </div>
+
+          <!-- Lista de OCs adicionadas -->
+          <div id="listaOrgsAdicionadas" style="display: flex; flex-direction: column; gap: 6px;"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-salvar" onclick="salvarDadosEscola()">Salvar</button>
+          <button class="btn-cancelar" onclick="cancelarEdicaoDadosEscola()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
     
     <!-- HEADER PRINCIPAL -->
     <header>
+      <!-- Faixa de campanha mensal -->
+      <div id="faixaCampanha" style="display:none; position: absolute; top: 12px; left: 16px; z-index: 10; 
+          background: rgba(0,0,0,0.25); backdrop-filter: blur(4px); border-radius: 12px; 
+          padding: 8px 16px; color: #fff; font-size: 14px; font-weight: 500; 
+          max-width: 300px; line-height: 1.3; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+        <span id="textoCampanha"></span>
+        <a id="linkCampanha" href="#" target="_blank" style="color: #fff; text-decoration: underline; margin-left: 8px; white-space: nowrap;">Saiba mais</a>
+      </div>
+      <div class="icone-flutuante" id="iconeGlobo" aria-hidden="true"></div>
+      <div class="icone-flutuante" id="iconeAmpulheta" aria-hidden="true"></div>
+      <div id="headerTitulo" style="text-align: center; padding: 10px 20px; z-index: 1; position: relative; width: 100%;">
+  <div id="nomeEscolaHeader" style="font-size: clamp(24px, 5vw, 38px); font-weight: 800; color: #ffffff; text-shadow: 0 4px 12px rgba(0,0,0,0.4); letter-spacing: -0.5px; line-height: 1.1;">
+    Carregando...
+  </div>
+  <div style="font-size: clamp(14px, 2.5vw, 18px); font-weight: 500; color: #e0e7ff; text-shadow: 0 2px 6px rgba(0,0,0,0.3); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase;">
+    Secretaria Escolar
+  </div>
+</div>
       <!-- Badges de perfil e e‑mail (canto superior direito) -->
       <div class="header-right">
         <!-- Foto de perfil + e‑mail -->
@@ -663,6 +958,7 @@
                 <button onclick="abrirModalLegalizacao()" id="btnLegalizacao" class="btn-header" style="display:none;"><i class="fas fa-gavel"></i> Atos Autorizativos</button>
                 <button onclick="abrirModalGeradorDocumentos()" id="btnGeradorDocumentos" class="btn-header" style="display:none;"><i class="fas fa-file-contract"></i> Parecer Supervisão</button>
                 <button onclick="abrirModalMonitoramento()" id="btnMonitoramento" class="btn-header"><i class="fas fa-clipboard-list"></i> Monitoramento</button>
+                <button onclick="abrirModalDadosEscola()" id="btnDadosEscola" class="btn-header"><i class="fas fa-school"></i> Dados da Escola</button>
               </div>
             
               <!-- Coluna: Plano Tático -->
@@ -699,10 +995,10 @@
                 <div id="headerActionsRight" style="flex: 1; display: flex; align-items: center; gap: 10px; justify-content: flex-end;">
             <!-- 🔍 CAMPO DE BUSCA GLOBAL -->
           <div style="position: relative;">
-            <input type="text" id="inputBuscaGlobal" placeholder="Buscar no sistema..."
-                  style="padding: 8px 12px; border-radius: 20px; border: 1px solid var(--input-border);
-                          background: var(--input-bg); color: var(--text-primary); width: 220px;"
-                  oninput="buscarGlobalComDebounce()" onfocus="buscarGlobalComDebounce()" onblur="setTimeout(fecharDropdownBusca, 200)">
+          <input type="text" id="inputBuscaGlobal" placeholder="Buscar no sistema..."
+                style="padding: 8px 12px; border-radius: 20px; border: 1px solid var(--input-border);
+                        background: var(--input-bg); color: var(--text-primary); width: 220px;"
+                oninput="buscarGlobalComDebounce()" onfocus="buscarGlobalComDebounce()">
             <div id="dropdownBuscaGlobal" style="position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg);
                   border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
                   z-index: 10000; max-height: 60vh; overflow-y: auto; display: none;"></div>
@@ -991,12 +1287,18 @@
     <div id="painel" class="painel-metricas">
       <!-- Será preenchido via JS -->
     </div>
-
     <!-- Barra de controle: Título + Toggle -->
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px; margin-bottom: 8px;">
-      <h3 style="margin: 0; font-size: 18px; color: var(--text-primary);">
-        <i class="fas fa-users"></i> Alunos
-      </h3>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <h3 style="margin: 0; font-size: 18px; color: var(--text-primary);">
+          <i class="fas fa-users"></i> Alunos
+        </h3>
+        <button id="btnModoFoco" class="btn-icone" onclick="alternarModoFoco()" 
+                data-tooltip="Modo Foco (tela cheia para a lista)" 
+                style="color: var(--text-muted); opacity: 0.5; transition: opacity 0.2s;">
+          <i class="fas fa-expand"></i>
+        </button>
+      </div>
       <div style="display: flex; align-items: center; gap: 8px;">
         <span style="font-size: 14px; color: var(--text-muted);">Cards</span>
         <button id="toggleVisualizacao" class="toggle-switch" onclick="alternarVisualizacao()">
@@ -1049,8 +1351,25 @@
           <div id="abasModelos" style="display: flex; gap: 10px; margin-bottom: 20px;">
             <button class="btn-pequeno" id="abaListarModelosBtn" onclick="mostrarAbaListarModelos()"><i class="fas fa-list"></i> Modelos Disponíveis</button>
             <button class="btn-pequeno" id="abaUploadModeloBtn" onclick="mostrarAbaUploadModelo()" style="display:none;"><i class="fas fa-upload"></i> Enviar Modelo</button>
+            <button class="btn-pequeno" onclick="mostrarAbaUploadModeloEscola()" style="display:none;" id="btnUploadModeloEscola">
+              <i class="fas fa-upload"></i> Enviar Modelo da Escola
+            </button>
           </div>
-          
+          <!-- Upload de Modelo da Escola -->
+          <div id="abaUploadModeloEscola" style="display:none;">
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-tag"></i></span>
+              <input type="text" id="nomeModeloEscola" placeholder="Nome do modelo (ex.: Formulário de Autorização)">
+            </div>
+            <div class="input-icon">
+              <span class="icon"><i class="fas fa-paperclip"></i></span>
+              <input type="file" id="arquivoModeloEscola" accept=".doc,.docx,.pdf,.odt,.xlsx,.pptx">
+            </div>
+            <div class="modal-actions">
+              <button class="btn-salvar" onclick="fazerUploadModeloEscola()"><i class="fas fa-cloud-upload-alt"></i> Enviar Modelo</button>
+              <button class="btn-cancelar" onclick="fecharModalModelos()">Cancelar</button>
+            </div>
+          </div>
           <!-- Aba Listar -->
           <div id="abaListarModelos">
             <p style="margin-bottom:16px; color:#64748b;">
@@ -1439,13 +1758,20 @@
             <!-- Seção de Vínculos (DROPDOWN) -->
             <div style="margin-top: 16px; border-top: 1px solid var(--card-border); padding-top: 16px;">
               <h4 style="margin:0 0 12px;"><i class="fas fa-link"></i> Vincular a outra legislação (opcional)</h4>
-              <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-                <select id="selectVinculo" style="flex:2;">
-                  <option value="">Selecionar documento...</option>
-                </select>
-                <button type="button" class="btn-pequeno" onclick="adicionarVinculoDoSelect()">
-                  <i class="fas fa-plus"></i> Vincular
-                </button>
+              <div style="margin-bottom: 12px;">
+                <div class="input-icon" style="margin-bottom: 8px;">
+                  <span class="icon"><i class="fas fa-search"></i></span>
+                  <input type="text" id="buscaVinculo" placeholder="Filtrar legislação..." 
+                        oninput="filtrarSelectVinculacao(this.value, 'selectVinculo', window.legislacoesParaVinculo)">
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <select id="selectVinculo" style="flex:2;">
+                    <option value="">Selecionar documento...</option>
+                  </select>
+                  <button type="button" class="btn-pequeno" onclick="adicionarVinculoDoSelect()">
+                    <i class="fas fa-plus"></i> Vincular
+                  </button>
+                </div>
               </div>
               <div id="vinculosAdicionados"></div>
             </div>
@@ -1534,13 +1860,20 @@
         <!-- Seção de Vínculos na Edição -->
         <div style="margin-top: 16px; border-top: 1px solid #d1d5db; padding-top: 16px;">
           <h4 style="margin:0 0 12px;"><i class="fas fa-link"></i> Vínculos</h4>
-          <div style="display: flex; gap: 8px; margin-bottom: 12px; align-items: center;">
-            <select id="selectEditVinculo" style="flex:2;">
-              <option value="">Selecionar documento...</option>
-            </select>
-            <button type="button" class="btn-pequeno" onclick="adicionarVinculoEdicaoDoSelect()">
-              <i class="fas fa-plus"></i> Vincular
-            </button>
+          <div style="margin-bottom: 12px;">
+            <div class="input-icon" style="margin-bottom: 8px;">
+              <span class="icon"><i class="fas fa-search"></i></span>
+              <input type="text" id="buscaEditVinculo" placeholder="Filtrar legislação..." 
+                    oninput="filtrarSelectVinculacao(this.value, 'selectEditVinculo', window.legislacoesParaEdicao)">
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <select id="selectEditVinculo" style="flex:2;">
+                <option value="">Selecionar documento...</option>
+              </select>
+              <button type="button" class="btn-pequeno" onclick="adicionarVinculoEdicaoDoSelect()">
+                <i class="fas fa-plus"></i> Vincular
+              </button>
+            </div>
           </div>
           <div id="vinculosEdicaoAdicionados"></div>
         </div>
@@ -2041,7 +2374,16 @@
     </div>
   </div>
 <div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+  <!-- 🔽 RODAPÉ FIXO -->
+  <footer id="footerPrincipal">
+    <span>SRE Afonso Cláudio – Secretaria Escolar &copy; 2026</span>
+    <span style="margin: 0 12px;">|</span>
+    <span>Sistema de Controle de Matrículas</span>
+  </footer>
 
+<div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+
+</body>
 <!-- DOCK INFERIOR MOBILE -->
 <div id="dockMobile" style="display:none;">
   <div class="dock-item" onclick="abrirModalLegislacao()"><i class="fas fa-balance-scale"></i><span>Legislação</span></div>
@@ -2092,24 +2434,25 @@
     </script>
 
     <!-- SCRIPTS MODULARIZADOS - ORDEM IMPORTANTE -->
-    <script src="js/config.js?v=29052026"></script>
-    <script src="js/utils.js?v=29052026"></script>
-    <script src="js/data.js?v=29052026"></script>
-    <script src="js/ui.js?v=29052026"></script>
-    <script src="js/modals.js?v=29052026"></script>
-    <script src="js/filtros.js?v=29052026"></script>
-    <script src="js/main.js?v=29052026"></script>
-    <script src="js/notificacoes.js?v=29052026"></script>
-    <script src="js/perfil.js?v=29052026"></script>
-    <script src="js/agenda.js?v=29052026"></script>
-    <script src="js/dashboard.js?v=29052026"></script>
-    <script src="js/log.js?v=29052026"></script>
-    <script src="js/termo.js?v=29052026"></script>
-    <script src="js/planotatico.js?v=29052026"></script>
-    <script src="js/gerador-documentos.js?v=29052026"></script>
-    <script src="js/dados-escolas.js?v=29052026"></script>
-    <script src="js/monitoramento.js?v=29052026"></script>
-    <link rel="stylesheet" href="style.css?v=29052025">
+    <script src="js/config.js?v=02062026"></script>
+    <script src="js/utils.js?v=02062026"></script>
+    <script src="js/data.js?v=02062026"></script>
+    <script src="js/ui.js?v=02062026"></script>
+    <script src="js/modals.js?v=02062026"></script>
+    <script src="js/filtros.js?v=02062026"></script>
+    <script src="js/main.js?v=02062026"></script>
+    <script src="js/notificacoes.js?v=02062026"></script>
+    <script src="js/perfil.js?v=02062026"></script>
+    <script src="js/agenda.js?v=02062026"></script>
+    <script src="js/dashboard.js?v=02062026"></script>
+    <script src="js/log.js?v=02062026"></script>
+    <script src="js/termo.js?v=02062026"></script>
+    <script src="js/planotatico.js?v=02062026"></script>
+    <script src="js/gerador-documentos.js?v=02062026"></script>
+    <script src="js/dados-escolas.js?v=02062026"></script>
+    <script src="js/monitoramento.js?v=02062026"></script>
+    <script src="js/orgs-curriculares.js?v=02062026"></script>
+    <link rel="stylesheet" href="style.css?v=02062026">
     <script>
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./service-worker.js')
@@ -2130,6 +2473,7 @@
     </script>
     <!-- 🔥 LIMPEZA AUTOMÁTICA DE CACHE E SERVICE WORKERS ANTIGOS -->
 <script>
+  
   (function() {
     // Só executa uma vez por navegador
     if (!localStorage.getItem('sw_cleanup_v2')) {
@@ -2150,5 +2494,141 @@
     }
   })();
 </script>
+<!-- SISTEMA DE GRADE 11x6 COM PADRÃO XADREZ (33 escolas, 33 vazios) -->
+<script>
+  (function() {
+    // Lista oficial das 33 escolas (sem a Tutorial Teste)
+    const escolas = [
+      "CEEFMTI Afonso Cláudio", "CEEFMTI Elisa Paiva", "EEEF Ivana Casagrande Scabelo",
+      "EEEF Severino Paste", "EEEFM Alto Rio Possmoser", "EEEFM Álvaro Castelo",
+      "EEEFM Domingos Perim", "EEEFM Elvira Barros", "EEEFM Fazenda Camporês",
+      "EEEFM Fazenda Emílio Schroeder", "EEEFM Fioravante Caliman", "EEEFM Frederico Boldt",
+      "EEEFM Gisela Salloker Fayet", "EEEFM Graça Aranha", "EEEFM Joaquim Caetano de Paiva",
+      "EEEFM José Cupertino", "EEEFM José Giestas", "EEEFM José Roberto Christo",
+      "EEEFM Leogildo Severiano de Souza", "EEEFM Luiz Jouffroy", "EEEFM Maria de Abreu Alvim",
+      "EEEFM Mário Bergamin", "EEEFM Marlene Brandão", "EEEFM Pedra Azul",
+      "EEEFM Ponto do Alto", "EEEFM Profª Aldy Soares Merçon Vargas", "EEEFM Prof Hermann Berger",
+      "EEEFM São Jorge", "EEEFM São Luís", "EEEFM Teófilo Paulino", "EEEM Francisco Guilherme",
+      "EEEM Mata fria", "EEEM Sobreiro"
+    ];
+
+    // Embaralhador (Fisher-Yates)
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Cria a estrutura fixa: 11 linhas, 6 colunas, preenchendo cheio/vazio conforme padrão de xadrez
+    function criarEstruturaXadrez(containerId) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      container.innerHTML = '';
+
+      const linhas = 11;
+      const colunas = 6;
+
+      for (let l = 0; l < linhas; l++) {
+        const linhaDiv = document.createElement('div');
+        linhaDiv.className = 'escola-linha';
+        
+        // Define se a linha começa com cheio na coluna 0 (índice par) ou na coluna 1 (ímpar)
+        const comecaCheio = (l % 2 === 0);
+        
+        for (let c = 0; c < colunas; c++) {
+          const celula = document.createElement('div');
+          celula.className = 'escola-grid-item';
+          // Célula cheia se (comecaCheio e coluna par) OU (!comecaCheio e coluna ímpar)
+          const isCheio = (comecaCheio && c % 2 === 0) || (!comecaCheio && c % 2 === 1);
+          if (!isCheio) {
+            celula.classList.add('empty');
+            celula.textContent = '';
+          } else {
+            celula.textContent = ''; // será preenchido depois
+          }
+          linhaDiv.appendChild(celula);
+        }
+        container.appendChild(linhaDiv);
+      }
+    }
+
+    function preencherXadrez(containerId, listaEscolas) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      
+      const celulas = container.querySelectorAll('.escola-grid-item');
+      const celulasCheias = [];
+      celulas.forEach(cel => {
+        if (!cel.classList.contains('empty')) {
+          celulasCheias.push(cel);
+        }
+      });
+      
+      const escolasEmbaralhadas = shuffleArray([...listaEscolas]);
+      
+      // Fade out
+      celulasCheias.forEach(cel => {
+        cel.style.opacity = '0';
+        cel.style.transform = 'scale(0.95)';
+      });
+      
+      // Espera a transição e troca os nomes
+      setTimeout(() => {
+        for (let i = 0; i < celulasCheias.length && i < escolasEmbaralhadas.length; i++) {
+          celulasCheias[i].textContent = escolasEmbaralhadas[i];
+        }
+        // Fade in
+        celulasCheias.forEach(cel => {
+          cel.style.opacity = '1';
+          cel.style.transform = 'scale(1)';
+        });
+      }, 1000); // tempo igual ao da transição CSS
+    }
+
+    // Inicialização para splash e login
+    function iniciarXadrez() {
+      const splashContainer = document.getElementById('splashEscolas');
+      const loginContainer = document.getElementById('loginParticles');
+      
+      if (splashContainer) {
+        criarEstruturaXadrez('splashEscolas');
+        preencherXadrez('splashEscolas', escolas);
+        setInterval(() => {
+          preencherXadrez('splashEscolas', escolas);
+        }, 3000);
+      }
+      if (loginContainer) {
+        criarEstruturaXadrez('loginParticles');
+        preencherXadrez('loginParticles', escolas);
+        setInterval(() => {
+          preencherXadrez('loginParticles', escolas);
+        }, 3000);
+      }
+    }
+
+    // Reconstruir ao redimensionar a janela (para recalcular tamanhos responsivos)
+    window.addEventListener('resize', function() {
+      const splashContainer = document.getElementById('splashEscolas');
+      const loginContainer = document.getElementById('loginParticles');
+      if (splashContainer) {
+        criarEstruturaXadrez('splashEscolas');
+        preencherXadrez('splashEscolas', escolas);
+      }
+      if (loginContainer) {
+        criarEstruturaXadrez('loginParticles');
+        preencherXadrez('loginParticles', escolas);
+      }
+    });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', iniciarXadrez);
+    } else {
+      iniciarXadrez();
+    }
+  })();
+</script>
+
 </body>
 </html>
