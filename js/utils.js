@@ -1,27 +1,113 @@
+let loadingButton = null;
 // =========================
 // FUNÇÕES UTILITÁRIAS
 // =========================
 
-// ------ JSONP (requisições GET contornando CORS) ------
 function jsonp(url, callback) {
+  // Inicia a barra de progresso (se existir)
+  const barra = document.getElementById('nprogress-bar');
+  if (barra) { barra.style.width = '90%'; barra.style.opacity = '1'; }
+
+  const btn = window._clickedButton;
+  if (btn && typeof showButtonLoading === 'function') {
+    showButtonLoading(btn);
+  }
+
   const callbackName = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
   window[callbackName] = function(data) {
+    // Finaliza a barra
+    if (barra) { barra.style.width = '100%'; setTimeout(() => { barra.style.opacity = '0'; }, 200); }
     callback(data);
     document.body.removeChild(script);
     delete window[callbackName];
+    if (btn && typeof hideButtonLoading === 'function') {
+      hideButtonLoading(btn);
+    }
+    window._clickedButton = null;
   };
   const script = document.createElement('script');
   script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + callbackName;
   script.onerror = function() {
-    callback({ erro: 'Falha na requisição JSONP' });
+    if (barra) { barra.style.width = '100%'; setTimeout(() => { barra.style.opacity = '0'; }, 200); }
+    callback({ erro: 'falha_rede' });
     document.body.removeChild(script);
     delete window[callbackName];
+    if (btn && typeof hideButtonLoading === 'function') {
+      hideButtonLoading(btn);
+    }
+    window._clickedButton = null;
   };
   document.body.appendChild(script);
 }
 
 // ------ POST sem esperar resposta (evita CORS) ------
 function postSemResposta(dados, msgSucesso, callback) {
+  const barra = document.getElementById('nprogress-bar');
+  if (barra) { barra.style.width = '90%'; barra.style.opacity = '1'; }
+
+  const btn = window._clickedButton;
+  if (btn && typeof showButtonLoading === 'function') {
+    showButtonLoading(btn);
+  }
+
+  fetch(API_URL, {
+    method: "POST",
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(dados)
+  })
+  .then(() => {
+    if (barra) { barra.style.width = '100%'; setTimeout(() => { barra.style.opacity = '0'; }, 200); }
+    if (msgSucesso) mostrarToast(msgSucesso, 'success');
+    if (callback) callback();
+  })
+  .catch(() => {
+    if (barra) { barra.style.width = '100%'; setTimeout(() => { barra.style.opacity = '0'; }, 200); }
+    mostrarToast("Erro de conexão.", "error");
+  })
+  .finally(() => {
+    if (btn && typeof hideButtonLoading === 'function') {
+      hideButtonLoading(btn);
+    }
+    window._clickedButton = null;
+  });
+}
+
+// =========================
+// BARRA DE PROGRESSO (NPROGRESS)
+// =========================
+function iniciarNProgress() {
+  let barra = document.getElementById('nprogress');
+  if (!barra) {
+    barra = document.createElement('div');
+    barra.id = 'nprogress';
+    barra.innerHTML = '<div class="bar"></div>';
+    document.body.appendChild(barra);
+  }
+  const bar = barra.querySelector('.bar');
+  bar.style.width = '0%';
+  // Força um reflow para reiniciar a animação
+  bar.getBoundingClientRect();
+  bar.style.width = '90%';
+}
+
+function finalizarNProgress() {
+  const barra = document.getElementById('nprogress');
+  if (!barra) return;
+  const bar = barra.querySelector('.bar');
+  bar.style.width = '100%';
+  setTimeout(() => {
+    barra.remove();
+  }, 300);
+}
+
+// ------ POST sem esperar resposta (evita CORS) ------
+function postSemResposta(dados, msgSucesso, callback) {
+  const btn = window._clickedButton;
+  if (btn && typeof showButtonLoading === 'function') {
+    showButtonLoading(btn);
+  }
+
   fetch(API_URL, {
     method: "POST",
     mode: 'no-cors',
@@ -34,6 +120,12 @@ function postSemResposta(dados, msgSucesso, callback) {
   })
   .catch(() => {
     mostrarToast("Erro de conexão.", "error");
+  })
+  .finally(() => {
+    if (btn && typeof hideButtonLoading === 'function') {
+      hideButtonLoading(btn);
+    }
+    window._clickedButton = null;
   });
 }
 
@@ -126,6 +218,7 @@ function mostrarToast(mensagem, tipo = 'info', duracao = 4000) {
     }, duracaoReal);
   }
 }
+
 // ------ LOADING SCREEN ------
 function mostrarLoading() {
   document.getElementById("loading").style.display = "flex";
@@ -172,7 +265,7 @@ function hideButtonLoading(btn) {
   btn.disabled = false;
 }
 
-// ------ DEBOUNCE (para campos de busca) ------
+// ------ DEBOUNCE ------
 function debounce(func, wait) {
   let timeout;
   return function(...args) {
@@ -225,14 +318,23 @@ function extrairPrimeiroTelefone(telefones) {
 // ------ STATUS DE ÍCONES DE DOCUMENTOS ------
 function getDocIconStatus(entregue, prazoFinal, nomeDoc) {
   let statusTexto;
+  let dataVenc = '';
+
   if (entregue) {
     statusTexto = '✓ Entregue';
   } else {
     if (prazoFinal) {
       const hoje = new Date();
-      hoje.setHours(0,0,0,0);
+      hoje.setHours(0, 0, 0, 0);
       const prazo = new Date(prazoFinal);
-      prazo.setHours(0,0,0,0);
+      prazo.setHours(0, 0, 0, 0);
+
+      // Formata a data de vencimento no padrão brasileiro
+      const dia = String(prazo.getDate()).padStart(2, '0');
+      const mes = String(prazo.getMonth() + 1).padStart(2, '0');
+      const ano = prazo.getFullYear();
+      dataVenc = ` (vence ${dia}/${mes}/${ano})`;
+
       if (prazo < hoje) {
         statusTexto = '✗ Vencido';
       } else {
@@ -242,24 +344,30 @@ function getDocIconStatus(entregue, prazoFinal, nomeDoc) {
       statusTexto = '⏳ Pendente';
     }
   }
+
   return {
     classe: entregue ? 'entregue' : (statusTexto.includes('Vencido') ? 'vencido' : 'pendente'),
-    tooltip: `${nomeDoc}\n${statusTexto}`
+    tooltip: `${nomeDoc}\n${statusTexto}${dataVenc}`
   };
 }
 
-// ------ ESCOLAS PERMITIDAS (baseado no perfil logado) ------
+// ------ ESCOLAS PERMITIDAS ------
 function getEscolasPermitidas() {
-  // perfilUsuario e emailUsuario são globais definidos após login
-  if (typeof perfilUsuario !== 'undefined' && perfilUsuario === 'SUPERVISOR' && emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
+  if (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') {
+    return LISTA_ESCOLAS.slice();
+  }
+  if (perfilUsuario === 'SUPERVISOR') {
     return window.escolasSupervisionadas || [];
   }
-  return LISTA_ESCOLAS;
+  if (perfilUsuario === 'SECRETARIA' || perfilUsuario === 'PEDAGOGICO') {
+    return escolaUsuario ? [escolaUsuario] : [];
+  }
+  return [];
 }
 
 function aplicarMascaraData(input) {
   let valor = input.value.replace(/\D/g, '');
-  if (valor.length > 8) valor = valor.slice(0, 8); // DDMMAAAA
+  if (valor.length > 8) valor = valor.slice(0, 8);
   let resultado = '';
   if (valor.length > 0) resultado = valor.substring(0, 2);
   if (valor.length > 2) resultado += '/' + valor.substring(2, 4);
@@ -269,39 +377,30 @@ function aplicarMascaraData(input) {
 
 function aplicarMascaraHora(input) {
   let valor = input.value.replace(/\D/g, '');
-  if (valor.length > 4) valor = valor.slice(0, 4); // HHMM
+  if (valor.length > 4) valor = valor.slice(0, 4);
   let resultado = '';
   if (valor.length > 0) resultado = valor.substring(0, 2);
   if (valor.length > 2) resultado += ':' + valor.substring(2, 4);
   input.value = resultado;
 }
+
 function validarCPF(cpf) {
-  cpf = cpf.replace(/\D/g, ''); // remove caracteres não numéricos
+  cpf = cpf.replace(/\D/g, '');
   if (cpf.length !== 11) return false;
-  
-  // Verifica se todos os dígitos são iguais (caso inválido)
   if (/^(\d)\1{10}$/.test(cpf)) return false;
-  
-  // Validação do primeiro dígito verificador
   let soma = 0;
-  for (let i = 0; i < 9; i++) {
-    soma += parseInt(cpf.charAt(i)) * (10 - i);
-  }
+  for (let i = 0; i < 9; i++) soma += parseInt(cpf.charAt(i)) * (10 - i);
   let resto = (soma * 10) % 11;
   if (resto === 10 || resto === 11) resto = 0;
   if (resto !== parseInt(cpf.charAt(9))) return false;
-  
-  // Validação do segundo dígito verificador
   soma = 0;
-  for (let i = 0; i < 10; i++) {
-    soma += parseInt(cpf.charAt(i)) * (11 - i);
-  }
+  for (let i = 0; i < 10; i++) soma += parseInt(cpf.charAt(i)) * (11 - i);
   resto = (soma * 10) % 11;
   if (resto === 10 || resto === 11) resto = 0;
   if (resto !== parseInt(cpf.charAt(10))) return false;
-  
   return true;
 }
+
 function normalizarRacaCor(valor) {
   if (!valor) return '';
   const v = valor.trim().toUpperCase();
@@ -312,23 +411,18 @@ function normalizarRacaCor(valor) {
     'INDÍGENA': 'Indígena',
     'AMARELA': 'Amarelo'
   };
-  return mapa[v] || ''; // retorna vazio se não reconhecer
+  return mapa[v] || '';
 }
 
 /**
  * Ativa o acionamento de busca/filtro ao pressionar Enter nos campos de um container.
- * @param {string} containerSelector - Seletor CSS do modal (ex.: '#modalDocumentos')
- * @param {function} callback - Função a ser chamada ao pressionar Enter
  */
 function ativarEnterNoModal(containerSelector, callback) {
   const container = document.querySelector(containerSelector);
   if (!container) return;
-  
   container.querySelectorAll('input, select').forEach(el => {
-    // Evita adicionar múltiplos listeners no mesmo elemento
     if (el.dataset.enterListener === 'true') return;
     el.dataset.enterListener = 'true';
-    
     el.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -336,4 +430,69 @@ function ativarEnterNoModal(containerSelector, callback) {
       }
     });
   });
+}
+
+/**
+ * Converte uma data de string para o formato ISO (YYYY-MM-DD).
+ */
+function parseDataCSV(str) {
+  if (!str) return '';
+  const limpo = str.toString().trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(limpo)) return limpo;
+  const partes = limpo.split(/[/-]/);
+  if (partes.length === 3) {
+    const dia = partes[0].padStart(2, '0');
+    const mes = partes[1].padStart(2, '0');
+    const ano = partes[2].length === 2 ? '20' + partes[2] : partes[2];
+    return `${ano}-${mes}-${dia}`;
+  }
+  return '';
+}
+
+function formatarDataISO(dataStr) {
+  if (!dataStr) return '';
+  if (dataStr instanceof Date) {
+    const ano = dataStr.getFullYear();
+    const mes = String(dataStr.getMonth() + 1).padStart(2, '0');
+    const dia = String(dataStr.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+  const limpo = dataStr.toString().trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(limpo)) return limpo.substring(0, 10);
+  const partes = limpo.split(/[/-]/);
+  if (partes.length === 3) {
+    const dia = partes[0].padStart(2, '0');
+    const mes = partes[1].padStart(2, '0');
+    const ano = partes[2].length === 2 ? '20' + partes[2] : partes[2];
+    return `${ano}-${mes}-${dia}`;
+  }
+  return limpo;
+}
+
+function gerarLinkWhatsApp(aluno) {
+  const docsPendentes = [];
+  CONFIG_DOCS_CARD.forEach(doc => {
+    if (doc.coluna === 'RG') return;
+    if (aluno[doc.coluna] !== true) {
+      docsPendentes.push(doc.label);
+    }
+  });
+
+  if (docsPendentes.length === 0) {
+    return { url: null, pendentes: [], mensagem: '' };
+  }
+
+  const telefone = aluno.TELEFONE ? aluno.TELEFONE.replace(/\D/g, '') : '';
+  let url = null;
+  const listaDocs = docsPendentes.join(', ');
+  const mensagem = `Olá! A escola ${aluno.ESCOLA} informa que o(a) aluno(a) ${aluno.ALUNO} está com os seguintes documentos pendentes: ${listaDocs}. Por favor, regularize o quanto antes. Obrigado!`;
+
+  if (telefone) {
+    let numero = telefone;
+    if (numero.startsWith('0')) numero = numero.substring(1);
+    if (!numero.startsWith('55')) numero = '55' + numero;
+    url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+  }
+
+  return { url, pendentes: docsPendentes, mensagem };
 }

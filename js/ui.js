@@ -28,8 +28,9 @@ function renderLista(dados) {
     div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.04)";
     div.style.border = "1px solid #f1f5f9";
     div.style.display = "flex";
-    div.style.alignItems = "center";
-    div.style.gap = "12px";
+    div.style.flexDirection = "column";
+    div.style.alignItems = "stretch";
+    div.style.gap = "0";
     div.style.transition = "all 0.2s";
     div.style.position = "relative";
     div.style.zIndex = "auto";
@@ -44,8 +45,6 @@ function renderLista(dados) {
 
     let prazoTexto = "";
     let prazoClasse = "";
-    let barraProgresso = "";
-    let corBarra = "#10b981";
     
     if (aluno.STATUS !== "✅ Completo") {
       if (aluno.PRAZO_FINAL) {
@@ -56,30 +55,18 @@ function renderLista(dados) {
         const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
         
         if (diff < 0) {
-          prazoTexto = `Vencido há ${Math.abs(diff)} dia(s)`;
+          prazoTexto = `Vencido: ${Math.abs(diff)} dia(s)`;
           prazoClasse = "prazo-urgente";
-          corBarra = "#ef4444";
         } else if (diff === 0) {
           prazoTexto = "Vence hoje";
           prazoClasse = "prazo-atencao";
-          corBarra = "#f59e0b";
         } else if (diff <= 5) {
           prazoTexto = `${diff} dia(s) restante(s)`;
           prazoClasse = "prazo-atencao";
-          corBarra = "#f59e0b";
         } else {
           prazoTexto = `${diff} dias restantes`;
           prazoClasse = "prazo-normal";
-          corBarra = "#10b981";
         }
-        
-        const totalDias = 30;
-        const percentual = diff > 0 ? Math.min(100, Math.round((diff / totalDias) * 100)) : 0;
-        barraProgresso = `
-          <div style="margin-top:6px; background:#e2e8f0; border-radius:10px; height:6px; width:100%;">
-            <div style="background:${corBarra}; border-radius:10px; height:6px; width:${percentual}%;"></div>
-          </div>
-        `;
       } else {
         prazoTexto = "Sem prazo";
         prazoClasse = "";
@@ -90,6 +77,7 @@ function renderLista(dados) {
     let docsIconsHtml = '<div class="docs-icons">';
     
     CONFIG_DOCS_CARD.forEach(doc => {
+      if (doc.coluna === 'RG') return;
       const entregue = aluno[doc.coluna] === true;
       const status = getDocIconStatus(entregue, aluno.PRAZO_FINAL, doc.label);
       docsIconsHtml += `
@@ -98,8 +86,16 @@ function renderLista(dados) {
         </span>
       `;
     });
+
+    const rgPreenchido = aluno.RG === true;
+    const classeRG = rgPreenchido ? 'entregue' : 'nao-declarado';
+    const tooltipRG = rgPreenchido ? 'RG: presente' : 'RG: não informado';
+    docsIconsHtml += `
+      <span class="doc-icon ${classeRG}" data-tooltip="${tooltipRG}">
+        <i class="fas fa-address-card"></i>
+      </span>
+    `;
     
-    // Ícone do ID SEGES (se existir)
     if (aluno.ID) {
       const tooltipId = `ID Aluno: ${aluno.ID}`;
       docsIconsHtml += `
@@ -119,7 +115,6 @@ function renderLista(dados) {
       `;
     }
 
-    // 🔥 Ícone de Raça/Cor (sempre visível, opcional)
     const racaCorPreenchida = aluno.RACA_COR && aluno.RACA_COR.trim() !== "";
     const classeRacaCor = racaCorPreenchida ? 'info' : 'nao-declarado';
     const tooltipRacaCor = racaCorPreenchida ? `Raça/Cor: ${aluno.RACA_COR}` : 'Raça/Cor: não declarada';
@@ -129,7 +124,6 @@ function renderLista(dados) {
       </span>
     `;
 
-    // 🔥 Ícone de Termo de Responsabilidade (se existir)
     if (aluno._TERMO_RESP_ID) {
       docsIconsHtml += `
         <span class="doc-icon info" data-tooltip="Termo de Responsabilidade anexado">
@@ -138,7 +132,6 @@ function renderLista(dados) {
       `;
     }
 
-        // Ícone de Declaração de Ed. Especial (apenas se o aluno for ED_ESPECIAL)
     if (aluno.ED_ESPECIAL === true) {
       const temDecl = aluno._DECL_ED_ESPECIAL_ID ? true : false;
       const classe = temDecl ? 'info' : 'pendente';
@@ -152,40 +145,300 @@ function renderLista(dados) {
     
     docsIconsHtml += '</div>';
 
-    // Inicial do nome (usada se não houver foto)
     const inicial = (aluno.ALUNO && typeof aluno.ALUNO === 'string' && aluno.ALUNO.trim().length > 0)
       ? aluno.ALUNO.trim().charAt(0).toUpperCase()
       : "?";
 
-    // Avatar: foto ou inicial
+       // ID único para o input file de cada card
+    const fotoInputId = `fotoCard_${aluno._row}`;
     let avatarHtml;
     if (aluno.FOTO) {
-      avatarHtml = `<img src="${aluno.FOTO}" class="aluno-foto" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;" alt="Foto do aluno">`;
+      avatarHtml = `<img src="${aluno.FOTO}" class="aluno-foto" id="foto_${aluno._row}" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;cursor:pointer;" alt="Foto do aluno" onclick="document.getElementById('${fotoInputId}').click()">`;
     } else {
-      avatarHtml = `<div class="aluno-avatar" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;">${inicial}</div>`;
+      avatarHtml = `<div class="aluno-avatar" id="foto_${aluno._row}" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;cursor:pointer;" title="Clique para adicionar foto" onclick="document.getElementById('${fotoInputId}').click()">${inicial}</div>`;
+    }
+    const turmaHtml = aluno.TURMA
+      ? `<div style="font-size:10px;color:#64748b;text-align:center;margin-top:4px;max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${aluno.TURMA}">${aluno.TURMA}</div>`
+      : '';
+
+    // Container vertical para botões de ação (gap reduzido para 1px)
+    let botoesAcaoHtml = '';
+    if (perfilUsuario !== 'PEDAGOGICO') {
+      botoesAcaoHtml = '<div class="botoes-acao-vertical" style="display:flex;flex-direction:column;gap:0;align-self:flex-start;flex-shrink:0;border-left:1px solid #94a3b8;padding-left:6px;margin-left:4px;"></div>';
     }
 
     div.innerHTML = `
-      ${avatarHtml}
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${aluno.ALUNO || ''}">${aluno.ALUNO || 'Nome inválido'}</div>
-        ${aluno.TURMA ? `<div style="font-size:11px;color:#64748b;margin-bottom:4px;"><i class="fas fa-book"></i> ${aluno.TURMA}</div>` : ''}
-        ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;"><i class="fas fa-thumbtack"></i> ${aluno.SITUACAO}</div>` : ''}
-        
-        ${docsIconsHtml}
-        
-        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
-          <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
-          ${prazoTexto ? `<span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;"><i class="fas fa-hourglass-half"></i> ${prazoTexto}</span>` : ''}
+<div style="font-weight:600;color:#0f172a;font-size:15px;line-height:1.3;min-height:40px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:8px;text-align:center;" title="${aluno.ALUNO || ''}">${aluno.ALUNO || 'Nome inválido'}</div>      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+          ${avatarHtml}
+          ${turmaHtml}
         </div>
-        ${barraProgresso}
-      </div>
-      <div style="display:flex;gap:4px;flex-shrink:0;">
-        <button class="btn-icone" onclick="abrirAluno(${aluno._row})" data-tooltip="Abrir ficha do aluno" style="color:#64748b;"><i class="fas fa-eye"></i></button>
+        <div style="flex:1;min-width:0;">
+          ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;"><i class="fas fa-thumbtack"></i> ${aluno.SITUACAO}</div>` : ''}
+          ${docsIconsHtml}
+          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
+            <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
+            ${prazoTexto ? `<span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;"><i class="fas fa-hourglass-half"></i> ${prazoTexto}</span>` : ''}
+          </div>
+        </div>
+        ${botoesAcaoHtml}
       </div>
     `;
+    // Pré‑visualização da foto ao passar o mouse
+    const avatarEl = div.querySelector('.aluno-foto, .aluno-avatar');
+    if (avatarEl && aluno.FOTO) {
+      let tooltipFoto = null;
+      avatarEl.addEventListener('mouseenter', function(e) {
+        tooltipFoto = document.createElement('img');
+        tooltipFoto.src = aluno.FOTO;
+        tooltipFoto.style.cssText = `
+          position: fixed;
+          width: 120px;
+          height: 120px;
+          object-fit: cover;
+          border-radius: 16px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+          z-index: 10000;
+          pointer-events: none;
+        `;
+        document.body.appendChild(tooltipFoto);
+        atualizarPosicaoTooltip(e);
+      });
+      avatarEl.addEventListener('mousemove', function(e) {
+        if (tooltipFoto) atualizarPosicaoTooltip(e);
+      });
+      avatarEl.addEventListener('mouseleave', function() {
+        if (tooltipFoto) {
+          tooltipFoto.remove();
+          tooltipFoto = null;
+        }
+      });
+      function atualizarPosicaoTooltip(e) {
+        if (!tooltipFoto) return;
+        const x = e.clientX + 15;
+        const y = e.clientY + 15;
+        tooltipFoto.style.left = x + 'px';
+        tooltipFoto.style.top = y + 'px';
+      }
+    }
+        // Input file oculto para upload de foto no card
+    const inputFoto = document.createElement('input');
+    inputFoto.type = 'file';
+    inputFoto.accept = 'image/*';
+    inputFoto.id = fotoInputId;
+    inputFoto.style.display = 'none';
+    inputFoto.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        mostrarToast('A imagem deve ter no máximo 5 MB.', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const base64 = ev.target.result.split(',')[1];
+        const dados = {
+          acao: 'uploadFotoAluno',
+          email: emailUsuario,
+          escola: aluno.ESCOLA,
+          row: aluno._row,
+          fileBase64: base64,
+          fileName: `aluno_${aluno.ID || aluno._row}.jpg`,
+          mimeType: file.type
+        };
+        postSemResposta(dados, 'Foto atualizada!', () => {
+          // Atualiza a visualização do card imediatamente
+          const fotoEl = document.getElementById(`foto_${aluno._row}`);
+          if (fotoEl) {
+            if (fotoEl.tagName === 'IMG') {
+              fotoEl.src = URL.createObjectURL(file);
+            } else {
+              // Substitui a div inicial pela nova imagem
+              const novaImg = document.createElement('img');
+              novaImg.src = URL.createObjectURL(file);
+              novaImg.className = 'aluno-foto';
+              novaImg.id = `foto_${aluno._row}`;
+              novaImg.style.cssText = 'width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;cursor:pointer;';
+              novaImg.title = 'Foto do aluno';
+              novaImg.onclick = () => document.getElementById(fotoInputId).click();
+              fotoEl.parentNode.replaceChild(novaImg, fotoEl);
+            }
+          }
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+    div.appendChild(inputFoto);
+    // Duplo clique no card abre a ficha do aluno
+    div.addEventListener('dblclick', function(e) {
+      if (e.target.closest('button, a, input, select, textarea, .btn-icone')) return;
+      abrirAluno(aluno._row);
+    });
 
+    // Botão lápis (editar) no canto inferior direito
+    const btnLapis = document.createElement('button');
+    btnLapis.className = 'btn-icone';
+    btnLapis.setAttribute('data-tooltip', 'Abrir ficha do aluno');
+    btnLapis.innerHTML = '<i class="fa-regular fa-pen-to-square"></i>';
+    btnLapis.style.cssText = `
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      z-index: 5;
+    `;
+    btnLapis.addEventListener('click', (e) => {
+      e.stopPropagation();
+      abrirAluno(aluno._row);
+    });
+    div.appendChild(btnLapis);
+
+    // Preencher o container vertical de ações (WhatsApp, Histórico, PDF)
+    if (perfilUsuario !== 'PEDAGOGICO') {
+      const containerAcoes = div.querySelector('.botoes-acao-vertical');
+      if (containerAcoes) {
+        // Botão WhatsApp
+        const infoWhatsApp = gerarLinkWhatsApp(aluno);
+        if (infoWhatsApp.pendentes.length > 0) {
+          const btnWhatsApp = document.createElement('a');
+          const temTelefone = !!infoWhatsApp.url;
+
+          btnWhatsApp.href = temTelefone ? infoWhatsApp.url : '#';
+          btnWhatsApp.target = temTelefone ? '_blank' : '';
+          btnWhatsApp.rel = 'noopener noreferrer';
+          btnWhatsApp.setAttribute('data-tooltip',
+            temTelefone
+              ? 'Abrir WhatsApp - Documentos Pendentes'
+              : 'Telefone não cadastrado'
+          );
+          btnWhatsApp.innerHTML = `<i class="fab fa-whatsapp" style="font-size:14px; color:${temTelefone ? '#25D366' : '#9ca3af'}; line-height:1;"></i>`;
+          btnWhatsApp.style.cssText = `
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            cursor: ${temTelefone ? 'pointer' : 'not-allowed'};
+            text-decoration: none;
+            padding: 0;
+            margin: 0;
+            line-height: 1;
+            vertical-align: middle;
+            opacity: ${temTelefone ? '1' : '0.6'};
+          `;
+          btnWhatsApp.classList.add('btn-acao-card');
+          btnWhatsApp.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.ctrlKey || e.metaKey) {
+              const msg = infoWhatsApp.mensagem;
+              if (navigator.clipboard) {
+                navigator.clipboard.writeText(msg).then(() => {
+                  mostrarToast('Mensagem copiada!', 'success');
+                }).catch(() => {
+                  mostrarToast('Erro ao copiar.', 'error');
+                });
+              } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = msg;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                mostrarToast('Mensagem copiada!', 'success');
+              }
+            } else {
+              if (temTelefone) {
+                window.open(infoWhatsApp.url, '_blank');
+              } else {
+                mostrarToast('Telefone do responsável não cadastrado.', 'warning');
+              }
+            }
+          });
+
+          containerAcoes.appendChild(btnWhatsApp);
+        }
+
+        // Botão Gerar Histórico
+        // Botão Gerar Histórico
+        const btnHistorico = document.createElement('button');
+        btnHistorico.className = 'btn-icone btn-acao-card';
+        btnHistorico.setAttribute('data-tooltip', 'Gerar Histórico');
+        btnHistorico.innerHTML = '<i class="fas fa-file-export" style="font-size:14px; line-height:1;"></i>';
+        btnHistorico.style.cssText = `
+          width: 28px;
+          height: 28px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          cursor: pointer;
+          padding: 0;
+          margin: 0;
+          line-height: 1;
+          vertical-align: middle;
+        `;
+        btnHistorico.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (aluno.ID && aluno.ESCOLA && aluno.TURMA) {
+            gerarHistoricoAluno(aluno.ID, aluno.ESCOLA, aluno.TURMA);
+          } else {
+            mostrarToast("Dados incompletos do aluno.", "warning");
+          }
+        });
+        btnHistorico.style.marginTop = '-14px';   // mesmo valor usado no PDF
+        containerAcoes.appendChild(btnHistorico);
+
+        // Botão Ficha PDF
+        // Botão Ficha PDF
+        const btnFicha = document.createElement('button');
+        btnFicha.className = 'btn-icone btn-acao-card';
+        btnFicha.setAttribute('data-tooltip', 'Gerar ficha em PDF');
+        btnFicha.innerHTML = '<i class="fas fa-file-pdf" style="font-size:14px; color:#ef4444; line-height:1;"></i>';
+        btnFicha.style.cssText = `
+          width: 28px;
+          height: 28px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          padding: 0;
+          margin: 0;
+          line-height: 1;
+          vertical-align: middle;
+        `;
+        btnFicha.addEventListener('click', (e) => {
+          e.stopPropagation();
+          gerarFichaPDF(aluno);
+        });
+        btnFicha.style.marginTop = '-18px';   // ← aumente este valor se quiser subir mais (ex.: -6px)
+        containerAcoes.appendChild(btnFicha);
+      }
+    }
+
+    div.style.opacity = '0';
+    div.style.transform = 'translateY(20px)';
+    div.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
     lista.appendChild(div);
+    
+    const index = dados.indexOf(aluno);
+    setTimeout(() => {
+      div.style.opacity = '1';
+      div.style.transform = 'translateY(0)';
+    }, index * 30);
   });
 }
 
@@ -217,14 +470,36 @@ function renderTabela(alunos, container) {
     tr.addEventListener('mouseenter', () => tr.style.background = 'var(--card-border)');
     tr.addEventListener('mouseleave', () => tr.style.background = 'transparent');
     
-    const tdNome = document.createElement('td');
-    tdNome.style.padding = '10px 8px';
-    tdNome.textContent = aluno.ALUNO;
-    tdNome.style.maxWidth = '200px';
-    tdNome.style.overflow = 'hidden';
-    tdNome.style.textOverflow = 'ellipsis';
-    tdNome.style.whiteSpace = 'nowrap';
-    tdNome.title = aluno.ALUNO;
+        const tdNome = document.createElement('td');
+    tdNome.style.padding = '6px 8px';
+    tdNome.style.maxWidth = '220px';
+    
+    // Container para foto + nome
+    const nomeContainer = document.createElement('div');
+    nomeContainer.style.cssText = 'display:flex; align-items:center; gap:8px;';
+    
+    // Miniatura da foto (ou inicial)
+    if (aluno.FOTO) {
+      const img = document.createElement('img');
+      img.src = aluno.FOTO;
+      img.style.cssText = 'width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0;';
+      nomeContainer.appendChild(img);
+    } else {
+      const inicial = (aluno.ALUNO || '').charAt(0).toUpperCase() || '?';
+      const divInicial = document.createElement('div');
+      divInicial.style.cssText = 'width:32px;height:32px;background:#e0e7ff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#2563eb;flex-shrink:0;';
+      divInicial.textContent = inicial;
+      nomeContainer.appendChild(divInicial);
+    }
+    
+    // Nome truncado
+    const spanNome = document.createElement('span');
+    spanNome.textContent = aluno.ALUNO;
+    spanNome.style.cssText = 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    spanNome.title = aluno.ALUNO;
+    nomeContainer.appendChild(spanNome);
+    
+    tdNome.appendChild(nomeContainer);
     
     const tdTurma = document.createElement('td');
     tdTurma.style.padding = '10px 8px';
@@ -259,7 +534,7 @@ function renderTabela(alunos, container) {
       const hoje = new Date(); hoje.setHours(0,0,0,0);
       const prazo = new Date(aluno.PRAZO_FINAL); prazo.setHours(0,0,0,0);
       const diff = Math.floor((prazo - hoje) / (1000*60*60*24));
-      if (diff < 0) prazoTexto = `Vencido há ${Math.abs(diff)} d`;
+      if (diff < 0) prazoTexto = `Vencido: ${Math.abs(diff)} d`;
       else if (diff === 0) prazoTexto = 'Vence hoje';
       else prazoTexto = `${diff} dias`;
     } else {
@@ -270,7 +545,7 @@ function renderTabela(alunos, container) {
     const tdAcoes = document.createElement('td');
     tdAcoes.style.padding = '10px 8px';
     tdAcoes.style.textAlign = 'center';
-    tdAcoes.innerHTML = `<button class="btn-icone" onclick="abrirAluno(${aluno._row})" data-tooltip="Abrir ficha" style="width:32px; height:32px;"><i class="fas fa-eye"></i></button>`;
+    tdAcoes.innerHTML = `<button class="btn-icone" onclick="abrirAluno(${aluno._row})" data-tooltip="Abrir ficha" style="width:32px; height:32px;"><i class="fa-regular fa-pen-to-square"></i></button>`;
     
     tr.appendChild(tdNome);
     tr.appendChild(tdTurma);
@@ -910,32 +1185,6 @@ function alternarVisualizacao() {
   renderLista(alunosPagina);
 }
 
-// ------ MODO ESCURO ------
-function toggleDarkMode() {
-  const body = document.body;
-  const isDark = body.getAttribute('data-theme') === 'dark';
-  const newTheme = isDark ? 'light' : 'dark';
-  body.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
-  updateDarkModeIcon(newTheme);
-}
-
-function updateDarkModeIcon(theme) {
-  const btn = document.getElementById('darkModeToggle');
-  if (btn) {
-    btn.innerHTML = theme === 'dark' ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-    btn.setAttribute('data-tooltip', theme === 'dark' ? 'Modo claro' : 'Modo escuro');
-  }
-}
-
-function initDarkMode() {
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = savedTheme || (prefersDark ? 'dark' : 'light');
-  document.body.setAttribute('data-theme', theme);
-  updateDarkModeIcon(theme);
-}
-
 // ------ LISTA DE TURMAS (MODAL TURMAS) ------
 let turmasGlobais = [];
 
@@ -1069,4 +1318,96 @@ function ordenarTabela(campo) {
   const lista = document.getElementById('lista');
   lista.innerHTML = '';
   renderTabela(dadosFiltradosGlobais, lista);
+}
+// =========================
+// GERAR FICHA DO ALUNO EM PDF (COMPLETA)
+// =========================
+function gerarFichaPDF(aluno) {
+  // Foto ou inicial
+  const fotoHtml = aluno.FOTO
+    ? `<img src="${aluno.FOTO}" style="width:120px;height:120px;border-radius:8px;object-fit:cover;border:2px solid #ccc;">`
+    : `<div style="width:120px;height:120px;background:#e0e7ff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:40px;color:#2563eb;">${aluno.ALUNO ? aluno.ALUNO.charAt(0).toUpperCase() : '?'}</div>`;
+
+  // Data de nascimento formatada
+  const dataNasc = aluno.DATA_NASCIMENTO 
+    ? new Date(aluno.DATA_NASCIMENTO).toLocaleDateString('pt-BR') 
+    : '—';
+  
+  // Data de matrícula formatada
+  const dataMat = aluno.DATA_MATRICULA 
+    ? new Date(aluno.DATA_MATRICULA).toLocaleDateString('pt-BR') 
+    : '—';
+
+
+  const html = `
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Ficha do Aluno</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; margin: 30px; color: #1e293b; }
+  h1 { color: #1e3a8a; border-bottom: 2px solid #2563eb; padding-bottom: 8px; font-size: 22px; }
+  .cabecalho { display: flex; gap: 24px; align-items: center; margin-bottom: 24px; }
+  .foto { flex-shrink: 0; }
+  .info-resumo { flex:1; }
+  .info-resumo h2 { margin:0 0 4px; font-size: 20px; color: #0f172a; }
+  .info-resumo p { margin: 2px 0; color: #475569; font-size: 13px; }
+  .secao { margin: 20px 0; }
+  .secao h3 { background: #f1f5f9; padding: 8px 12px; border-radius: 6px; font-size: 14px; color: #1e3a8a; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th { background: #f8fafc; padding: 8px 12px; text-align: left; width: 40%; font-size: 13px; color: #64748b; }
+  td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+  .status-geral { padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: 600; font-size: 14px; }
+  @page { size: A4; margin: 15mm; }
+  @media print { body { -webkit-print-color-adjust: exact; } }
+</style></head><body>
+  <h1>Ficha do Aluno</h1>
+
+  <div class="cabecalho">
+    <div class="foto">${fotoHtml}</div>
+    <div class="info-resumo">
+      <h2>${aluno.ALUNO || '—'}</h2>
+      <p>${aluno.ESCOLA || '—'} — ${aluno.TURMA || '—'}</p>
+      <p>ID SEGES: ${aluno.ID || '—'}</p>
+    </div>
+  </div>
+
+  <div class="secao">
+    <h3>Dados Pessoais</h3>
+    <table>
+      <tr><th>Nome completo</th><td>${aluno.ALUNO || '—'}</td></tr>
+      <tr><th>Data de nascimento</th><td>${dataNasc}</td></tr>
+      <tr><th>CPF</th><td>${aluno.CPF_NUMERO || '—'}</td></tr>
+      <tr><th>RG</th><td>${aluno.RG === true ? 'Presente' : 'Não informado'}</td></tr>
+      <tr><th>Raça/Cor</th><td>${aluno.RACA_COR || '—'}</td></tr>
+      <tr><th>Filiação 1</th><td>${aluno.FILIACAO_1 || '—'}</td></tr>
+      <tr><th>Filiação 2</th><td>${aluno.FILIACAO_2 || '—'}</td></tr>
+      <tr><th>Naturalidade</th><td>${aluno.NATURALIDADE || '—'} / ${aluno.UF_NASCIMENTO || '—'}</td></tr>
+      <tr><th>Nacionalidade</th><td>${aluno.NACIONALIDADE || '—'}</td></tr>
+    </table>
+  </div>
+
+  <div class="secao">
+    <h3>Dados Escolares</h3>
+    <table>
+      <tr><th>Escola</th><td>${aluno.ESCOLA || '—'}</td></tr>
+      <tr><th>Turma</th><td>${aluno.TURMA || '—'}</td></tr>
+      <tr><th>Data de matrícula</th><td>${dataMat}</td></tr>
+      <tr><th>Situação</th><td>${aluno.SITUACAO || 'Ativo'}</td></tr>
+      <tr><th>Responsável</th><td>${aluno.RESPONSAVEL || '—'}</td></tr>
+      <tr><th>Telefone</th><td>${aluno.TELEFONE || '—'}</td></tr>
+      <tr><th>Educação Especial</th><td>${aluno.ED_ESPECIAL ? 'Sim' : 'Não'}</td></tr>
+    </table>
+  </div>
+
+  ${aluno.OBSERVACOES ? `
+  <div class="secao">
+    <h3>Observações</h3>
+    <p style="padding:8px;background:#f8fafc;border-radius:6px;">${aluno.OBSERVACOES}</p>
+  </div>` : ''}
+
+  <script>window.print();</script>
+</body></html>`;
+
+  const w = window.open('', '_blank', 'width=900,height=700');
+  w.document.write(html);
+  w.document.close();
 }

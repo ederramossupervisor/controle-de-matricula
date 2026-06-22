@@ -29,15 +29,35 @@ let modoVisualizacao = 'cards'; // 'cards' ou 'lista'
 // INICIALIZAÇÃO
 // =========================
 window.onload = function () {
-  initDarkMode();
   const emailSalvo = localStorage.getItem("emailUsuario");
 
   if (emailSalvo) {
     emailUsuario = emailSalvo;
     document.getElementById("email").value = emailSalvo;
+    // Tenta carregar alunos diretamente
     carregarAlunos();
+  } else {
+    // Nenhum e-mail salvo – mostra login imediatamente
+    esconderSplash();
+    document.getElementById("login").style.display = "";
   }
 };
+
+// Função auxiliar para esconder a splash screen
+function esconderSplash() {
+  // Para as dicas (agora definidas no HTML)
+  if (window._splashDicaInterval) {
+    clearInterval(window._splashDicaInterval);
+    window._splashDicaInterval = null;
+  }
+  const splash = document.getElementById("splash");
+  if (splash) {
+    splash.style.opacity = '0';
+    setTimeout(() => {
+      splash.style.display = 'none';
+    }, 300);
+  }
+}
 
 // =========================
 // EVENTOS GLOBAIS (quando o DOM estiver pronto)
@@ -50,6 +70,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
   document.getElementById('modalEditarLegislacao').addEventListener('click', function(e) {
     if (e.target === this) fecharEdicaoLegislacao();
+  });
+
+  document.getElementById('modalHistorico').addEventListener('click', function(e) {
+      if (e.target === this) fecharModalHistorico();
   });
 
   document.getElementById("modalDetalhes").addEventListener("click", function(e) {
@@ -104,6 +128,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
 
+        // Ctrl + S: Salvar dados do aluno (quando modal de detalhes estiver aberto)
+    if (e.ctrlKey && e.key === 's') {
+      const modalDetalhes = document.getElementById('modalDetalhes');
+      if (modalDetalhes && modalDetalhes.style.display === 'flex') {
+        e.preventDefault();
+        if (typeof salvarDadosAluno === 'function') {
+          salvarDadosAluno();
+        }
+      }
+    }
+
     // Ctrl + N: Novo Aluno
     if (e.ctrlKey && e.key === 'n') {
       e.preventDefault();
@@ -119,6 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
         inputBusca.select();
       }
     }
+    
 
 // Esc: Fechar menu dropdown ou modais abertos
 if (e.key === 'Escape') {
@@ -157,8 +193,10 @@ if (e.key === 'Escape') {
     { element: document.getElementById('modalNotificacoes'), close: fecharNotificacoes },
     { element: document.getElementById('modalAgenda'), close: fecharModalAgenda },
     { element: document.getElementById('modalDashboard'), close: fecharModalDashboard },
+    { element: document.getElementById('modalHistorico'), close: fecharModalHistorico },
     { element: document.getElementById('modalAprovacaoTermos'), close: fecharModalAprovacaoTermos },
     { element: document.getElementById('modalMonitoramento'), close: fecharModalMonitoramento },
+    { element: document.getElementById('modalDadosEscola'), close: fecharModalDadosEscola },
     { element: document.getElementById('novoAluno'), close: voltarApp }
   ];
 
@@ -216,6 +254,82 @@ if (e.key === 'Escape') {
   `;
   document.head.appendChild(style);
 
+// =========================
+// EASTER EGG – Sequência de setas (funciona em qualquer lugar)
+// =========================
+(function() {
+  const sequencia = [
+    'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+    'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight'
+  ];
+  let indice = 0;
+
+  document.addEventListener('keydown', function(e) {
+    // Se a tecla pressionada for a esperada na sequência
+    if (e.key === sequencia[indice]) {
+      indice++;
+      if (indice === sequencia.length) {
+                // Easter Egg ativado – exibe vídeo comemorativo
+        const urlVideo = 'https://www.youtube.com/embed/Sb7GTnc36ok?autoplay=1';
+
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+          position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(0,0,0,0.85); z-index: 99999;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+        `;
+
+        const container = document.createElement('div');
+        container.style.cssText = `
+          position: relative; width: 80%; max-width: 800px;
+          background: #000; border-radius: 16px; overflow: hidden;
+          box-shadow: 0 0 40px rgba(250,204,21,0.6);
+        `;
+
+        const iframe = document.createElement('iframe');
+        iframe.src = urlVideo;
+        iframe.style.cssText = 'width: 100%; height: 450px; border: none;';
+        iframe.allow = 'autoplay; encrypted-media';
+        iframe.allowFullscreen = true;
+
+        const btnFechar = document.createElement('button');
+        btnFechar.innerHTML = '✕';
+        btnFechar.style.cssText = `
+          position: absolute; top: 10px; right: 10px;
+          background: rgba(0,0,0,0.6); color: white; border: none;
+          font-size: 20px; width: 36px; height: 36px; border-radius: 50%;
+          cursor: pointer; z-index: 1;
+        `;
+        btnFechar.addEventListener('click', (e) => {
+          e.stopPropagation();
+          overlay.remove();
+        });
+
+        container.appendChild(iframe);
+        container.appendChild(btnFechar);
+        overlay.appendChild(container);
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) overlay.remove();
+        });
+        document.body.appendChild(overlay);
+
+        console.log('🥚 Easter Egg ativado!');
+        console.log('Desenvolvido por Eder Ramos – SRE Afonso Cláudio');
+
+        indice = 0;
+      }
+    } else {
+      // Tecla errada, reinicia a contagem
+      indice = 0;
+      // Se a tecla for a primeira da sequência, já conta como início
+      if (e.key === sequencia[0]) {
+        indice = 1;
+      }
+    }
+  });
+})();
+
   function checkTooltipPosition(el) {
     const rect = el.getBoundingClientRect();
     if (rect.top < 80) {
@@ -251,3 +365,40 @@ if (e.key === 'Escape') {
   });
   observer.observe(document.body, { childList: true, subtree: true });
 });
+
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('button');
+  if (btn) {
+    window._clickedButton = btn;
+  }
+});
+// =========================
+// MODO FOCO
+// =========================
+function alternarModoFoco() {
+  const body = document.body;
+  const btn = document.getElementById('btnModoFoco');
+  const ativo = body.classList.toggle('modo-foco');
+  
+  if (ativo) {
+    btn.innerHTML = '<i class="fas fa-compress"></i>';
+    btn.setAttribute('data-tooltip', 'Sair do Modo Foco');
+    localStorage.setItem('modoFoco', '1');
+  } else {
+    btn.innerHTML = '<i class="fas fa-expand"></i>';
+    btn.setAttribute('data-tooltip', 'Modo Foco (tela cheia para a lista)');
+    localStorage.removeItem('modoFoco');
+  }
+}
+
+// Restaurar preferência ao carregar
+(function() {
+  if (localStorage.getItem('modoFoco') === '1') {
+    document.body.classList.add('modo-foco');
+    const btn = document.getElementById('btnModoFoco');
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-compress"></i>';
+      btn.setAttribute('data-tooltip', 'Sair do Modo Foco');
+    }
+  }
+})();

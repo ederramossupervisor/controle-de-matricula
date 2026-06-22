@@ -1,6 +1,6 @@
 let fotoAlunoCarregada = null;
 let vinculosEdicaoSelecionados = [];
-
+const cacheAlunosBusca = {};
 const tiposDocumentoSemNome = [
   "Atas de Conselho de Classe",
   "Listas de Alunos Concluintes",
@@ -38,7 +38,7 @@ function abrirModalDetalhes(aluno) {
     exibirFotoAluno(null);
   }
   
-  // Monta checkboxes de documentos (código existente...)
+  // Monta checkboxes de documentos
   let html = `
     <p style="margin-top:0; color:#64748b; display:flex; gap:12px;">
       <span><i class="fas fa-school"></i> ${aluno.ESCOLA}</span>
@@ -113,7 +113,7 @@ function abrirModalDetalhes(aluno) {
   
   document.getElementById("detalhesConteudo").innerHTML = html;
 
-    // Seção Termo de Responsabilidade
+  // Seção Termo de Responsabilidade
   const termoHtml = `
     <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
       <h3><i class="fas fa-file-signature"></i> Termo de Responsabilidade</h3>
@@ -133,10 +133,10 @@ function abrirModalDetalhes(aluno) {
   `;
   document.getElementById("detalhesConteudo").innerHTML += termoHtml;
 
-    // Seção Declaração de Educação Especial
+  // Seção Declaração de Educação Especial
   const declEdEspHtml = `
     <div style="margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
-      <h3><i class="fas fa-wheelchair"></i> Declaração para Educação Especial</h3>
+      <h3><i class="fa-solid fa-universal-access"></i> Declaração para Educação Especial</h3>
       <p style="font-size:13px; color: var(--text-muted);">Documento obrigatório para alunos público da Educação Especial (Decreto 12.686/2025).</p>
       <a href="https://docs.google.com/document/d/1lB4Cqp-ZZ2sfVUmSg3RSNCvhIEg-nCqo/export?format=docx" target="_blank" class="btn-pequeno">
         <i class="fas fa-download"></i> Baixar modelo
@@ -158,10 +158,8 @@ function abrirModalDetalhes(aluno) {
   `;
   document.getElementById("detalhesConteudo").innerHTML += declEdEspHtml;
 
-  // Atualiza botões conforme a declaração existente (mesmo se não for ED_ESPECIAL, para manter estado)
+  // Atualiza botões conforme a declaração existente
   atualizarBotoesDeclEdEsp(aluno);
-
-  // Atualiza os botões conforme o termo já anexado
   atualizarBotoesTermo(aluno);
   
   // ---- Preenche os campos editáveis ----
@@ -187,10 +185,23 @@ function abrirModalDetalhes(aluno) {
   document.getElementById("editCpfNumero").value = aluno.CPF_NUMERO || '';
   document.getElementById("editCpfNumero").disabled = isPedagogico;
 
-  // NOVO CAMPO RAÇA/COR
   document.getElementById("editRacaCor").value = aluno.RACA_COR || "";
   document.getElementById("editRacaCor").disabled = isPedagogico;
-  
+  document.getElementById("editFiliacao1").value = aluno.FILIACAO_1 || "";
+  document.getElementById("editFiliacao2").value = aluno.FILIACAO_2 || "";
+  document.getElementById("editDataNascimento").value = formatarDataISO(aluno.DATA_NASCIMENTO);
+  document.getElementById("editNaturalidade").value = aluno.NATURALIDADE || "";
+  document.getElementById("editUfNascimento").value = (aluno.UF_NASCIMENTO || '').trim().toUpperCase();
+  document.getElementById("editNacionalidade").value = aluno.NACIONALIDADE || "";
+
+  if (isPedagogico) {
+    document.getElementById("editFiliacao1").disabled = true;
+    document.getElementById("editFiliacao2").disabled = true;
+    document.getElementById("editDataNascimento").disabled = true;
+    document.getElementById("editNaturalidade").disabled = true;
+    document.getElementById("editUfNascimento").disabled = true;
+    document.getElementById("editNacionalidade").disabled = true;
+  }
   document.getElementById("btnSalvarInfoAluno").style.display = isPedagogico ? 'none' : '';
   document.getElementById("btnSalvarDetalhes").style.display = isPedagogico ? 'none' : '';
   
@@ -201,7 +212,78 @@ function abrirModalDetalhes(aluno) {
   
   carregarTurmasParaEdicao(aluno.ESCOLA, aluno.TURMA);
   document.getElementById("modalDetalhes").style.display = "flex";
+
+  // ********** Foto do aluno: ícone único e funcional **********
+  const fotoPreview = document.getElementById('fotoAlunoPreview');
+  const fotoInicial = document.getElementById('fotoAlunoInicial');
+  const inputFoto = document.getElementById('uploadFotoAluno');
+
+  // Remove completamente o botão "Foto" original para evitar qualquer ícone duplicado
+  const oldFotoBtn = document.querySelector('#modalDetalhes button[onclick*="uploadFotoAluno"]');
+  if (oldFotoBtn) oldFotoBtn.remove(); // remove do DOM, não apenas esconde
+
+  // Função para abrir seletor de arquivo
+  function abrirSeletorFoto() {
+    if (inputFoto) inputFoto.click();
+  }
+
+  // Torna a foto de preview clicável
+  if (fotoPreview) {
+    fotoPreview.style.cursor = 'pointer';
+    fotoPreview.title = 'Clique para alterar a foto';
+    fotoPreview.onclick = abrirSeletorFoto;
+  }
+
+  // Configura a div de inicial (sem foto) com ícone de câmera ÚNICO
+  if (fotoInicial) {
+    // Limpa qualquer conteúdo extra que possa ter sido adicionado (overlays antigos)
+    const existingOverlay = fotoInicial.querySelector('.camera-overlay');
+    if (existingOverlay) existingOverlay.remove();
+
+    fotoInicial.style.cursor = 'pointer';
+    fotoInicial.title = 'Clique para adicionar uma foto';
+    fotoInicial.onclick = abrirSeletorFoto;
+
+    // Cria um único ícone de câmera
+    const overlay = document.createElement('span');
+    overlay.className = 'camera-overlay';
+    overlay.innerHTML = '<i class="fas fa-camera" style="font-size:14px; color:#fff;"></i>';
+    overlay.style.cssText = `
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none; /* para não interceptar cliques */
+    `;
+    // Garante que a div pai tenha position relative para o absolute funcionar
+    if (!fotoInicial.style.position || fotoInicial.style.position === 'static') {
+      fotoInicial.style.position = 'relative';
+    }
+    fotoInicial.appendChild(overlay);
+  }
+
+  // ********** Botão Gerar Histórico **********
+  let btnHistorico = document.getElementById('btnGerarHistorico');
+  if (!btnHistorico) {
+    btnHistorico = document.createElement('button');
+    btnHistorico.id = 'btnGerarHistorico';
+    btnHistorico.className = 'btn-salvar';
+    btnHistorico.innerHTML = '<i class="fas fa-file-excel"></i> Gerar Histórico';
+    btnHistorico.style.marginTop = '12px';
+    const detalhesConteudo = document.getElementById('detalhesConteudo');
+    if (detalhesConteudo) detalhesConteudo.after(btnHistorico);
+  }
+  btnHistorico.onclick = function() {
+    gerarHistoricoAluno(dadosAlunoAtual.ID, dadosAlunoAtual.ESCOLA, dadosAlunoAtual.TURMA);
+  };
 }
+
 function fecharModalDetalhes() {
   // 🔓 Restaura a rolagem da página
   const scrollY = document.body.style.top;
@@ -493,14 +575,21 @@ function abrirModalModelos() {
   mostrarAbaListarModelos();
 }
 
+function mostrarAbaUploadModeloEscola() {
+  document.getElementById('abaListarModelos').style.display = 'none';
+  document.getElementById('abaUploadModelo').style.display = 'none';
+  document.getElementById('abaUploadModeloEscola').style.display = 'block';
+}
+
 function fecharModalModelos() {
   document.getElementById("modalModelos").style.display = "none";
 }
 
 function mostrarAbaListarModelos() {
-  document.getElementById("abaListarModelos").style.display = "block";
-  document.getElementById("abaUploadModelo").style.display = "none";
-  carregarModelos();
+  document.getElementById('abaListarModelos').style.display = 'block';
+  document.getElementById('abaUploadModelo').style.display = 'none';
+  document.getElementById('abaUploadModeloEscola').style.display = 'none';
+  carregarModelosEscola(); // usa a nova função que lista todos
 }
 
 function mostrarAbaUploadModelo() {
@@ -522,7 +611,7 @@ function preencherSelectTipoModelo() {
 // ------ MODAL GESTÃO DE DOCUMENTOS ------
 function abrirModalDocumentos() {
   document.getElementById("modalDocumentos").style.display = "flex";
-  preencherSelectEscolasDoc();
+  preencherSelectEscolasDoc();   // ← chamada movida para cá
   mostrarAbaUpload();
   ativarEnterNoModal('#modalDocumentos', buscarDocumentos);
 }
@@ -534,6 +623,50 @@ function fecharModalDocumentos() {
 function mostrarAbaUpload() {
   document.getElementById("abaUpload").style.display = "block";
   document.getElementById("abaListagem").style.display = "none";
+  carregarTiposDocumento();
+}
+
+function carregarTiposDocumento() {
+  const select = document.getElementById('uploadTipoDoc');
+  if (!select) return;
+
+  const url = `${API_URL}?tipo=listarTiposDocumento&email=${emailUsuario}`;
+  jsonp(url, function(tipos) {
+    select.innerHTML = '<option value="">Tipo de documento</option>';
+    if (Array.isArray(tipos)) {
+      tipos.forEach(tipo => {
+        const opt = document.createElement('option');
+        opt.value = tipo;
+        opt.textContent = tipo;
+        select.appendChild(opt);
+      });
+    }
+    // Adiciona opção "Outro" no final
+    const optOutro = document.createElement('option');
+    optOutro.value = '__novo__';
+    optOutro.textContent = '+ Novo tipo...';
+    select.appendChild(optOutro);
+
+    // Evento para capturar quando selecionar "+ Novo tipo..."
+    select.onchange = function() {
+      if (this.value === '__novo__') {
+        const novoTipo = prompt('Digite o nome do novo tipo de documento:');
+        if (novoTipo && novoTipo.trim()) {
+          postSemResposta({
+            acao: 'cadastrarTipoDocumento',
+            email: emailUsuario,
+            tipo: novoTipo.trim()
+          }, 'Tipo cadastrado!', () => {
+            carregarTiposDocumento(); // recarrega a lista
+            select.value = novoTipo.trim();
+          });
+        } else {
+          select.value = '';
+        }
+      }
+      atualizarCampoNomeTitular(); // função existente
+    };
+  });
 }
 
 function mostrarAbaListagem() {
@@ -545,7 +678,7 @@ function mostrarAbaListagem() {
 // ------ MODAL PROCESSOS (EDOCS) ------
 function abrirModalProcessos() {
   document.getElementById("modalProcessos").style.display = "flex";
-  preencherSelectsProcessos();
+  preencherSelectsProcessos();   // ← chamada movida para cá
   mostrarAbaCadastroProcesso();
   ativarEnterNoModal('#modalProcessos', buscarProcessos);
 }
@@ -687,7 +820,25 @@ function abrirModalChecklistLote() {
   document.getElementById("listaChecklistContainer").innerHTML = '<p style="padding:20px; text-align:center;">Selecione uma turma...</p>';
 }
 
+// Função auxiliar: verifica se alguma checkbox do checklist foi alterada
+function checklistTemAlteracoes() {
+  const checkboxes = document.querySelectorAll('#listaChecklistContainer .check-doc-individual');
+  for (const cb of checkboxes) {
+    const original = cb.dataset.original === 'true';
+    if (cb.checked !== original) {
+      return true; // pelo menos uma alteração encontrada
+    }
+  }
+  return false;
+}
+
+// Função de fechamento do modal de checklist em lote (ATUALIZADA)
 function fecharModalChecklistLote() {
+  if (checklistTemAlteracoes()) {
+    if (!confirm('Você tem alterações não salvas. Deseja sair mesmo assim?')) {
+      return; // não fecha se o usuário cancelar
+    }
+  }
   document.getElementById("modalChecklistLote").style.display = "none";
 }
 
@@ -723,7 +874,7 @@ async function carregarAlunosParaChecklist() {
       { col: 'RESP_DOCS', label: 'Resp. Docs', icon: 'fa-file-signature' },
       { col: 'HISTORICO', label: 'Histórico', icon: 'fa-history' },
       { col: 'DECL_TRANSF', label: 'Decl. Transf.', icon: 'fa-exchange-alt' },
-      { col: 'ED_ESPECIAL', label: 'Laudo Ed. Especial', icon: 'fa-puzzle-piece', especial: true }
+      { col: 'ED_ESPECIAL', label: 'Laudo Ed. Especial', icon: 'fa-solid fa-universal-access', especial: true }
     ];
 
     let html = '<div style="display:flex; flex-direction:column; min-width:700px;">';
@@ -828,82 +979,20 @@ function voltarApp() {
   if (edEspCheck) edEspCheck.checked = false;
   const racaCad = document.getElementById('racaCorCadastro');
   if (racaCad) racaCad.value = "";
+    const filiacao1 = document.getElementById("filiacao1Cadastro");
+  if (filiacao1) filiacao1.value = "";
+  const filiacao2 = document.getElementById("filiacao2Cadastro");
+  if (filiacao2) filiacao2.value = "";
+  const dataNasc = document.getElementById("dataNascimentoCadastro");
+  if (dataNasc) dataNasc.value = "";
+  const naturalidade = document.getElementById("naturalidadeCadastro");
+  if (naturalidade) naturalidade.value = "";
+  const ufNasc = document.getElementById("ufNascimentoCadastro");
+  if (ufNasc) ufNasc.value = "";
+  const nacionalidade = document.getElementById("nacionalidadeCadastro");
+  if (nacionalidade) nacionalidade.value = "";
 }
-async function salvarAluno() {
-  const nomeInput = document.getElementById("nomeAluno");
-  const idAluno = document.getElementById("idAlunoCadastro")?.value.trim() || "";
-  const responsavelInput = document.getElementById("nomeResponsavel");
-  const edEspecialCheck = document.getElementById("alunoEdEspecial");
-  const turmaSelect = document.getElementById("selectTurmaAluno");
-  const dataMatriculaInput = document.getElementById("dataMatricula").value;
-  const observacoes = document.getElementById("observacoesNovoAluno")?.value || "";
-  const cpfNumero = document.getElementById("cpfNumeroCadastro")?.value || "";
-  const racaCor = document.getElementById("racaCorCadastro")?.value || ""; // NOVO
 
-  const nome = nomeInput ? nomeInput.value.trim() : "";
-  const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
-  const telefone = coletarTelefonesCadastro();
-  const edEspecial = edEspecialCheck ? edEspecialCheck.checked : false;
-  const turma = turmaSelect ? turmaSelect.value : "";
-  
-  const erroDiv = document.getElementById("erroNome");
-  const btnSalvar = document.getElementById("btnSalvarAluno");
-
-  if (!nome) {
-    if (erroDiv) erroDiv.style.display = "block";
-    if (nomeInput) nomeInput.style.borderColor = "#dc2626";
-    return;
-  }
-
-  if (erroDiv) erroDiv.style.display = "none";
-  if (nomeInput) nomeInput.style.borderColor = "#e2e8f0";
-
-  const telefoneNumeros = telefone.replace(/\D/g, '');
-  if (telefoneNumeros.length > 0 && telefoneNumeros.length < 10) {
-    mostrarToast("Telefone incompleto. Informe DDD + número (mínimo 10 dígitos).", "warning");
-    return;
-  }
-
-  showButtonLoading(btnSalvar);
-
-  const dados = {
-    acao: "cadastrarAluno",
-    nome: nome,
-    idAluno: idAluno,
-    responsavel: responsavel,
-    telefone: telefone,
-    turma: turma,
-    dataMatricula: dataMatriculaInput,
-    edEspecial: edEspecial,
-    observacoes: observacoes,
-    cpfNumero: cpfNumero,
-    racaCor: racaCor,       // NOVO
-    email: emailUsuario
-  };
-
-  postSemResposta(dados, "Aluno cadastrado com sucesso!", () => {
-    registrarUltimaAcao('Novo aluno cadastrado');
-
-    if (nomeInput) nomeInput.value = "";
-    if (responsavelInput) responsavelInput.value = "";
-    if (edEspecialCheck) edEspecialCheck.checked = false;
-    document.getElementById("selectTurmaAluno").selectedIndex = 0;
-    document.getElementById("dataMatricula").value = "";
-    const obsField = document.getElementById("observacoesNovoAluno");
-    if (obsField) obsField.value = "";
-    const cpfField = document.getElementById("cpfNumeroCadastro");
-    if (cpfField) cpfField.value = "";
-    const racaField = document.getElementById("racaCorCadastro");
-    if (racaField) racaField.value = "";   // limpa
-
-    document.getElementById("novoAluno").style.display = "none";
-    document.getElementById("lista").style.display = "";
-    document.getElementById("painel").style.display = "";
-
-    carregarAlunos();
-    hideButtonLoading(btnSalvar);
-  });
-}
 
 // ------ CAMPOS DE TELEFONE (MODAL CADASTRO E EDIÇÃO) ------
 function adicionarCampoTelefoneCadastro() {
@@ -1154,26 +1243,50 @@ let vinculosSelecionados = [];
 
 // ---- ABERTURA / FECHAMENTO / ABAS ----
 function abrirModalLegislacao() {
+  // Salva o estado atual do scroll (para restaurar depois)
+  const scrollY = window.scrollY;
+  document.documentElement.style.setProperty('--scroll-y', scrollY + 'px');
+
+  // Trava o fundo (html e body)
+  document.documentElement.style.overflow = 'hidden';
   document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.width = '100%';
+  document.body.style.top = `-${scrollY}px`;
+
+  // Exibe o modal
   document.getElementById('modalLegislacao').style.display = 'flex';
-  
+  document.body.classList.add('modal-fullscreen-aberto');
+
+  // Restante da lógica existente...
   const abaCadastroBtn = document.getElementById('abaCadastrarLegislacaoBtn');
   const emailsPermitidos = [
     "eder.ramos@educador.edu.es.gov.br",
     "ecramos@sedu.es.gov.br"
   ];
-  
   if (abaCadastroBtn) {
     abaCadastroBtn.style.display = emailsPermitidos.includes(emailUsuario) ? 'inline-block' : 'none';
   }
-  
   mostrarAbaConsultaLegislacao();
   ativarEnterNoModal('#modalLegislacao', buscarLegislacao);
 }
 
 function fecharModalLegislacao() {
-  document.body.style.overflow = '';         // 🔓 libera o fundo
+  // Restaura o fundo
+  const scrollY = parseInt(document.documentElement.style.getPropertyValue('--scroll-y') || '0');
+  document.documentElement.style.overflow = '';
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.width = '';
+  document.body.style.top = '';
+  document.documentElement.style.removeProperty('--scroll-y');
+
+  // Esconde o modal
   document.getElementById('modalLegislacao').style.display = 'none';
+  document.body.classList.remove('modal-fullscreen-aberto');
+
+  // Restaura a posição de rolagem original
+  window.scrollTo(0, scrollY);
 }
 
 function mostrarAbaCadastroLegislacao() {
@@ -1428,7 +1541,11 @@ function abrirDetalheLegislacao(id) {
       detalheContainer.id = 'detalheLegislacaoContainer';
       document.getElementById('abaConsultaLegislacao').appendChild(detalheContainer);
     }
-    detalheContainer.innerHTML = conteudo;
+     detalheContainer.innerHTML = conteudo;
+    // Rola suavemente até o detalhe
+    setTimeout(() => {
+      detalheContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 200);
   });
 }
 
@@ -1451,17 +1568,31 @@ function buscarLegislacaoPorId(id) {
 // Preenche o dropdown de vínculos ao abrir a aba de cadastro
 function carregarDocumentosParaVinculacao() {
   const select = document.getElementById('selectVinculo');
+  const inputBusca = document.getElementById('buscaVinculo');
   if (!select) return;
+
+  // Inicializa lista global para o filtro
+  window.legislacoesParaVinculo = [];
+
   select.innerHTML = '<option value="">Selecionar...</option>';
   const url = `${API_URL}?tipo=legislacao&email=${emailUsuario}`;
   jsonp(url, function(dados) {
     if (Array.isArray(dados)) {
+      window.legislacoesParaVinculo = dados; // guarda os dados originais
+      // Preenche o select com todos os itens
       dados.forEach(item => {
         const option = document.createElement('option');
         option.value = item.id;
-        option.textContent = `${item.tipo} ${item.numero}/${item.ano} - ${item.assunto}`;
+        const textoCompleto = `${item.tipo} ${item.numero}/${item.ano} - ${item.assunto}`;
+        option.textContent = truncarTexto(textoCompleto, 100); // Limita a 60 caracteres
+        // Armazena o texto completo como atributo (opcional, para referência)
+        option.setAttribute('data-fulltext', textoCompleto);
         select.appendChild(option);
       });
+    }
+    // Se houver texto no campo de busca, aplica o filtro imediatamente
+    if (inputBusca && inputBusca.value.trim()) {
+      filtrarSelectVinculacao(inputBusca.value, 'selectVinculo', window.legislacoesParaVinculo);
     }
   });
 }
@@ -1651,19 +1782,50 @@ async function salvarEdicaoLegislacao() {
 // Preenche o dropdown de vínculos do modal de edição
 function carregarDocumentosParaVinculacaoEdicao() {
   const select = document.getElementById('selectEditVinculo');
+  const inputBusca = document.getElementById('buscaEditVinculo');
   if (!select) return;
+
+  // Inicializa lista global para o filtro
+  window.legislacoesParaEdicao = [];
+
   select.innerHTML = '<option value="">Selecionar documento...</option>';
   const url = `${API_URL}?tipo=legislacao&email=${emailUsuario}`;
   jsonp(url, function(dados) {
     if (Array.isArray(dados)) {
+      window.legislacoesParaEdicao = dados;
       dados.forEach(item => {
         const option = document.createElement('option');
         option.value = item.id;
-        option.textContent = `${item.tipo} ${item.numero}/${item.ano} - ${item.assunto}`;
+        const textoCompleto = `${item.tipo} ${item.numero}/${item.ano} - ${item.assunto}`;
+        option.textContent = truncarTexto(textoCompleto, 100);
+        option.setAttribute('data-fulltext', textoCompleto);
         select.appendChild(option);
       });
     }
+    if (inputBusca && inputBusca.value.trim()) {
+      filtrarSelectVinculacao(inputBusca.value, 'selectEditVinculo', window.legislacoesParaEdicao);
+    }
   });
+}
+
+function filtrarSelectVinculacao(termo, selectId, lista) {
+  const select = document.getElementById(selectId);
+  if (!select || !lista) return;
+
+  const termoLower = termo.trim().toLowerCase();
+
+  // Mantém a opção padrão
+  let html = '<option value="">Selecionar documento...</option>';
+  const filtrados = termoLower === '' ? lista : lista.filter(item => {
+    const texto = `${item.tipo} ${item.numero}/${item.ano} - ${item.assunto}`.toLowerCase();
+    return texto.includes(termoLower);
+  });
+
+  filtrados.forEach(item => {
+    html += `<option value="${item.id}">${item.tipo} ${item.numero}/${item.ano} - ${item.assunto}</option>`;
+  });
+
+  select.innerHTML = html;
 }
 
 // Adiciona o vínculo selecionado no dropdown da edição
@@ -1772,7 +1934,6 @@ function salvarComunicado() {
     return;
   }
 
-  // 🔥 Validação da data de expiração (não pode ser anterior à data atual)
   if (dataExpiracao) {
     const dataExp = new Date(dataExpiracao);
     const hoje = new Date();
@@ -1782,6 +1943,10 @@ function salvarComunicado() {
       return;
     }
   }
+
+  // 🔄 Indicador de carregamento no botão "Publicar"
+  const btnPublicar = document.querySelector('#modalComunicado .btn-salvar');
+  showButtonLoading(btnPublicar);
 
   const dados = {
     acao: 'salvarComunicado',
@@ -1795,8 +1960,9 @@ function salvarComunicado() {
   };
 
   postSemResposta(dados, 'Comunicado publicado!', () => {
+    hideButtonLoading(btnPublicar);
     fecharModalComunicado();
-    carregarComunicados(); // atualiza o mural
+    carregarComunicados();
   });
 }
 
@@ -1819,10 +1985,14 @@ function carregarComunicados() {
     container.innerHTML = '';
 
     if (!Array.isArray(dados) || dados.length === 0) {
-      // Exibe mensagem amigável, mantendo o mural aberto
       container.innerHTML = `<p style="text-align:center; color:var(--text-muted); padding:16px;">
         Nenhum comunicado no momento.
       </p>`;
+      // Recolhe o mural automaticamente
+      const cards = document.getElementById('muralCards');
+      const btn = document.getElementById('btnToggleMural');
+      if (cards) cards.style.display = 'none';
+      if (btn) btn.innerHTML = '<i class="fas fa-chevron-down"></i> Expandir';
       return;
     }
 
@@ -1833,8 +2003,12 @@ function carregarComunicados() {
     dados.forEach(item => {
       const cor = cores[item.prioridade] || cores.informativo;
       const icone = icones[item.prioridade] || icones.informativo;
-      const diffHoras = (new Date() - new Date(item.dataInicio)) / 36e5;
-      const badgeNovo = diffHoras < 24 ? '<span class="badge-novo">NOVO</span>' : '';
+            // Verifica se o comunicado já foi lido (registrado no localStorage)
+      const chaveLido = 'comunicado_lido_' + item.id;
+      const jaFoiLido = localStorage.getItem(chaveLido) === 'true';
+      
+      // Exibe o badge "NOVO" apenas para comunicados ainda não lidos
+      const badgeNovo = !jaFoiLido ? '<span class="badge-novo">NOVO</span>' : '';
       const badgeFixado = item.fixado ? '📌' : '';
 
       const card = document.createElement('div');
@@ -1861,7 +2035,14 @@ function carregarComunicados() {
         card.querySelector('.texto-comunicado').style.overflow = expandido ? 'visible' : 'hidden';
       };
 
-      card.onclick = () => {
+            card.onclick = () => {
+        // Marca como lido no localStorage quando o card é clicado
+        if (!jaFoiLido) {
+          localStorage.setItem(chaveLido, 'true');
+          // Atualiza o card para remover o badge imediatamente
+          const badge = card.querySelector('.badge-novo');
+          if (badge) badge.remove();
+        }
         expandido = !expandido;
         atualizarCard();
       };
@@ -1953,7 +2134,6 @@ function renderizarDropdownBusca(resultados) {
     return;
   }
 
-  // Agrupa por tipo
   const grupos = {};
   resultados.forEach(item => {
     if (!grupos[item.tipo]) grupos[item.tipo] = [];
@@ -1974,8 +2154,12 @@ function renderizarDropdownBusca(resultados) {
     html += `<div class="grupo-busca">
       <div class="grupo-titulo"><i class="fas ${icone}"></i> ${tipo}</div>`;
     grupos[tipo].forEach(item => {
+      // Armazena o aluno no cache, se disponível
+      if (item.aluno) {
+        cacheAlunosBusca[item.link] = item.aluno;
+      }
       html += `
-        <div class="item-busca" onclick="abrirResultadoBusca('${item.link.replace(/'/g, "\\'")}'); fecharDropdownBusca()">
+        <div class="item-busca" onmousedown="event.preventDefault(); abrirResultadoBusca('${item.link.replace(/'/g, "\\'")}'); fecharDropdownBusca()">
           <i class="fas ${icone}"></i>
           <div>
             <strong>${item.titulo}</strong>
@@ -2000,26 +2184,33 @@ function fecharDropdownBusca() {
 
 function abrirResultadoBusca(link) {
   if (!link) return;
-  
-  const [prefixo, id] = link.split('_');
+  const index = link.indexOf('_');
+  const prefixo = index !== -1 ? link.substring(0, index) : link;
+  const id = index !== -1 ? link.substring(index + 1) : '';
+  // Fecha o dropdown imediatamente
+  fecharDropdownBusca();
   
   switch (prefixo) {
     case 'aluno':
-      abrirAluno(id);
+      const alunoCache = cacheAlunosBusca[link];
+      if (alunoCache) {
+        abrirModalDetalhes(alunoCache);
+      } else {
+        // fallback: tenta encontrar nos dados globais (para retrocompatibilidade)
+        abrirAluno(id);
+      }
       break;
     case 'legislacao':
       abrirModalLegislacao();
       setTimeout(() => {
         abrirDetalheLegislacao(id);
-      }, 500);
+      }, 300);
       break;
     case 'comunicado':
-      // Por enquanto, abre o mural e destaca? Pode só abrir o modal de comunicação
       abrirModalComunicado();
       break;
     case 'processo':
       abrirModalProcessos();
-      // Não temos busca por ID direta, mas já abre a listagem
       break;
     case 'ata':
       abrirModalAtas();
@@ -2343,46 +2534,6 @@ function gerarTabelaAtos(atos) {
   html += `</tbody></table>`;
   return html;
 }
-
-function gerarTabelaAtos(atos) {
-  let html = `<table><thead><tr>
-    <th>Tipo</th><th>Número</th><th>Curso/Etapa</th><th>Curso Técnico</th><th>Fundamentação</th><th>Publicação</th><th>Validade</th><th>Status</th>
-  </tr></thead><tbody>`;
-  atos.forEach(ato => {
-    html += `<tr>
-      <td>${ato.tipoAto}</td>
-      <td>${ato.numeroAto}</td>
-      <td>${ato.cursoEtapa || '—'}</td>
-      <td>${ato.cursoTecnico || '—'}</td>
-      <td>${ato.fundamentacao || '—'}</td>
-      <td>${new Date(ato.dataPublicacao).toLocaleDateString('pt-BR')}</td>
-      <td>${ato.validadeAnos} anos</td>
-      <td>${ato.status}</td>
-    </tr>`;
-  });
-  html += `</tbody></table>`;
-  return html;
-}
-
-function gerarTabelaAtos(atos) {
-  let html = `<table><thead><tr>
-    <th>Tipo</th><th>Número</th><th>Curso/Etapa</th><th>Curso Técnico</th><th>Fundamentação</th><th>Publicação</th><th>Validade</th><th>Status</th>
-  </tr></thead><tbody>`;
-  atos.forEach(ato => {
-    html += `<tr>
-      <td>${ato.tipoAto}</td>
-      <td>${ato.numeroAto}</td>
-      <td>${ato.cursoEtapa || '—'}</td>
-      <td>${ato.cursoTecnico || '—'}</td>
-      <td>${ato.fundamentacao || '—'}</td>
-      <td>${new Date(ato.dataPublicacao).toLocaleDateString('pt-BR')}</td>
-      <td>${ato.validadeAnos} anos</td>
-      <td>${ato.status}</td>
-    </tr>`;
-  });
-  html += `</tbody></table>`;
-  return html;
-}
 // =========================
 // TERMO DE RESPONSABILIDADE
 // =========================
@@ -2557,3 +2708,303 @@ function atualizarCelulaChecklist(checkbox) {
     td.style.backgroundColor = '#fff';
   }
 }
+// =========================
+// MODAL DADOS DA ESCOLA
+// =========================
+
+function abrirModalDadosEscola() {
+  document.body.style.overflow = 'hidden';               // trava rolagem do fundo
+  document.getElementById('modalDadosEscola').style.display = 'flex';
+  preencherSelectEscolaDados();
+  preencherEtapasModalidade();
+  orgsSelecionadas = [];
+  renderizarOrgsAdicionadas();
+}
+
+function fecharModalDadosEscola() {
+  document.body.style.overflow = '';                     // restaura rolagem
+  document.getElementById('modalDadosEscola').style.display = 'none';
+}
+
+function preencherSelectEscolaDados() {
+  const select = document.getElementById('selectEscolaDados');
+  const escolas = getEscolasPermitidas();
+  select.innerHTML = '<option value="">Selecione a escola</option>';
+  escolas.forEach(esc => select.appendChild(new Option(esc, esc)));
+}
+
+function carregarDadosEscola() {
+  const escola = document.getElementById('selectEscolaDados').value;
+  if (!escola) {
+    document.getElementById('cardDadosEscola').style.display = 'none';
+    document.getElementById('formDadosEscola').style.display = 'none';
+    return;
+  }
+
+  const url = `${API_URL}?tipo=obterDadosEscola&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`;
+  jsonp(url, function(dados) {
+    if (dados.erro) {
+      mostrarToast(dados.erro, 'error');
+      return;
+    }
+
+    // Preenche o card de resumo
+    const enderecoParts = [
+      dados.LOGRADOURO, dados.NUMERO, dados.BAIRRO,
+      dados.CIDADE, dados.UF, dados.CEP
+    ].filter(Boolean).join(', ') || '—';
+    document.getElementById('resumoEndereco').innerHTML = `<i class="fas fa-map-marker-alt"></i> ${enderecoParts}`;
+    document.getElementById('resumoContato').innerHTML = `<i class="fas fa-envelope"></i> ${dados.EMAIL || '—'} | <i class="fas fa-phone"></i> ${dados.TELEFONE || '—'}`;
+
+    const formatarData = (d) => d ? new Date(d).toLocaleDateString('pt-BR') : '—';
+    document.getElementById('resumoAtos').innerHTML = 
+      `<i class="fas fa-file-contract"></i> Criação: ${dados.ATO_CRIACAO || '—'} (${formatarData(dados.PUBLICACAO_CRIACAO)}) | Aprovação: ${dados.ATO_APROVACAO || '—'} (${formatarData(dados.PUBLICACAO_APROVACAO)})`;
+
+    // Preenche o formulário de edição
+    document.getElementById('editLogradouro').value = dados.LOGRADOURO || '';
+    document.getElementById('editNumero').value = dados.NUMERO || '';
+    document.getElementById('editBairro').value = dados.BAIRRO || '';
+    document.getElementById('editCidade').value = dados.CIDADE || '';
+    document.getElementById('editUfEscola').value = dados.UF || '';
+    document.getElementById('editCep').value = dados.CEP || '';
+    document.getElementById('editEmailEscola').value = dados.EMAIL || '';
+
+    const telInput = document.getElementById('editTelefone');
+    telInput.value = dados.TELEFONE || '';
+    if (dados.TELEFONE) {
+      telInput.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    document.getElementById('editAtoCriacao').value = dados.ATO_CRIACAO || '';
+    document.getElementById('editPublicacaoCriacao').value = dados.PUBLICACAO_CRIACAO ? new Date(dados.PUBLICACAO_CRIACAO).toISOString().split('T')[0] : '';
+    document.getElementById('editAtoAprovacao').value = dados.ATO_APROVACAO || '';
+    document.getElementById('editPublicacaoAprovacao').value = dados.PUBLICACAO_APROVACAO ? new Date(dados.PUBLICACAO_APROVACAO).toISOString().split('T')[0] : '';
+    
+    // Carrega organizações curriculares vinculadas
+    const urlOrgs = `${API_URL}?tipo=listarOrganizacoesCurriculares&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`;
+    jsonp(urlOrgs, function(orgs) {
+      orgsSelecionadas = orgs || [];
+      renderizarOrgsAdicionadas();
+    });
+
+    document.getElementById('cardDadosEscola').style.display = 'block';
+    document.getElementById('formDadosEscola').style.display = 'none';
+  });
+}
+
+function mostrarFormEdicaoDadosEscola() {
+  document.getElementById('cardDadosEscola').style.display = 'none';
+  document.getElementById('formDadosEscola').style.display = 'block';
+}
+
+function cancelarEdicaoDadosEscola() {
+  document.getElementById('formDadosEscola').style.display = 'none';
+  document.getElementById('cardDadosEscola').style.display = 'block';
+}
+
+function salvarDadosEscola() {
+  const escola = document.getElementById('selectEscolaDados').value;
+  if (!escola) {
+    mostrarToast('Selecione uma escola.', 'warning');
+    return;
+  }
+
+  // Primeiro salva as organizações curriculares
+  const dadosOrgs = {
+    acao: 'salvarOrganizacoesCurriculares',
+    email: emailUsuario,
+    escola: escola,
+    organizacoes: orgsSelecionadas
+  };
+
+  postSemResposta(dadosOrgs, null, () => {
+    // Depois salva os dados da escola
+    const dadosEscola = {
+      acao: 'salvarDadosEscola',
+      email: emailUsuario,
+      escola: escola,
+      logradouro: document.getElementById('editLogradouro').value,
+      numero: document.getElementById('editNumero').value,
+      bairro: document.getElementById('editBairro').value,
+      cidade: document.getElementById('editCidade').value,
+      uf: document.getElementById('editUfEscola').value,
+      cep: document.getElementById('editCep').value,
+      emailEscola: document.getElementById('editEmailEscola').value,
+      telefone: document.getElementById('editTelefone').value,
+      atoCriacao: document.getElementById('editAtoCriacao').value,
+      publicacaoCriacao: document.getElementById('editPublicacaoCriacao').value,
+      atoAprovacao: document.getElementById('editAtoAprovacao').value,
+      publicacaoAprovacao: document.getElementById('editPublicacaoAprovacao').value
+      
+    };
+
+    postSemResposta(dadosEscola, 'Dados da escola e organizações curriculares salvos!', () => {
+      cancelarEdicaoDadosEscola();
+      carregarDadosEscola();
+    });
+  });
+}
+
+function truncarTexto(texto, max = 100) {
+  if (!texto) return '';
+  return texto.length > max ? texto.substring(0, max - 3) + '...' : texto;
+}
+
+function exportarDadosEscolaPDF() {
+  const escola = document.getElementById('selectEscolaDados').value;
+  if (!escola) {
+    mostrarToast('Selecione uma escola.', 'warning');
+    return;
+  }
+
+  mostrarLoading();
+  const url = `${API_URL}?tipo=obterDadosEscola&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`;
+
+  jsonp(url, function(dados) {
+    if (dados.erro) {
+      esconderLoading();
+      mostrarToast(dados.erro, 'error');
+      return;
+    }
+
+    if (!dados.ESCOLA) {
+      esconderLoading();
+      mostrarToast('Escola não encontrada.', 'error');
+      return;
+    }
+
+    // Busca as organizações curriculares para incluir no PDF
+    const urlOrgs = `${API_URL}?tipo=listarOrganizacoesCurriculares&email=${emailUsuario}&escola=${encodeURIComponent(escola)}`;
+    jsonp(urlOrgs, function(orgs) {
+      esconderLoading();
+
+      // Monta o endereço formatado
+      const partesEndereco = [
+        dados.LOGRADOURO,
+        dados.NUMERO,
+        dados.BAIRRO,
+        dados.CIDADE ? `${dados.CIDADE}/${dados.UF}` : '',
+        dados.CEP ? `CEP: ${dados.CEP}` : ''
+      ].filter(Boolean);
+      const enderecoFormatado = partesEndereco.join(', ') || '—';
+
+      // Monta o HTML do relatório
+      let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Dados da Escola</title>`;
+      html += `<style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 30px; color: #333; }
+        h1 { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; }
+        h2 { color: #1e3a8a; margin-top: 24px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #1e3a8a; color: white; padding: 8px; text-align: left; }
+        td { padding: 8px; border: 1px solid #ccc; }
+        ul { margin: 8px 0; padding-left: 20px; }
+        li { margin-bottom: 4px; }
+        @page { size: A4; margin: 15mm; }
+        @media print { body { -webkit-print-color-adjust: exact; } }
+      </style></head><body>`;
+      html += `<h1>Dados da Escola: ${dados.ESCOLA}</h1>`;
+      html += `<table>`;
+
+      // Endereço (linha única)
+      html += `<tr><th>Endereço</th><td>${enderecoFormatado}</td></tr>`;
+
+      // Demais campos
+      const camposExibicao = {
+        EMAIL: 'E-mail',
+        TELEFONE: 'Telefone',
+        ATO_CRIACAO: 'Ato de Criação',
+        PUBLICACAO_CRIACAO: 'Publicação do Ato de Criação',
+        ATO_APROVACAO: 'Ato de Aprovação/Credenciamento',
+        PUBLICACAO_APROVACAO: 'Publicação do Ato de Aprovação'
+      };
+
+      for (let campo in camposExibicao) {
+        let valor = dados[campo] || '—';
+        if (campo.includes('PUBLICACAO') && dados[campo]) {
+          valor = new Date(dados[campo]).toLocaleDateString('pt-BR');
+        }
+        html += `<tr><th>${camposExibicao[campo]}</th><td>${valor}</td></tr>`;
+      }
+
+      html += `</table>`;
+
+      // Seção de Organizações Curriculares
+      html += `<h2>Organizações Curriculares Vinculadas</h2>`;
+      if (orgs && orgs.length > 0) {
+        html += `<table>`;
+        html += `<tr><th>Código</th><th>Nome</th><th>Etapa/Modalidade</th><th>Tipo</th></tr>`;
+        orgs.forEach(org => {
+          html += `<tr><td>${org.codigo}</td><td>${org.nome}</td><td>${org.etapaModalidade}</td><td>${org.tipo}</td></tr>`;
+        });
+        html += `</table>`;
+      } else {
+        html += `<p>Nenhuma organização curricular vinculada.</p>`;
+      }
+
+      html += `</body></html>`;
+
+      const printWindow = window.open('', '_blank', 'width=900,height=700');
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.onload = function() {
+        printWindow.print();
+      };
+    });
+  });
+}
+
+// =========================
+// GERAR HISTÓRICO
+// =========================
+
+function gerarHistoricoAluno(idAluno, escola, turma) {
+  mostrarLoading();
+  
+  // Mapeamento de modelo por características da turma
+  let modeloAba = 'TEMPLATE_EF'; // padrão
+
+  const t = turma.toUpperCase();
+
+  if (t.includes('EJA') || t.includes('NEEJA')) {
+    if (t.includes('TÉCNICO') || t.includes('INTEGRADO')) modeloAba = 'TEMPLATE_TECNICO_EJA';
+    else if (t.includes('QUALIFICAÇÃO')) modeloAba = 'TEMPLATE_QUALI_EJA';
+    else if (t.includes('EM') || t.includes('ENSINO MÉDIO') || t.includes('3ª SÉRIE')) modeloAba = 'TEMPLATE_EJA_EM';
+    else modeloAba = 'TEMPLATE_EJA_EF';
+  } else if (t.includes('TÉCNICO') || t.includes('INTEGRADO') || t.includes('CONCOMITANTE') || t.includes('SUBSEQUENTE')) {
+    if (t.includes('EJA')) modeloAba = 'TEMPLATE_TECNICO_EJA';
+    else if (t.includes('NÍVEL MÉDIO')) modeloAba = 'TEMPLATE_TECNICO_NM';
+    else modeloAba = 'TEMPLATE_TECNICO';
+  } else if (t.includes('ENSINO MÉDIO') || /^[1-3]ª/.test(t)) {
+    modeloAba = 'TEMPLATE_EM';
+  } else if (/^[1-9]º/.test(t)) {
+    modeloAba = 'TEMPLATE_EF';
+  }
+
+  const url = API_URL + '?tipo=gerarHistorico&email=' + encodeURIComponent(emailUsuario)
+              + '&idAluno=' + encodeURIComponent(idAluno)
+              + '&escola=' + encodeURIComponent(escola)
+              + '&modelo=' + encodeURIComponent(modeloAba);
+              
+  jsonp(url, function(res) {
+    esconderLoading();
+    if (res.erro) {
+      mostrarToast(res.erro, 'error');
+      return;
+    }
+    window.open(res.url, '_blank');
+    mostrarToast('Histórico gerado com sucesso!', 'success');
+  });
+}
+
+// Fechar dropdown de busca global ao clicar fora
+document.addEventListener('mousedown', function(e) {
+  const input = document.getElementById('inputBuscaGlobal');
+  const dropdown = document.getElementById('dropdownBuscaGlobal');
+  if (!input || !dropdown) return;
+  
+  // Se o clique foi FORA do input e FORA do dropdown, fecha
+  if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+    fecharDropdownBusca();
+  }
+});

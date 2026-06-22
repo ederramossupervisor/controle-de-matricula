@@ -38,7 +38,7 @@ function inicializarFiltros() {
 
   const campoBusca = document.getElementById("pesquisaNome");
   if (campoBusca) {
-    const buscarDebounced = debounce(aplicarFiltros, 300);
+    const buscarDebounced = debounce(aplicarFiltros, 600);
     campoBusca.removeEventListener("input", buscarDebounced);
     campoBusca.addEventListener("input", buscarDebounced);
   }
@@ -244,11 +244,11 @@ function ajustarInterfacePorPerfil() {
 
   const isAdministrador = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
   const btnLegalizacao = document.getElementById("btnLegalizacao");
-  if (perfilUsuario === "SUPERVISOR") {
-    if (btnLegalizacao) btnLegalizacao.style.display = "inline-block";
-  } else {
-    if (btnLegalizacao) btnLegalizacao.style.display = "none";
-  }
+  if (perfilUsuario === "SUPERVISOR" || perfilUsuario === "SECRETARIA") {
+  if (btnLegalizacao) btnLegalizacao.style.display = "inline-block";
+} else {
+  if (btnLegalizacao) btnLegalizacao.style.display = "none";
+}
 
   if (perfilUsuario === "SECRETARIA") {
     if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "none";

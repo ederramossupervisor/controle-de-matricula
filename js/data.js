@@ -51,9 +51,22 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     }
 
     if (dados.erro) {
-      mostrarToast("Acesso não autorizado", "error");
-      esconderLoading();
-      return;
+      if (dados.erro === "sessao_expirada") {
+        // Apenas desloga se for explicitamente sessão expirada
+        localStorage.removeItem("emailUsuario");
+        emailUsuario = "";
+        esconderLoading();
+        esconderSplash();
+        document.getElementById("app").style.display = "none";
+        document.getElementById("login").style.display = "";
+        mostrarToast("Sessão expirada. Faça login novamente.", "error");
+        return;
+      } else {
+        // Outros erros (rede, falha JSONP) apenas mostram um aviso e mantém o usuário logado
+        esconderLoading();
+        mostrarToast("Erro de conexão. Tente novamente.", "warning");
+        return;
+      }
     }
 
     if (dados.escolasSupervisionadas) {
@@ -96,6 +109,15 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     document.body.classList.add(perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria');
     escolaUsuario = dados.escola;
 
+    const nomeEscolaHeader = document.getElementById('nomeEscolaHeader');
+if (nomeEscolaHeader) {
+  if (perfilUsuario === 'SUPERVISOR') {
+    nomeEscolaHeader.textContent = 'SRE Afonso Cláudio';
+  } else {
+    nomeEscolaHeader.textContent = escolaUsuario || 'Escola';
+  }
+}
+
     const emailSpan = document.getElementById("emailUsuarioTexto");
     if (emailSpan) emailSpan.textContent = emailUsuario;
 
@@ -126,21 +148,30 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     }
 
     document.getElementById("login").style.display = "none";
+    esconderLoading();
+    esconderSplash();          // ← ADICIONE AQUI
     document.getElementById("app").style.display = "block";
+    aplicarCampanha();
 
     // Exibe dock mobile após login
     if (typeof exibirDockMobile === 'function') {
       exibirDockMobile();
     }
 
-    carregarComunicados();
-    iniciarPollingNotificacoes();
-    carregarFotoPerfil();
-    ajustarInterfacePorPerfil();
-    inicializarFiltros();
-    preencherSelectsProcessos();
-    preencherSelectEscolasDoc();
-    preencherSelectEscolasTurma();
+    // ========== AÇÕES IMEDIATAS (essenciais para a tela) ==========
+    ajustarInterfacePorPerfil();   // esconde/mostra botões conforme perfil
+    inicializarFiltros();          // carrega turmas para filtro (usa cache)
+    preencherSelectEscolasTurma(); // select da escola no modal turmas (leve)
+
+    // ========== AÇÕES ADIADAS (não bloqueiam a exibição inicial) ==========
+    setTimeout(() => {
+      carregarComunicados();       // busca no servidor
+      iniciarPollingNotificacoes();// verifica a cada 30s, pode começar depois
+      carregarFotoPerfil();        // foto do Google Drive
+    }, 400); // 400 ms após a lista aparecer
+
+    // preencherSelectsProcessos() e preencherSelectEscolasDoc() foram movidas
+    // para as funções de abertura dos modais correspondentes (modals.js)
 
     if (perfilUsuario === "SECRETARIA") {
       carregarTurmasParaFiltro();
@@ -214,6 +245,11 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       btnGerador.style.display = 'block';
     }
 
+    const btnDadosEscola = document.getElementById('btnDadosEscola');
+    if (btnDadosEscola) {
+      btnDadosEscola.style.display = (perfilUsuario === 'SUPERVISOR' || perfilUsuario === 'SECRETARIA') ? 'inline-block' : 'none';
+    }
+
     // Botões do Plano Tático
     const botoesPlano = ['btnPlanoTatico', 'btnPlanoTaticoTrim'];
     botoesPlano.forEach(id => {
@@ -236,6 +272,12 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     const btnMonitoramento = document.getElementById('btnMonitoramento');
     if (btnMonitoramento) {
       btnMonitoramento.style.display = (perfilUsuario === 'SUPERVISOR') ? 'inline-block' : 'none';
+    }
+
+        // Botão de upload de modelo da escola (visível para SECRETARIA e SUPERVISOR)
+    const btnUploadEscola = document.getElementById('btnUploadModeloEscola');
+    if (btnUploadEscola) {
+      btnUploadEscola.style.display = (perfilUsuario === 'SECRETARIA' || perfilUsuario === 'SUPERVISOR') ? 'inline-block' : 'none';
     }
 
     // Ocultar colunas vazias do menu
@@ -454,8 +496,13 @@ async function salvarAto() {
   const arquivoInput = document.getElementById("atoArquivo");
   const file = arquivoInput.files[0];
 
-  if (!escola || !tipoAto || !cursoEtapa || !numeroAto || !dataPublicacao || !dataHomologacao) {
+  const isAtoCurso = tipoAto === 'Ato de curso (criação)' || tipoAto === 'Ato de curso (aprovação/renovação)';
+  if (!escola || !tipoAto || !numeroAto || !dataPublicacao || !dataHomologacao) {
     mostrarToast("Preencha todos os campos obrigatórios.", "warning");
+    return;
+  }
+  if (isAtoCurso && !cursoEtapa) {
+    mostrarToast("Selecione o Curso/Etapa.", "warning");
     return;
   }
 
@@ -524,36 +571,42 @@ async function excluirAto(id) {
   carregarAtos();
 }
 
-// ------ MODELOS DE DOCUMENTOS ------
-function carregarModelos() {
+function carregarModelosEscola() {
   mostrarLoading();
-  const url = `${API_URL}?tipo=modelos&email=${emailUsuario}&_=${new Date().getTime()}`;
+  const url = `${API_URL}?tipo=listarModelosEscola&email=${emailUsuario}&_=${new Date().getTime()}`;
   jsonp(url, function(modelos) {
+    esconderLoading();
     const container = document.getElementById("listaModelosContainer");
     container.innerHTML = "";
     
     if (!modelos || modelos.length === 0) {
       container.innerHTML = "<p>Nenhum modelo disponível no momento.</p>";
-      esconderLoading();
       return;
     }
-    
+
+    let html = '<h3 style="margin-top:0;">Modelos Oficiais</h3>';
+    let temPersonalizados = false;
+
     modelos.forEach(modelo => {
-      const div = document.createElement("div");
-      div.className = "usuario-card";
-      div.style.marginBottom = "8px";
-      
-      const temArquivo = modelo.temArquivo;
-      
+      if (modelo.isPersonalizado) {
+        if (!temPersonalizados) {
+          html += '<h3 style="margin-top:16px;">Modelos da Escola</h3>';
+          temPersonalizados = true;
+        }
+      }
+
+      const div = document.createElement('div');
+      div.className = 'usuario-card';
+      div.style.marginBottom = '8px';
       div.innerHTML = `
         <div class="usuario-avatar"><i class="fas fa-file-word"></i></div>
         <div class="usuario-info">
           <strong>${modelo.nome}</strong>
-          <p>${temArquivo ? modelo.fileName : '<span style="color:#ef4444;">Nenhum arquivo</span>'}</p>
+          <p>${modelo.fileName || '<span style="color:#ef4444;">Nenhum arquivo</span>'}</p>
           <div style="margin-top:8px;">
-            ${temArquivo ? `
-              <a href="${modelo.downloadUrl}" class="btn-pequeno" target="_blank"><i class="fas fa-download"></i> Baixar</a>
-              <a href="${modelo.viewUrl}" class="btn-pequeno" target="_blank"><i class="fas fa-eye"></i> Visualizar</a>
+            ${modelo.viewUrl ? `
+              <a href="${modelo.viewUrl}" target="_blank" class="btn-pequeno"><i class="fas fa-eye"></i> Visualizar</a>
+              <a href="${modelo.downloadUrl}" class="btn-pequeno"><i class="fas fa-download"></i> Baixar</a>
             ` : `
               <button class="btn-pequeno" disabled style="opacity:0.5;"><i class="fas fa-exclamation-triangle"></i> Sem arquivo</button>
             `}
@@ -562,9 +615,48 @@ function carregarModelos() {
       `;
       container.appendChild(div);
     });
-    
+
     esconderLoading();
   });
+}
+
+async function fazerUploadModeloEscola() {
+  const nomeModelo = document.getElementById('nomeModeloEscola')?.value.trim();
+  const fileInput = document.getElementById('arquivoModeloEscola');
+  const file = fileInput?.files[0];
+
+  if (!nomeModelo) { mostrarToast('Digite um nome para o modelo.', 'warning'); return; }
+  if (!file) { mostrarToast('Selecione um arquivo.', 'warning'); return; }
+  if (file.size > 20 * 1024 * 1024) { mostrarToast('Arquivo muito grande. Máximo 20 MB.', 'warning'); return; }
+
+  const btnEnviar = document.querySelector('#abaUploadModeloEscola .btn-salvar');
+  showButtonLoading(btnEnviar);
+
+  try {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    postSemResposta({
+      acao: 'uploadModeloEscola',
+      email: emailUsuario,
+      nomeModelo: nomeModelo,
+      fileName: file.name,
+      mimeType: file.type,
+      fileBase64: base64
+    }, 'Modelo enviado com sucesso!', () => {
+      fileInput.value = '';
+      document.getElementById('nomeModeloEscola').value = '';
+      hideButtonLoading(btnEnviar);
+      carregarModelosEscola(); // atualiza a lista
+    });
+  } catch (error) {
+    mostrarToast('Erro ao enviar.', 'error');
+    hideButtonLoading(btnEnviar);
+  }
 }
 
 async function fazerUploadModelo() {
@@ -829,7 +921,15 @@ async function salvarDadosAluno() {
   const edEspecial = document.getElementById("editEdEspecial").checked;
   const observacoes = document.getElementById("observacoesAluno")?.value || "";
   const cpfNumero = document.getElementById("editCpfNumero")?.value.trim() || "";
-  const racaCor = document.getElementById("editRacaCor")?.value || ""; // NOVO
+  const racaCor = document.getElementById("editRacaCor")?.value || "";
+
+  // NOVOS CAMPOS
+  const filiacao1 = document.getElementById("editFiliacao1")?.value.trim() || "";
+  const filiacao2 = document.getElementById("editFiliacao2")?.value.trim() || "";
+  const dataNascimento = document.getElementById("editDataNascimento")?.value || "";
+  const naturalidade = document.getElementById("editNaturalidade")?.value.trim() || "";
+  const ufNascimento = document.getElementById("ufNascimentoCadastro")?.value || "";
+  const nacionalidade = document.getElementById("editNacionalidade")?.value.trim() || "";
   
   if (!nome) {
     mostrarToast("Nome do aluno é obrigatório.", "warning");
@@ -842,6 +942,14 @@ async function salvarDadosAluno() {
     return;
   }
   
+    // Valida CPF (se preenchido)
+  if (cpfNumero && cpfNumero.replace(/\D/g, '') !== '') {
+    if (!validarCPF(cpfNumero)) {
+      mostrarToast("CPF inválido. Verifique o número digitado.", "warning");
+      return;
+    }
+  }
+
   const btn = document.getElementById("btnSalvarInfoAluno");
   showButtonLoading(btn);
   
@@ -857,7 +965,13 @@ async function salvarDadosAluno() {
     edEspecial: edEspecial,
     observacoes: observacoes,
     cpfNumero: cpfNumero,
-    racaCor: racaCor,       // NOVO
+    racaCor: racaCor,
+    filiacao1: filiacao1,
+    filiacao2: filiacao2,
+    dataNascimento: dataNascimento,
+    naturalidade: naturalidade,
+    ufNascimento: ufNascimento,
+    nacionalidade: nacionalidade,
     email: emailUsuario
   };
   
@@ -872,7 +986,13 @@ async function salvarDadosAluno() {
     dadosAlunoAtual.ED_ESPECIAL = edEspecial;
     dadosAlunoAtual.OBSERVACOES = observacoes;
     dadosAlunoAtual.CPF_NUMERO = cpfNumero;
-    dadosAlunoAtual.RACA_COR = racaCor;   // atualiza localmente
+    dadosAlunoAtual.RACA_COR = racaCor;
+    dadosAlunoAtual.FILIACAO_1 = filiacao1;
+    dadosAlunoAtual.FILIACAO_2 = filiacao2;
+    dadosAlunoAtual.DATA_NASCIMENTO = dataNascimento;
+    dadosAlunoAtual.NATURALIDADE = naturalidade;
+    dadosAlunoAtual.UF_NASCIMENTO = ufNascimento;
+    dadosAlunoAtual.NACIONALIDADE = nacionalidade;
     
     document.getElementById("detalhesTitulo").textContent = nome;
     
@@ -1112,52 +1232,24 @@ async function importarDaPlanilha() {
 }
 
 function executarImportacao() {
-  if (alunosImportados.length === 0) return;
-  
-  const btn = document.getElementById('btnExecutarImportacao');
-  const statusDiv = document.getElementById('statusImportacao');
-  
-  showButtonLoading(btn);
-  
-  const loteSize = 20;
-  let lotesEnviados = 0;
-  
-  function enviarLote(lote) {
-    return new Promise((resolve) => {
-      postSemResposta(
-        {
-          acao: 'importarAlunosLote',
-          email: emailUsuario,
-          alunos: lote
-        },
-        null,
-        () => {
-          lotesEnviados++;
-          statusDiv.innerHTML = `Importando lote ${lotesEnviados} de ${Math.ceil(alunosImportados.length / loteSize)}...`;
-          resolve();
-        }
-      );
-    });
+  console.log("Email:", emailUsuario, "Alunos:", alunosImportados.length);
+  if (alunosImportados.length === 0) {
+    mostrarToast("Nenhum aluno para importar.", "warning");
+    return;
   }
-  
-  (async () => {
-    try {
-      for (let i = 0; i < alunosImportados.length; i += loteSize) {
-        const lote = alunosImportados.slice(i, i + loteSize);
-        await enviarLote(lote);
-      }
-      statusDiv.innerHTML = `Importação concluída! ${alunosImportados.length} alunos enviados.`;
-      registrarUltimaAcao('Importação de alunos');   // 🔥
-      mostrarToast(`Importação concluída! ${alunosImportados.length} alunos processados.`, 'success');
-    } catch (error) {
-      console.error('Erro na importação:', error);
-      mostrarToast('Erro durante a importação.', 'error');
-    } finally {
-      hideButtonLoading(btn);
-      btn.innerHTML = '<i class="fas fa-download"></i> Iniciar Importação';
-      carregarAlunos();
-    }
-  })();
+
+  mostrarLoading();
+  const dados = {
+    acao: "enviarCSVParaFila",
+    email: emailUsuario,
+    alunos: alunosImportados   // array de objetos de aluno
+  };
+
+  postSemResposta(dados, "Importação agendada!...", () => {
+    esconderLoading();
+    fecharModalImportacao();
+    alunosImportados = [];
+  });
 }
 
 function processarCSV() {
@@ -1184,11 +1276,12 @@ function processarCSV() {
         }
         
         alunosImportados = dados.map(linha => {
-          const dataMatricula = linha['Aluno: Data de matrícula'] || '';
+          const dataMatricula = parseDataCSV(linha['Aluno: Data de matrícula']);
           const rawDef = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotação'] || '').toLowerCase();
           const edEspecial = rawDef.includes('sim');
-          const racaCorBruta = linha['Aluno: Raça'] || '';
-          const racaCor = normalizarRacaCor(racaCorBruta);  // NOVO
+          
+          // Normaliza UF (maiúscula, sem espaços)
+          const ufNascimento = (linha['Aluno: UF de nascimento'] || linha['Aluno: UF de Nascimento'] || '').trim().toUpperCase();
 
           return {
             id: linha['id'] || '',
@@ -1204,8 +1297,14 @@ function processarCSV() {
             certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
             rg: linha['Aluno: Identidade'] || '',
             residencia: linha['Endereço: Código de instalação elétrica'] || '',
-            racaCor: racaCor,                           // NOVO
-            observacaoExtra: ''
+            racaCor: linha['Aluno: Raça'] || '',
+            // NOVOS CAMPOS
+            filiacao1: linha['Aluno: Filiação 1'] || '',
+            filiacao2: linha['Aluno: Filiação 2'] || '',
+            dataNascimento: parseDataCSV(linha['Aluno: Data de nascimento'] || linha['Aluno: Data de Nascimento']),
+            naturalidade: linha['Aluno: Naturalidade'] || '',
+            ufNascimento: ufNascimento,
+            nacionalidade: linha['Aluno: Nacionalidade'] || ''
           };
         }).filter(a => a.nome && a.escola);
 
@@ -1219,6 +1318,112 @@ function processarCSV() {
   };
   
   reader.readAsText(file, 'ISO-8859-1');
+}
+
+async function salvarAluno() {
+  const nomeInput = document.getElementById("nomeAluno");
+  const idAluno = document.getElementById("idAlunoCadastro")?.value.trim() || "";
+  const responsavelInput = document.getElementById("nomeResponsavel");
+  const edEspecialCheck = document.getElementById("alunoEdEspecial");
+  const turmaSelect = document.getElementById("selectTurmaAluno");
+  const dataMatriculaInput = document.getElementById("dataMatricula").value;
+  const observacoes = document.getElementById("observacoesNovoAluno")?.value || "";
+  const cpfNumero = document.getElementById("cpfNumeroCadastro")?.value || "";
+  const racaCor = document.getElementById("racaCorCadastro")?.value || "";
+
+  // NOVOS CAMPOS
+  const filiacao1 = document.getElementById("filiacao1Cadastro")?.value.trim() || "";
+  const filiacao2 = document.getElementById("filiacao2Cadastro")?.value.trim() || "";
+  const dataNascimento = document.getElementById("dataNascimentoCadastro")?.value || "";
+  const naturalidade = document.getElementById("naturalidadeCadastro")?.value.trim() || "";
+  const ufNascimento = document.getElementById("editUfNascimento")?.value || ""; // no modal de cadastro o id é editUfNascimento (herdado do detalhes)
+  const nacionalidade = document.getElementById("nacionalidadeCadastro")?.value.trim() || "";
+
+  const nome = nomeInput ? nomeInput.value.trim() : "";
+  const responsavel = responsavelInput ? responsavelInput.value.trim() : "";
+  const telefone = coletarTelefonesCadastro();
+  const edEspecial = edEspecialCheck ? edEspecialCheck.checked : false;
+  const turma = turmaSelect ? turmaSelect.value : "";
+  
+  const erroDiv = document.getElementById("erroNome");
+  const btnSalvar = document.getElementById("btnSalvarAluno");
+
+  if (!nome) {
+    if (erroDiv) erroDiv.style.display = "block";
+    if (nomeInput) nomeInput.style.borderColor = "#dc2626";
+    return;
+  }
+
+  if (erroDiv) erroDiv.style.display = "none";
+  if (nomeInput) nomeInput.style.borderColor = "#e2e8f0";
+
+  const telefoneNumeros = telefone.replace(/\D/g, '');
+  if (telefoneNumeros.length > 0 && telefoneNumeros.length < 10) {
+    mostrarToast("Telefone incompleto. Informe DDD + número (mínimo 10 dígitos).", "warning");
+    return;
+  }
+
+    // Valida CPF (se preenchido)
+  if (cpfNumero && cpfNumero.replace(/\D/g, '') !== '') {
+    if (!validarCPF(cpfNumero)) {
+      mostrarToast("CPF inválido. Verifique o número digitado.", "warning");
+      return;
+    }
+  }
+
+  showButtonLoading(btnSalvar);
+
+  const dados = {
+    acao: "cadastrarAluno",
+    nome: nome,
+    idAluno: idAluno,
+    responsavel: responsavel,
+    telefone: telefone,
+    turma: turma,
+    dataMatricula: dataMatriculaInput,
+    edEspecial: edEspecial,
+    observacoes: observacoes,
+    cpfNumero: cpfNumero,
+    racaCor: racaCor,
+    filiacao1: filiacao1,
+    filiacao2: filiacao2,
+    dataNascimento: dataNascimento,
+    naturalidade: naturalidade,
+    ufNascimento: ufNascimento,
+    nacionalidade: nacionalidade,
+    email: emailUsuario
+  };
+
+  postSemResposta(dados, "Aluno cadastrado com sucesso!", () => {
+    registrarUltimaAcao('Novo aluno cadastrado');
+
+    if (nomeInput) nomeInput.value = "";
+    if (responsavelInput) responsavelInput.value = "";
+    if (edEspecialCheck) edEspecialCheck.checked = false;
+    document.getElementById("selectTurmaAluno").selectedIndex = 0;
+    document.getElementById("dataMatricula").value = "";
+    const obsField = document.getElementById("observacoesNovoAluno");
+    if (obsField) obsField.value = "";
+    const cpfField = document.getElementById("cpfNumeroCadastro");
+    if (cpfField) cpfField.value = "";
+    const racaField = document.getElementById("racaCorCadastro");
+    if (racaField) racaField.value = "";
+
+    // Limpa novos campos
+    document.getElementById("filiacao1Cadastro").value = "";
+    document.getElementById("filiacao2Cadastro").value = "";
+    document.getElementById("dataNascimentoCadastro").value = "";
+    document.getElementById("naturalidadeCadastro").value = "";
+    document.getElementById("editUfNascimento").value = "";
+    document.getElementById("nacionalidadeCadastro").value = "";
+
+    document.getElementById("novoAluno").style.display = "none";
+    document.getElementById("lista").style.display = "";
+    document.getElementById("painel").style.display = "";
+
+    carregarAlunos();
+    hideButtonLoading(btnSalvar);
+  });
 }
 
 // ------ ALTERAR SITUAÇÃO / EXCLUIR ALUNO ------
@@ -1600,8 +1805,6 @@ function processarCSVPromocao() {
           const nome = linha['Aluno: Nome'] || '';
           const escola = linha['Escola: Nome'] || '';
           const turma = normalizarTexto(linha['Turma: Nome'] || '');
-          const racaCorBruta = linha['Aluno: Raça'] || '';
-          const racaCor = normalizarRacaCor(racaCorBruta);  // NOVO
 
           return {
             id: id,
@@ -1610,17 +1813,25 @@ function processarCSVPromocao() {
             telefone: extrairPrimeiroTelefone(linha['Aluno: Telefones']),
             escola: escola,
             turma: turma,
-            dataMatricula: linha['Aluno: Data de matrícula'] || '',
+            // Correção da data de matrícula
+            dataMatricula: parseDataCSV(linha['Aluno: Data de matrícula']),
             cpf: linha['Aluno: CPF'] || '',
             sus: linha['Aluno: Cartão do SUS'] || '',
             certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
             rg: linha['Aluno: Identidade'] || '',
             residencia: linha['Endereço: Código de instalação elétrica'] || '',
-            racaCor: racaCor                            // NOVO
+            racaCor: linha['Aluno: Raça'] || '',
+            filiacao1: linha['Aluno: Filiação 1'] || '',
+            filiacao2: linha['Aluno: Filiação 2'] || '',
+            // Correção da data de nascimento
+            dataNascimento: parseDataCSV(linha['Aluno: Data de nascimento']),
+            naturalidade: linha['Aluno: Naturalidade'] || '',
+            ufNascimento: linha['Aluno: UF de nascimento'] || '',
+            nacionalidade: linha['Aluno: Nacionalidade'] || ''
           };
         }).filter(a => a.id && a.nome && a.escola);
 
-        // Pré-visualização
+        // Pré-visualização (mantida a original)
         const container = document.getElementById("previewPromocao");
         let html = '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
         html += '<thead><tr><th>ID</th><th>Nome</th><th>Escola</th><th>Turma</th></tr></thead><tbody>';
@@ -1641,63 +1852,67 @@ function processarCSVPromocao() {
   reader.readAsText(file, 'ISO-8859-1');
 }
 
-async function executarPromocaoCSV() {
-  if (alunosPromocao.length === 0) return;
+function executarPromocaoCSV() {
+  if (alunosPromocao.length === 0) {
+    mostrarToast('Nenhum aluno para promover.', 'warning');
+    return;
+  }
 
   const btn = document.getElementById('btnExecutarPromocao');
+  const statusDiv = document.getElementById('statusPromocao');
   showButtonLoading(btn);
 
-  const loteSize = 20;
+  const loteSize = 50;
   const atrasoEntreLotes = 2000;
-
   let totalEnviados = 0;
 
-  for (let i = 0; i < alunosPromocao.length; i += loteSize) {
-    const lote = alunosPromocao.slice(i, i + loteSize);
-    const numeroLote = Math.floor(i / loteSize) + 1;
-    const totalLotes = Math.ceil(alunosPromocao.length / loteSize);
+  (async () => {
+    for (let i = 0; i < alunosPromocao.length; i += loteSize) {
+      const lote = alunosPromocao.slice(i, i + loteSize);
 
-    document.getElementById('statusPromocao').innerHTML =
-      `Enviando lote ${numeroLote} de ${totalLotes}…`;
+      await new Promise((resolve) => {
+        postSemResposta(
+          {
+            acao: 'promoverAlunosLote',
+            email: emailUsuario,
+            alunos: lote
+          },
+          null,
+          () => {
+            totalEnviados += lote.length;
+            if (statusDiv) {
+              statusDiv.innerHTML = `Enviando lote ${Math.floor(i / loteSize) + 1} de ${Math.ceil(alunosPromocao.length / loteSize)}...`;
+            }
+            resolve();
+          }
+        );
+      });
 
+      await new Promise(r => setTimeout(r, atrasoEntreLotes));
+    }
+
+    // Chama a finalização da promoção após todos os lotes
     await new Promise((resolve) => {
       postSemResposta(
         {
-          acao: 'promoverAlunosLote',
+          acao: 'finalizarPromocao',
           email: emailUsuario,
-          alunos: lote
+          alunos: alunosPromocao
         },
         null,
         () => {
-          totalEnviados += lote.length;
           resolve();
         }
       );
     });
 
-    await new Promise(r => setTimeout(r, atrasoEntreLotes));
-  }
-
-  await new Promise((resolve) => {
-    postSemResposta(
-      {
-        acao: 'finalizarPromocao',
-        email: emailUsuario,
-        alunos: alunosPromocao
-      },
-      null,
-      () => {
-        registrarUltimaAcao('Promoção de alunos');   // 🔥
-        mostrarToast(`Promoção concluída! ${totalEnviados} alunos enviados.`, 'success');
-        resolve();
-      }
-    );
-  });
-
-  hideButtonLoading(btn);
-  fecharModalPromocao();
-  carregarAlunos();
+    mostrarToast(`Promoção concluída! ${alunosPromocao.length} alunos processados.`, 'success');
+    hideButtonLoading(btn);
+    fecharModalPromocao();
+    carregarAlunos();
+  })();
 }
+
 let alunosAtualizar = [];
 
 function abrirModalAtualizarMatriculados() {
@@ -1739,22 +1954,27 @@ function processarCSVAtualizar() {
           const turma = normalizarTexto(linha['Turma: Nome'] || '');
           const rawDef = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotação'] || '').toLowerCase();
           const edEspecial = rawDef.includes('sim');
-          const racaCorBruta = linha['Aluno: Raça'] || '';
-          const racaCor = normalizarRacaCor(racaCorBruta);  // NOVO
-
           return {
             id, nome,
             responsavel: linha['Aluno: Nome do responsável'] || '',
             telefone: extrairPrimeiroTelefone(linha['Aluno: Telefones']),
             escola, turma,
-            dataMatricula: linha['Aluno: Data de matrícula'] || '',
+            // Corrigido para usar parseDataCSV
+            dataMatricula: parseDataCSV(linha['Aluno: Data de matrícula']),
             cpf: linha['Aluno: CPF'] || '',
             sus: linha['Aluno: Cartão do SUS'] || '',
             certidao: linha['Aluno: Número de matrícula da certidão nascimento'] || '',
             rg: linha['Aluno: Identidade'] || '',
             residencia: linha['Endereço: Código de instalação elétrica'] || '',
             edEspecial: edEspecial,
-            racaCor: racaCor                            // NOVO
+            racaCor: linha['Aluno: Raça'] || '',
+            filiacao1: linha['Aluno: Filiação 1'] || '',
+            filiacao2: linha['Aluno: Filiação 2'] || '',
+            // Corrigido para usar parseDataCSV
+            dataNascimento: parseDataCSV(linha['Aluno: Data de nascimento']),
+            naturalidade: linha['Aluno: Naturalidade'] || '',
+            ufNascimento: linha['Aluno: UF de nascimento'] || '',
+            nacionalidade: linha['Aluno: Nacionalidade'] || ''
           };
         }).filter(a => a.id && a.nome && a.escola);
 
@@ -1777,47 +1997,52 @@ function processarCSVAtualizar() {
   reader.readAsText(file, 'ISO-8859-1');
 }
 
-async function executarAtualizarMatriculados() {
-  if (alunosAtualizar.length === 0) return;
+function executarAtualizarMatriculados() {
+  if (alunosAtualizar.length === 0) {
+    mostrarToast('Nenhum aluno para atualizar.', 'warning');
+    return;
+  }
 
   const btn = document.getElementById('btnExecutarAtualizarMatriculados');
+  const statusDiv = document.getElementById('statusAtualizar');
   showButtonLoading(btn);
 
-  const loteSize = 20;
+  const loteSize = 50;
   const atrasoEntreLotes = 2000;
   let totalEnviados = 0;
 
-  for (let i = 0; i < alunosAtualizar.length; i += loteSize) {
-    const lote = alunosAtualizar.slice(i, i + loteSize);
-    const numeroLote = Math.floor(i / loteSize) + 1;
-    const totalLotes = Math.ceil(alunosAtualizar.length / loteSize);
+  (async () => {
+    for (let i = 0; i < alunosAtualizar.length; i += loteSize) {
+      const lote = alunosAtualizar.slice(i, i + loteSize);
 
-    document.getElementById('statusAtualizar').innerHTML = `Enviando lote ${numeroLote} de ${totalLotes}…`;
+      await new Promise((resolve) => {
+        postSemResposta(
+          {
+            acao: 'inserirNovosAlunosLote',
+            email: emailUsuario,
+            alunos: lote
+          },
+          null,
+          () => {
+            totalEnviados += lote.length;
+            if (statusDiv) {
+              statusDiv.innerHTML = `Enviando lote ${Math.floor(i / loteSize) + 1} de ${Math.ceil(alunosAtualizar.length / loteSize)}...`;
+            }
+            resolve();
+          }
+        );
+      });
 
-    await new Promise((resolve) => {
-      postSemResposta(
-        {
-          acao: 'inserirNovosAlunosLote',
-          email: emailUsuario,
-          alunos: lote
-        },
-        null,
-        () => {
-          totalEnviados += lote.length;
-          resolve();
-        }
-      );
-    });
+      await new Promise(r => setTimeout(r, atrasoEntreLotes));
+    }
 
-    await new Promise(r => setTimeout(r, atrasoEntreLotes));
-  }
-
-  registrarUltimaAcao('Atualização de matriculados');   // 🔥
-  mostrarToast(`Atualização concluída! ${totalEnviados} alunos enviados.`, 'success');
-  hideButtonLoading(btn);
-  fecharModalAtualizarMatriculados();
-  carregarAlunos();
+    mostrarToast(`Atualização concluída! ${alunosAtualizar.length} alunos processados.`, 'success');
+    hideButtonLoading(btn);
+    fecharModalAtualizarMatriculados();
+    carregarAlunos();
+  })();
 }
+
 function carregarTurmasExportacao(escolaFiltro) {
   const selectTurma = document.getElementById('exportTurma');
   selectTurma.innerHTML = '<option value="">Carregando...</option>';
@@ -2003,6 +2228,22 @@ function esconderDockMobile() {
   const dock = document.getElementById('dockMobile');
   if (dock) dock.style.display = 'none';
 }
+
+function gerarHistoricoAluno(idAluno) {
+  mostrarLoading();
+  const modeloAba = 'TEMPLATE_EF';
+  const url = API_URL + '?tipo=gerarHistorico&email=' + encodeURIComponent(emailUsuario) + '&idAluno=' + encodeURIComponent(idAluno) + '&modelo=' + encodeURIComponent(modeloAba);
+  jsonp(url, function(res) {
+    esconderLoading();
+    if (res.erro) {
+      mostrarToast(res.erro, 'error');
+      return;
+    }
+    window.open(res.url, '_blank');
+    mostrarToast('Histórico gerado com sucesso!', 'success');
+  });
+}
+
 function atualizarBadgeTermosPendentes() {
   if (emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') return;
   
@@ -2022,3 +2263,35 @@ function atualizarBadgeTermosPendentes() {
 
 // Iniciar verificação ao carregar o sistema e depois a cada 60 segundos
 setInterval(atualizarBadgeTermosPendentes, 60000);
+// =========================
+// CAMPANHAS MENSAIS
+// =========================
+const CAMPANHAS = {
+  5: { // Junho (mês 5, pois janeiro=0)
+    cor: '#2e7d32',
+    texto: '🌿 Junho Verde: Educação Ambiental se constrói em rede.',
+    link: 'https://drive.google.com/drive/u/0/mobile/folders/1xEo6qYJ7oHl-3PoSe3jhqFUlNY5kjQkA'
+  }
+  // Adicione outros meses aqui:
+  // 0: { cor: 'roxo', texto: 'Janeiro Branco...', link: '...' },
+  // 1: { cor: 'roxo', texto: 'Fevereiro Roxo...', link: '...' }
+};
+
+function aplicarCampanha() {
+  const mesAtual = new Date().getMonth();
+  const campanha = CAMPANHAS[mesAtual];
+  const faixa = document.getElementById('faixaCampanha');
+  const texto = document.getElementById('textoCampanha');
+  const link = document.getElementById('linkCampanha');
+
+  if (!faixa || !texto || !link) return;
+
+  if (campanha) {
+    faixa.style.backgroundColor = campanha.cor;
+    texto.textContent = campanha.texto;
+    link.href = campanha.link;
+    faixa.style.display = 'block';
+  } else {
+    faixa.style.display = 'none';
+  }
+}

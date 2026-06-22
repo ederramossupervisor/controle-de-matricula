@@ -76,6 +76,10 @@ function atualizarBadgeNotificacoes() {
   // 🔥 Conta apenas as não lidas da agenda
   const url = `${API_URL}?tipo=notificacoesAgenda&email=${emailUsuario}`;
   jsonp(url, function(mensagens) {
+    if (!Array.isArray(mensagens)) {
+      console.warn('Notificações: resposta inválida', mensagens);
+      return;
+    }
     const naoLidas = mensagens.filter(msg => !msg.lida);
     const count = naoLidas.length;
     const badge = document.getElementById("badgeNotificacoes");

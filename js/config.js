@@ -2,7 +2,7 @@
 // CONFIGURAÇÕES GERAIS
 // =========================
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzonYYSmXmy1UkmnZGou6bRfdJOoLUmrnw5fFfp1EU4cyB-EkGOmxzfxTA6LfDdc56_FA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwCJDLKIzJKcthOmy3V1If-XbGXzsw3q6BTqkrHnYnC8bgJndDdsIYm0Cv9hGmPkO5O/exec";
 
 // Lista oficial de escolas (disponível para o supervisor)
 const LISTA_ESCOLAS = [
@@ -183,7 +183,7 @@ const CONFIG_DOCS_CARD = [
 // Ícone extra para Educação Especial
 const DOC_ESPECIAL = {
   coluna: "ED_ESPECIAL",
-  icone: "fa-wheelchair",
+  icone: "fa-solid fa-universal-access",
   label: "Laudo/Relatório Pedagógico (Ed. Especial)"
 };
 
