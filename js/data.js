@@ -187,16 +187,7 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       carregarTurmasParaFiltro();
     }
 
-    // Indicador de última atualização
-    if (dados.ultimaAtualizacao) {
-      const data = new Date(dados.ultimaAtualizacao);
-      const textoData = data.toLocaleString('pt-BR');
-      const acao = ultimaAcao ? ultimaAcao + ' em ' : '';
-      document.getElementById('textoUltimaAtualizacao').textContent = `${acao}${textoData}`;
-    } else {
-      document.getElementById('textoUltimaAtualizacao').textContent = 'Nenhuma atualização recente';
-    }
-
+    
     // Métricas
     const statusAtual = document.getElementById('filtroStatus')?.value || '';
     if (dados.metricas) {
@@ -2509,7 +2500,7 @@ function carregarRanking() {
   }
 
   // 🔥 Usa a rota rankingCache (dados já pré-calculados)
-  var url = API_URL + '?tipo=rankingCache&email=' + encodeURIComponent(emailUsuario) + '&_=' + Date.now();
+  var url = API_URL + '?tipo=rankingCache&email=' + encodeURIComponent(emailUsuario) + '&escola=' + encodeURIComponent(escolaAlvo) + '&_=' + Date.now();
   console.log('📤 URL do ranking cache:', url);
 
   jsonp(url, function(dados) {
