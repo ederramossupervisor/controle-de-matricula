@@ -3969,3 +3969,6 @@ body.modal-fullscreen-aberto {
 header {
   overflow: visible !important;
 }
+#indicadorUltimaAtualizacao {
+  visibility: hidden;
+}
