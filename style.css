@@ -1560,7 +1560,10 @@ select.btn-paginacao { background-color: var(--card-bg); cursor: pointer; }
 /* ==========================================
    TOOLTIP
    ========================================== */
-[data-tooltip] { position: relative; cursor: pointer; }
+[data-tooltip] {
+  position: relative;
+  cursor: help;
+}
 
 [data-tooltip]:before {
   content: attr(data-tooltip);
@@ -1568,23 +1571,23 @@ select.btn-paginacao { background-color: var(--card-bg); cursor: pointer; }
   background: #1e293b;
   color: #f8fafc;
   font-size: 13px;
-  font-weight: 500;
   padding: 8px 12px;
   border-radius: 8px;
   white-space: pre-line;
-  max-width: 220px;
+  max-width: 280px;
   width: max-content;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: 99999;
   visibility: hidden;
   opacity: 0;
   transition: opacity 0.2s, visibility 0.2s;
   pointer-events: none;
   line-height: 1.4;
   text-align: left;
+  font-weight: 500;
 }
 
 [data-tooltip]:after {
@@ -1596,7 +1599,7 @@ select.btn-paginacao { background-color: var(--card-bg); cursor: pointer; }
   bottom: 125%;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1000;
+  z-index: 99999 !important;
   visibility: hidden;
   opacity: 0;
   transition: opacity 0.2s, visibility 0.2s;
@@ -3744,4 +3747,225 @@ body.modal-fullscreen-aberto {
 .login-avatar {
   width: 64px !important;          /* logo um pouco menor (opcional) */
   height: 64px !important;
+}
+/* Seletor de Abas (Alunos / Profissionais) */
+.abas-seletor {
+  display: flex;
+  background: var(--card-border);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+}
+.aba-item {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--touch-min);
+}
+.aba-item:hover {
+  background: rgba(0,0,0,0.05);
+}
+.aba-item.ativo {
+  background: var(--card-bg);
+  color: var(--primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+/* Card de profissional */
+.card-profissional {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  border: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+}
+.card-profissional:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+/* Estilos para a ficha do profissional */
+#modalDetalhesProfissional th {
+  background: #f1f5f9;
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+  color: #475569;
+}
+#modalDetalhesProfissional td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+/* Cards de profissionais por situação */
+.card-profissional.situacao-ativo {
+  background-color: #dcfce7;   /* verde claro */
+  border-left: 4px solid #10b981;
+}
+
+.card-profissional.situacao-outro {
+  background-color: #fef3c7;   /* amarelo claro */
+  border-left: 4px solid #f59e0b;
+}
+
+.card-profissional.situacao-desligado {
+  background-color: #fee2e2;   /* vermelho claro */
+  border-left: 4px solid #ef4444;
+}
+
+/* Efeito hover nos cards de profissionais */
+.card-profissional:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+/* Ícones de documentos para profissionais */
+.card-profissional .docs-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.card-profissional .doc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background-color: rgba(0,0,0,0.03);
+  transition: transform 0.1s ease;
+  cursor: help;
+}
+
+.card-profissional .doc-icon:hover {
+  transform: scale(1.15);
+  background-color: rgba(0,0,0,0.06);
+}
+
+.card-profissional .doc-icon i {
+  font-size: 14px;
+}
+
+.card-profissional .doc-icon.entregue i {
+  color: #10b981;
+}
+
+.card-profissional .doc-icon.pendente i {
+  color: #ef4444;
+}
+#estrelasContainer {
+  text-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+  transition: all 0.3s ease;
+}
+#estrelasContainer:hover {
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+}
+#estrelasContainer {
+  position: relative;
+  display: inline-block;
+  text-align: center;
+  font-size: 1.4rem;
+  letter-spacing: 6px;
+  color: #9ca3af;
+  line-height: 1.2;
+  min-height: 2.4rem;
+  padding: 4px 0;
+  margin: 0 auto 2px;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  cursor: default;
+  width: 100%;
+  z-index: 99998 !important;           /* maior que o header (50) */
+  pointer-events: auto !important;   /* 🔥 ESSENCIAL para receber o hover */
+}
+
+#estrelasContainer:hover {
+  opacity: 1;
+  color: #d1d5db;
+}
+/* Estilos do modal de desempenho */
+#modalDesempenho .metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--card-border);
+  border-radius: 8px;
+  font-size: 14px;
+  border-left: 4px solid #2563eb;
+}
+#modalDesempenho .metric-item strong {
+  color: var(--text-primary);
+}
+#modalDesempenho .metric-item .valor {
+  font-weight: 600;
+  color: var(--btn-primary-bg);
+}
+#modalDesempenho .estrelas-grandes {
+  text-align: center;
+  font-size: 2.5rem;
+  letter-spacing: 6px;
+  color: #fbbf24;
+  margin-bottom: 8px;
+}
+#modalDesempenho .nivel-texto {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+#rankingContainer {
+  display: inline-block;
+  cursor: pointer;
+  user-select: none;
+  pointer-events: auto; /* para permitir cliques */
+}
+#rankingContainer > div {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+  padding: 4px 12px 4px 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+#rankingContainer > div:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+}
+
+/* Modal ranking */
+#modalRanking .modal-body ul {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0;
+}
+#modalRanking .modal-body ul li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--card-border);
+}
+#modalRanking .modal-body ul li:last-child {
+  border-bottom: none;
+}
+header {
+  overflow: visible !important;
 }
