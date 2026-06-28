@@ -135,7 +135,7 @@ header > * { position: relative; z-index: 1; }
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .header-actions-left {
