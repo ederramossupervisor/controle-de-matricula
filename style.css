@@ -70,7 +70,7 @@ body {
 header {
   position: relative;
   z-index: 50;
-  height: 235px;
+  height: 229px;
   box-sizing: border-box;
   background-size: 100% 100%;
   background-position: center;
@@ -135,7 +135,7 @@ header > * { position: relative; z-index: 1; }
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 
 .header-actions-left {
