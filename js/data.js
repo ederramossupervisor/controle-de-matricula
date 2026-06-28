@@ -1,5 +1,6 @@
 let ultimaAcao = null;
 let atosSelecionados = new Set();
+let nomeUsuario = "";
 // =========================
 // COMUNICAÇÃO COM A PLANILHA (GOOGLE SHEETS VIA API)
 // =========================
@@ -52,7 +53,6 @@ function continuarCarregamentoAlunos(pagina, filtros) {
 
     if (dados.erro) {
       if (dados.erro === "sessao_expirada") {
-        // Apenas desloga se for explicitamente sessão expirada
         localStorage.removeItem("emailUsuario");
         emailUsuario = "";
         esconderLoading();
@@ -62,7 +62,6 @@ function continuarCarregamentoAlunos(pagina, filtros) {
         mostrarToast("Sessão expirada. Faça login novamente.", "error");
         return;
       } else {
-        // Outros erros (rede, falha JSONP) apenas mostram um aviso e mantém o usuário logado
         esconderLoading();
         mostrarToast("Erro de conexão. Tente novamente.", "warning");
         return;
@@ -108,15 +107,18 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     document.body.classList.remove('perfil-supervisor', 'perfil-secretaria');
     document.body.classList.add(perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria');
     escolaUsuario = dados.escola;
-
     const nomeEscolaHeader = document.getElementById('nomeEscolaHeader');
-if (nomeEscolaHeader) {
-  if (perfilUsuario === 'SUPERVISOR') {
-    nomeEscolaHeader.textContent = 'SRE Afonso Cláudio';
-  } else {
-    nomeEscolaHeader.textContent = escolaUsuario || 'Escola';
-  }
-}
+    if (nomeEscolaHeader) {
+      if (perfilUsuario === 'SUPERVISOR') {
+        nomeEscolaHeader.textContent = 'SRE Afonso Cláudio';
+      } else {
+        nomeEscolaHeader.textContent = escolaUsuario || 'Escola';
+      }
+    }
+
+    const nomeSpan = document.getElementById("nomeUsuarioTexto");
+    if (nomeSpan) nomeSpan.textContent = nomeUsuario;
+
 
     const emailSpan = document.getElementById("emailUsuarioTexto");
     if (emailSpan) emailSpan.textContent = emailUsuario;
@@ -147,9 +149,10 @@ if (nomeEscolaHeader) {
       aplicarEstadoInicialMobile();
     }
 
+    
     document.getElementById("login").style.display = "none";
     esconderLoading();
-    esconderSplash();          // ← ADICIONE AQUI
+    esconderSplash();
     document.getElementById("app").style.display = "block";
     aplicarCampanha();
 
@@ -165,9 +168,16 @@ if (nomeEscolaHeader) {
 
     // ========== AÇÕES ADIADAS (não bloqueiam a exibição inicial) ==========
     setTimeout(() => {
-      carregarComunicados();       // busca no servidor
-      iniciarPollingNotificacoes();// verifica a cada 30s, pode começar depois
-      carregarFotoPerfil();        // foto do Google Drive
+      carregarComunicados();
+      iniciarPollingNotificacoes();
+      carregarFotoPerfil();
+      
+      if (typeof carregarDesempenho === 'function') {
+        carregarDesempenho();
+      }
+      if (typeof carregarRanking === 'function') {
+        carregarRanking();   // 🔥 ADICIONE AQUI
+      }
     }, 400); // 400 ms após a lista aparecer
 
     // preencherSelectsProcessos() e preencherSelectEscolasDoc() foram movidas
@@ -274,7 +284,7 @@ if (nomeEscolaHeader) {
       btnMonitoramento.style.display = (perfilUsuario === 'SUPERVISOR') ? 'inline-block' : 'none';
     }
 
-        // Botão de upload de modelo da escola (visível para SECRETARIA e SUPERVISOR)
+    // Botão de upload de modelo da escola (visível para SECRETARIA e SUPERVISOR)
     const btnUploadEscola = document.getElementById('btnUploadModeloEscola');
     if (btnUploadEscola) {
       btnUploadEscola.style.display = (perfilUsuario === 'SECRETARIA' || perfilUsuario === 'SUPERVISOR') ? 'inline-block' : 'none';
@@ -1156,12 +1166,18 @@ async function salvarChecklistEmLote() {
 
 // ------ USUÁRIOS ------
 async function salvarUsuario() {
+  const nome = document.getElementById("novoNome").value.trim(); // 🔥 NOVO
   const email = document.getElementById("novoEmail").value.trim();
   const perfil = document.getElementById("perfil").value;
   const escola = document.getElementById("escola").value.trim();
   const erroDiv = document.getElementById("erroUsuario");
   const btnSalvar = document.getElementById("btnSalvarUsuario");
-  
+
+  if (!nome) {
+    erroDiv.textContent = "Nome completo é obrigatório";
+    erroDiv.style.display = "block";
+    return;
+  }
   if (!email) {
     erroDiv.textContent = "E-mail obrigatório";
     erroDiv.style.display = "block";
@@ -1173,17 +1189,18 @@ async function salvarUsuario() {
     return;
   }
   erroDiv.style.display = "none";
-  
+
   showButtonLoading(btnSalvar);
-  
+
   const dados = {
     acao: "cadastrarUsuario",
     email: email,
+    nome: nome, // 🔥 NOVO
     perfil: perfil,
     escola: escola,
     emailLogado: emailUsuario
   };
-  
+
   postSemResposta(dados, "Usuário cadastrado com sucesso!", async () => {
     hideButtonLoading(btnSalvar);
     fecharModalCadastroUsuario();
@@ -1580,7 +1597,6 @@ function executarExportacaoPDF(opcoes = {}) {
 
 // ------ LOGIN / LOGOUT ------
 function login() {
-  localStorage.removeItem('emailUsuario');
   const email = document.getElementById("email").value.trim();
   const senha = document.getElementById("senha").value;
 
@@ -1596,15 +1612,16 @@ function login() {
     esconderLoading();
 
     if (resultado.autorizado) {
-      emailUsuario = email;
-      localStorage.setItem("emailUsuario", email);
+      emailUsuario = email.toLowerCase();
+      nomeUsuario = resultado.nome || emailUsuario; // 🔥 ADICIONE ESTA LINHA
+      localStorage.setItem("emailUsuario", emailUsuario);
+      localStorage.setItem("nomeUsuario", nomeUsuario);
 
       if (resultado.primeiroAcesso) {
         abrirModalAlterarSenhaObrigatorio();
         return;
       }
 
-      // Simplesmente tenta carregar os alunos – o backend decide
       carregarAlunos();
 
     } else {
@@ -1650,6 +1667,25 @@ function logout() {
   const iniciais = document.getElementById('fotoPerfilIniciais');
   if (iniciais) iniciais.textContent = '';
   
+  // 🔥 LIMPA OS CAMPOS DE LOGIN (SEGURANÇA)
+  const emailInput = document.getElementById('email');
+  const senhaInput = document.getElementById('senha');
+  if (emailInput) {
+    emailInput.value = '';
+    emailInput.disabled = false; // reabilita se tiver sido desabilitado
+  }
+  if (senhaInput) {
+    senhaInput.value = '';
+    senhaInput.type = 'password'; // força o campo a ficar oculto novamente
+    senhaInput.disabled = false;
+  }
+  
+  // Remove mensagens de erro da tela de login
+  const msgErro = document.getElementById('mensagemLoginErro');
+  if (msgErro) msgErro.remove();
+  const statusVer = document.getElementById('statusVerificacaoLogin');
+  if (statusVer) statusVer.remove();
+
   emailUsuario = "";
   localStorage.removeItem("emailUsuario");
 
@@ -1657,24 +1693,18 @@ function logout() {
   document.body.style.backgroundImage = "";
   document.body.classList.remove("fundo-personalizado");
 
-  // Esconde a dock mobile (se estiver visível)
+  // Esconde a dock mobile
   if (typeof esconderDockMobile === 'function') {
     esconderDockMobile();
   }
-  
-  // Limpa mensagens de erro no login
-  const msgErro = document.getElementById('mensagemLoginErro');
-  if (msgErro) msgErro.remove();
-  const statusVer = document.getElementById('statusVerificacaoLogin');
-  if (statusVer) statusVer.remove();
-  document.getElementById("email").disabled = false;
-  document.getElementById("senha").disabled = false;
+
+  // Reseta o botão de login (caso esteja desabilitado)
   const btnLogin = document.querySelector('#login button');
   if (btnLogin) btnLogin.disabled = false;
 
+  // Mostra a tela de login
   const loginEl = document.getElementById("login");
   loginEl.style.display = "";
-  document.getElementById("email").value = "";
   dadosGlobais = [];
 }
 
@@ -2295,3 +2325,369 @@ function aplicarCampanha() {
     faixa.style.display = 'none';
   }
 }
+
+// =========================
+// DESEMPENHO – ESTRELAS
+// =========================
+
+function carregarDesempenho() {
+  if (!emailUsuario) return;
+
+  var escola = '';
+  if (perfilUsuario === 'SECRETARIA' || perfilUsuario === 'PEDAGOGICO') {
+    escola = escolaUsuario;
+  } else if (perfilUsuario === 'SUPERVISOR') {
+    // 🔥 NÃO ENVIA ESCOLA – o backend usará a média de todas supervisionadas
+    escola = '';
+  } else {
+    return;
+  }
+
+  var url = API_URL + '?tipo=desempenho&email=' + encodeURIComponent(emailUsuario) + '&_=' + Date.now();
+  if (escola) {
+    url += '&escola=' + encodeURIComponent(escola);
+  }
+
+  jsonp(url, function(dados) {
+    if (dados && dados.erro) {
+      console.warn('Erro ao carregar desempenho:', dados.erro);
+      return;
+    }
+    if (dados && dados.nivel) {
+      atualizarEstrelas(dados);
+    }
+  });
+}
+
+function atualizarEstrelas(dados) {
+  var container = document.getElementById('estrelasContainer');
+  if (!container) return;
+
+  var nivel = dados.nivel || 0;
+
+  // Gera estrelas com Font Awesome
+  var estrelas = '';
+  for (var i = 0; i < nivel; i++) {
+    estrelas += '<i class="fas fa-star" style="font-size: 1.2rem; margin: 0 3px;"></i>';
+  }
+  container.innerHTML = estrelas;
+
+  // 🔥 Remove tooltip (data-tooltip) e adiciona clique
+  container.removeAttribute('data-tooltip');
+  container.classList.remove('tooltip-below');
+  container.style.cursor = 'pointer';
+
+  // Armazena os dados para uso no clique
+  container._desempenhoData = dados;
+
+  // Remove listener antigo para evitar duplicação
+  if (container._clickHandler) {
+    container.removeEventListener('click', container._clickHandler);
+  }
+
+  // Cria novo handler
+  container._clickHandler = function() {
+    abrirModalDesempenho(this._desempenhoData);
+  };
+  container.addEventListener('click', container._clickHandler);
+}
+
+// =========================
+// MODAL DE DESEMPENHO
+// =========================
+
+function abrirModalDesempenho(dados) {
+  if (!dados) return;
+  const modal = document.getElementById('modalDesempenho');
+  const body = document.getElementById('modalDesempenhoBody');
+  if (!modal || !body) return;
+
+  const nivel = dados.nivel || 0;
+  const nota = dados.notaGeral || 0;
+  const d = dados.detalhes || {};
+
+  // Estrelas grandes
+  const estrelas = '⭐'.repeat(nivel);
+
+  let html = `
+    <div class="estrelas-grandes">${estrelas}</div>
+    <div class="nivel-texto">⭐ Nível ${nivel} (${nota}%)</div>
+    <div style="display: grid; gap: 10px;">
+      <div class="metric-item">
+        <strong><i class="fas fa-user-graduate"></i> Alunos</strong>
+        <span class="valor">${d.alunos ? d.alunos.percentual : 0}% (${d.alunos ? d.alunos.completos : 0}/${d.alunos ? d.alunos.total : 0})</span>
+      </div>
+      <div class="metric-item">
+        <strong><i class="fas fa-user-tie"></i> Profissionais</strong>
+        <span class="valor">${d.profissionais ? d.profissionais.percentual : 0}% (${d.profissionais ? d.profissionais.emDia : 0}/${d.profissionais ? d.profissionais.total : 0})</span>
+      </div>
+      <div class="metric-item">
+        <strong><i class="fas fa-school"></i> Dados da Escola</strong>
+        <span class="valor">${d.dadosEscola ? d.dadosEscola.percentual : 0}% (${d.dadosEscola ? d.dadosEscola.preenchidos : 0}/${d.dadosEscola ? d.dadosEscola.total : 0})</span>
+      </div>
+      <div class="metric-item">
+        <strong><i class="fas fa-gavel"></i> Atos Autorizativos</strong>
+        <span class="valor">${d.atos ? d.atos.percentual : 0}% (${d.atos ? d.atos.validos : 0}/${d.atos ? d.atos.total : 0})</span>
+      </div>
+    </div>
+  `;
+
+  body.innerHTML = html;
+  modal.style.display = 'flex';
+}
+
+function fecharModalDesempenho() {
+  document.getElementById('modalDesempenho').style.display = 'none';
+}
+
+// Fechar ao clicar fora (overlay)
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('modalDesempenho');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) fecharModalDesempenho();
+    });
+  }
+});
+
+// =========================
+// RANKING – BADGE E MODAL
+// =========================
+
+function carregarRanking() {
+  console.log('🔄 carregarRanking iniciado');
+  
+  var container = document.getElementById('rankingContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'rankingContainer';
+    container.style.cssText = 'position: absolute; bottom: 12px; left: 16px; z-index: 10; pointer-events: auto;';
+    var header = document.querySelector('header');
+    if (header) header.appendChild(container);
+  }
+  
+  // Mostra "Carregando..." enquanto o ranking é carregado
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; background: rgba(255,255,255,0.12); backdrop-filter: blur(4px); padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); color: #f8fafc; opacity: 0.7;">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Carregando...</span>
+    </div>
+  `;
+  
+  if (!emailUsuario) {
+    console.warn('❌ emailUsuario não definido');
+    return;
+  }
+
+  var escolaAlvo = '';
+  if (perfilUsuario === 'SECRETARIA' || perfilUsuario === 'PEDAGOGICO') {
+    escolaAlvo = escolaUsuario;
+  } else if (perfilUsuario === 'SUPERVISOR') {
+    var selectEscola = document.getElementById('filtroEscola');
+    if (selectEscola && selectEscola.value) {
+      escolaAlvo = selectEscola.value;
+    } else {
+      var escolas = getEscolasPermitidas();
+      if (escolas && escolas.length > 0) {
+        escolaAlvo = escolas[0];
+      } else {
+        console.warn('⚠️ Nenhuma escola supervisionada disponível');
+        container.innerHTML = '';
+        return;
+      }
+    }
+  } else {
+    console.warn('⚠️ Perfil sem permissão para ranking:', perfilUsuario);
+    container.innerHTML = '';
+    return;
+  }
+
+  if (!escolaAlvo) {
+    console.warn('⚠️ Escola alvo não definida');
+    container.innerHTML = '';
+    return;
+  }
+
+  // 🔥 Usa a rota rankingCache (dados já pré-calculados)
+  var url = API_URL + '?tipo=rankingCache&email=' + encodeURIComponent(emailUsuario) + '&_=' + Date.now();
+  console.log('📤 URL do ranking cache:', url);
+
+  jsonp(url, function(dados) {
+    console.log('📥 Resposta do ranking cache:', dados);
+    
+    if (dados && dados.erro) {
+      console.warn('❌ Erro no ranking:', dados.erro);
+      container.innerHTML = '';
+      return;
+    }
+    
+    if (dados && dados.ranking) {
+      // Encontra a posição da escola alvo
+      var posicao = null;
+      var nota = null;
+      var dicas = [];
+      var total = dados.totalEscolas;
+      
+      for (var i = 0; i < dados.ranking.length; i++) {
+        if (dados.ranking[i].escola === escolaAlvo) {
+          posicao = dados.ranking[i].posicao;
+          nota = dados.ranking[i].nota;
+          dicas = dados.ranking[i].dicas || [];
+          break;
+        }
+      }
+      
+      if (posicao !== null) {
+        var resultado = {
+          posicao: posicao,
+          totalEscolas: total,
+          nota: nota,
+          dicas: dicas,
+          ranking: dados.ranking,
+          escolaAtual: escolaAlvo
+        };
+        atualizarBadgeRanking(resultado);
+      } else {
+        console.warn('⚠️ Escola não encontrada no ranking:', escolaAlvo);
+        container.innerHTML = '';
+      }
+    } else {
+      console.warn('⚠️ Nenhum ranking retornado');
+      container.innerHTML = '';
+    }
+  });
+}
+
+function atualizarBadgeRanking(dados) {
+  var container = document.getElementById('rankingContainer');
+  if (!container) return;
+
+  var posicao = dados.posicao;
+  var total = dados.totalEscolas;
+  var nota = dados.nota || 0;
+
+  // Define ícone e cor baseados na posição
+  var icone = '';
+  var cor = '#9ca3af';
+  var fundo = 'rgba(255,255,255,0.12)';
+  var borda = 'rgba(255,255,255,0.2)';
+  
+  if (posicao === 1) {
+    icone = 'fa-solid fa-trophy';
+    cor = '#fbbf24'; // ouro
+    fundo = 'rgba(251, 191, 36, 0.2)';
+    borda = 'rgba(251, 191, 36, 0.4)';
+  } else if (posicao === 2) {
+    icone = 'fa-solid fa-trophy';
+    cor = '#c0c0c0'; // prata
+    fundo = 'rgba(192, 192, 192, 0.2)';
+    borda = 'rgba(192, 192, 192, 0.4)';
+  } else if (posicao === 3) {
+    icone = 'fa-solid fa-trophy';
+    cor = '#cd7f32'; // bronze
+    fundo = 'rgba(205, 127, 50, 0.2)';
+    borda = 'rgba(205, 127, 50, 0.4)';
+  } else if (posicao <= 10) {
+    icone = 'fa-regular fa-medal';
+    cor = '#9ca3af';
+    fundo = 'rgba(255,255,255,0.08)';
+    borda = 'rgba(255,255,255,0.15)';
+  } else {
+    icone = 'fa-regular fa-circle';
+    cor = '#64748b';
+    fundo = 'rgba(255,255,255,0.05)';
+    borda = 'rgba(255,255,255,0.1)';
+  }
+
+  container.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; background: ${fundo}; backdrop-filter: blur(4px); padding: 6px 14px 6px 10px; border-radius: 20px; border: 1px solid ${borda}; transition: all 0.2s; color: #f8fafc; box-shadow: 0 2px 8px rgba(0,0,0,0.12);"
+         onclick="abrirModalRanking()"
+         onmouseenter="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='scale(1.02)';"
+         onmouseleave="this.style.background='${fundo}'; this.style.transform='scale(1)';"
+         data-tooltip="Clique para ver o ranking completo e dicas de melhoria">
+      <i class="${icone}" style="font-size: 1.1rem; color: ${cor};"></i>
+      <span style="font-weight: 600; color: ${cor};">#${posicao}</span>
+      <span style="font-size: 0.7rem; opacity: 0.6;">/${total}</span>
+    </div>
+  `;
+
+  // Armazena os dados para uso no modal
+  container._rankingData = dados;
+}
+
+function abrirModalRanking() {
+  var container = document.getElementById('rankingContainer');
+  if (!container || !container._rankingData) return;
+
+  var dados = container._rankingData;
+  var modal = document.getElementById('modalRanking');
+  var body = document.getElementById('modalRankingBody');
+  if (!modal || !body) return;
+
+  // Monta o HTML do modal
+  var html = `
+    <div style="margin-bottom: 16px;">
+      <div style="font-size: 1.2rem; font-weight: 600; margin-bottom: 4px;">
+        🏆 Posição #${dados.posicao} de ${dados.totalEscolas}
+      </div>
+      <div style="color: var(--text-muted); font-size: 0.9rem;">
+        Nota geral: ${dados.nota}%
+      </div>
+    </div>
+  `;
+
+  // Dicas de melhoria
+  if (dados.dicas && dados.dicas.length > 0) {
+    html += `
+      <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+        <strong style="display: block; margin-bottom: 4px;">💡 Dicas para melhorar:</strong>
+        <ul style="margin: 0; padding-left: 20px; font-size: 0.95rem;">
+          ${dados.dicas.map(d => `<li>${d}</li>`).join('')}
+        </ul>
+      </div>
+    `;
+  }
+
+  // Ranking (top 10)
+  if (dados.ranking && dados.ranking.length > 0) {
+    html += `
+      <div style="margin-top: 12px;">
+        <strong style="display: block; margin-bottom: 6px;">🏅 Top ${Math.min(dados.ranking.length, 10)} escolas:</strong>
+        <div style="max-height: 260px; overflow-y: auto; padding-right: 4px;">
+    `;
+    dados.ranking.forEach(function(item) {
+      var medalha = '';
+      if (item.posicao === 1) medalha = '🥇';
+      else if (item.posicao === 2) medalha = '🥈';
+      else if (item.posicao === 3) medalha = '🥉';
+      else medalha = '#' + item.posicao;
+      var destaque = (item.escola === dados.escolaAtual || (dados.ranking.find(function(r) { return r.posicao === dados.posicao; })?.escola === item.escola)) 
+        ? 'font-weight: 600; background: #e0e7ff; border-radius: 6px;' 
+        : '';
+      html += `
+        <div style="display: flex; justify-content: space-between; padding: 6px 10px; ${destaque}">
+          <span>${medalha} ${item.escola}</span>
+          <span style="font-weight: 500;">${item.nota}%</span>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  }
+
+  body.innerHTML = html;
+  modal.style.display = 'flex';
+}
+
+function fecharModalRanking() {
+  document.getElementById('modalRanking').style.display = 'none';
+}
+
+// Fechar ao clicar fora
+document.addEventListener('DOMContentLoaded', function() {
+  var modal = document.getElementById('modalRanking');
+  if (modal) {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) fecharModalRanking();
+    });
+  }
+});

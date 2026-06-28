@@ -16,6 +16,11 @@ function aplicarFiltros(pagina = 1) {
   };
 
   carregarAlunos(pagina, filtros);
+
+  // 🔥 Recarregar estrelas ao mudar a escola
+  if (typeof carregarDesempenho === 'function') {
+    carregarDesempenho();
+  }
 }
 
 // ------ INICIALIZAR FILTROS PRINCIPAIS ------

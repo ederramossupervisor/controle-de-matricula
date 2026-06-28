@@ -34,7 +34,14 @@ async function enviarConsentimentoETermo() {
   }
 
   const btn = document.getElementById('btnEnviarConsentimento');
-  showButtonLoading(btn);
+  if (!btn) {
+    mostrarToast('Erro interno: botão não encontrado.', 'error');
+    return;
+  }
+
+  // Feedback visual
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-btn"></span> Enviando...';
 
   try {
     let ip = 'N/A';
@@ -62,20 +69,22 @@ async function enviarConsentimentoETermo() {
       }, null, () => resolve());
     });
 
-        // Fecha o modal de consentimento
+    // Fecha o modal
     document.getElementById('modalConsentimento').style.display = 'none';
 
     // Exibe o toast de confirmação
     mostrarToast('Documentos enviados com sucesso! Você receberá um e‑mail quando o acesso for aprovado.', 'success', 0);
-    
-    // Faz logout (volta para a tela de login)
+
+    // Faz logout
     logout();
 
   } catch (e) {
     console.error(e);
     mostrarToast('Erro ao enviar documentos. Tente novamente.', 'error');
   } finally {
-    hideButtonLoading(btn);
+    // Restaura o botão
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-check-circle"></i> Enviar e Aceitar';
   }
 }
 

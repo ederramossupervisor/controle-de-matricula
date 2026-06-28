@@ -11,7 +11,7 @@ let turmasDisponiveis = [];
 let resumoPorEscolaGlobal = {};
 
 let paginaAtual = 1;
-let alunosPorPagina = 20;
+let alunosPorPagina = 50;
 let dadosFiltradosGlobais = [];
 
 let alunosImportados = [];
@@ -30,14 +30,13 @@ let modoVisualizacao = 'cards'; // 'cards' ou 'lista'
 // =========================
 window.onload = function () {
   const emailSalvo = localStorage.getItem("emailUsuario");
-
+  const nomeSalvo = localStorage.getItem("nomeUsuario");
   if (emailSalvo) {
     emailUsuario = emailSalvo;
+    if (nomeSalvo) nomeUsuario = nomeSalvo;
     document.getElementById("email").value = emailSalvo;
-    // Tenta carregar alunos diretamente
     carregarAlunos();
   } else {
-    // Nenhum e-mail salvo – mostra login imediatamente
     esconderSplash();
     document.getElementById("login").style.display = "";
   }
@@ -197,6 +196,10 @@ if (e.key === 'Escape') {
     { element: document.getElementById('modalAprovacaoTermos'), close: fecharModalAprovacaoTermos },
     { element: document.getElementById('modalMonitoramento'), close: fecharModalMonitoramento },
     { element: document.getElementById('modalDadosEscola'), close: fecharModalDadosEscola },
+    { element: document.getElementById('modalDetalhesProfissional'), close: fecharModalDetalhesProfissional },
+    { element: document.getElementById('modalDashboardProfissionais'), close: fecharDashboardProfissionais },
+    { element: document.getElementById('modalDetalhesProfissional'), close: fecharModalDetalhesProfissional },
+    { element: document.getElementById('modalDesempenho'), close: fecharModalDesempenho },
     { element: document.getElementById('novoAluno'), close: voltarApp }
   ];
 
@@ -402,3 +405,24 @@ function alternarModoFoco() {
     }
   }
 })();
+
+// =========================
+// ABRIR DASHBOARD CONFORME ABA ATIVA
+// =========================
+function abrirDashboard() {
+  if (typeof abaAtiva !== 'undefined' && abaAtiva === 'profissionais') {
+    // Se a função de abrir dashboard de profissionais existir, chama
+    if (typeof abrirDashboardProfissionais === 'function') {
+      abrirDashboardProfissionais();
+    } else {
+      mostrarToast('Dashboard de profissionais não disponível.', 'warning');
+    }
+  } else {
+    // Padrão: dashboard de alunos
+    if (typeof abrirModalDashboard === 'function') {
+      abrirModalDashboard();
+    } else {
+      mostrarToast('Dashboard de alunos não disponível.', 'warning');
+    }
+  }
+}

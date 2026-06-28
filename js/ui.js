@@ -138,7 +138,7 @@ function renderLista(dados) {
       const tooltip = temDecl ? 'Declaração de Ed. Especial anexada' : 'Declaração de Ed. Especial pendente';
       docsIconsHtml += `
         <span class="doc-icon ${classe}" data-tooltip="${tooltip}">
-          <i class="fas fa-wheelchair"></i>
+          <i class="fas fa-solid fa-universal-access"></i>
         </span>
       `;
     }
@@ -943,8 +943,8 @@ function renderUsuarios(usuarios) {
     div.innerHTML = `
       <div class="usuario-avatar">${avatarIcon}</div>
       <div class="usuario-info">
-        <strong>${u.EMAIL}</strong>
-        <p><i class="fas fa-school"></i> ${u.ESCOLA || "—"} · <span class="perfil-badge ${perfilClass}">${u.PERFIL}</span></p>
+        <strong>${u.NOME || u.EMAIL}</strong>
+        <p><i class="fas fa-envelope"></i> ${u.EMAIL} · <i class="fas fa-school"></i> ${u.ESCOLA || "—"} · <span class="perfil-badge ${perfilClass}">${u.PERFIL}</span></p>
         <button class="btn-pequeno" onclick="resetarSenhaUsuario('${u.EMAIL}')" style="margin-top:8px;">
           <i class="fas fa-key"></i> Resetar senha
         </button>
@@ -1410,4 +1410,74 @@ function gerarFichaPDF(aluno) {
   const w = window.open('', '_blank', 'width=900,height=700');
   w.document.write(html);
   w.document.close();
+}
+
+function renderListaProfissionais(dados) {
+  const lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  // Por enquanto, usamos apenas o modo cards (depois podemos expandir)
+  lista.style.display = "grid";
+  lista.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))";
+  lista.style.gap = "12px";
+  lista.style.padding = "0 20px 20px";
+
+  dados.forEach(prof => {
+    const div = document.createElement("div");
+    div.className = "fade";
+    
+    div.style.borderRadius = "16px";
+    div.style.padding = "12px 16px";
+    div.style.boxShadow = "0 2px 6px rgba(0,0,0,0.04)";
+    div.style.border = "1px solid #f1f5f9";
+    div.style.display = "flex";
+    div.style.alignItems = "center";
+    div.style.gap = "12px";
+    div.style.transition = "all 0.2s";
+    
+    // Nome e cargo
+    const nome = prof.NOME || prof["Nome do profissional"] || "Sem nome";
+    const cargo = prof.CARGO || prof["Descrição Cargo"] || "—";
+    const regime = prof.REGIME || prof["Regime Trabalho"] || "—";
+    const situacao = prof.SITUACAO_LOTACAO || prof["Situação Lotação"] || "—";
+    
+    // Inicial
+    const inicial = nome.trim().charAt(0).toUpperCase();
+
+    // Avatar
+    let avatarHtml;
+    if (prof.FOTO) {
+      avatarHtml = `<img src="${prof.FOTO}" style="width:44px;height:44px;border-radius:12px;object-fit:cover;flex-shrink:0;" alt="Foto">`;
+    } else {
+      avatarHtml = `<div class="aluno-avatar" style="width:44px;height:44px;background:#e0e7ff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#2563eb;flex-shrink:0;">${inicial}</div>`;
+    }
+
+    div.innerHTML = `
+      ${avatarHtml}
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;color:#0f172a;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;" title="${nome}">${nome}</div>
+        <div style="font-size:12px;color:#64748b;margin-bottom:2px;"><i class="fas fa-briefcase"></i> ${cargo}</div>
+        <div style="font-size:12px;color:#64748b;"><i class="fas fa-building"></i> ${regime}</div>
+        ${situacao !== 'ATIVO' ? `<div style="font-size:11px; color:#dc2626; margin-top:2px;"><i class="fas fa-thumbtack"></i> ${situacao}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <!-- Botão de editar (futuro) -->
+        <button class="btn-icone" onclick="abrirFichaProfissional('${prof.ID || prof.MATRICULA}')" data-tooltip="Abrir ficha do profissional" style="color:#64748b;">
+          <i class="fa-regular fa-pen-to-square"></i>
+        </button>
+      </div>
+    `;
+
+    // Animação de fade
+    div.style.opacity = '0';
+    div.style.transform = 'translateY(20px)';
+    div.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    lista.appendChild(div);
+    
+    const index = dados.indexOf(prof);
+    setTimeout(() => {
+      div.style.opacity = '1';
+      div.style.transform = 'translateY(0)';
+    }, index * 30);
+  });
 }
