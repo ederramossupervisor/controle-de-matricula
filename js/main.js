@@ -200,6 +200,8 @@ if (e.key === 'Escape') {
     { element: document.getElementById('modalDashboardProfissionais'), close: fecharDashboardProfissionais },
     { element: document.getElementById('modalDetalhesProfissional'), close: fecharModalDetalhesProfissional },
     { element: document.getElementById('modalDesempenho'), close: fecharModalDesempenho },
+    { element: document.getElementById('modalDesempenho'), close: fecharModalDesempenho },
+    { element: document.getElementById('modalRanking'), close: fecharModalRanking },
     { element: document.getElementById('novoAluno'), close: voltarApp }
   ];
 
