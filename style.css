@@ -3970,5 +3970,5 @@ header {
   overflow: visible !important;
 }
 #indicadorUltimaAtualizacao {
-  visibility: hidden;
+  visibility: hidden !important;
 }
