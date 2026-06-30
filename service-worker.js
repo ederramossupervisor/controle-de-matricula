@@ -1,5 +1,5 @@
 // Versão do cache – altere este número a cada deploy
-const CACHE_NAME = 'matriculas-v11';
+const CACHE_NAME = 'matriculas-v12';
 
 // Arquivos estáticos que serão cacheados (apenas recursos locais)
 const urlsToCache = [
