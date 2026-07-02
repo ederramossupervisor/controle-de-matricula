@@ -2723,7 +2723,13 @@
       })();
     </script>
 
-    <script src="js/version.js"></script>
+    <script>
+      // =========================
+      // CONTROLE DE VERSÃO DO FRONTEND
+      // Altere este número a cada deploy.
+      // =========================
+      const APP_VERSION = 'v1.0.0';  // ← altere aqui em cada atualização
+    </script>
     <script src="js/loader.js"></script>
     <link rel="stylesheet" href="style.css?v=" id="estiloPrincipal">
     <script>document.getElementById('estiloPrincipal').href += APP_VERSION;</script>
@@ -2749,10 +2755,9 @@
     </script>
     <!-- 🔥 LIMPEZA AUTOMÁTICA DE CACHE E SERVICE WORKERS ANTIGOS -->
 <script>
-  
   (function() {
-    // Só executa uma vez por navegador
-    if (!localStorage.getItem('sw_cleanup_v2')) {
+    // Executa apenas uma vez após grandes mudanças de SW
+    if (!localStorage.getItem('sw_cleanup_v3')) {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
           registrations.forEach(function(reg) { reg.unregister(); });
@@ -2763,9 +2768,9 @@
           names.forEach(function(name) { caches.delete(name); });
         });
       }
-      localStorage.clear();
-      localStorage.setItem('sw_cleanup_v2', 'true');
-      // Recarrega após limpeza
+      // Apenas marca que a limpeza foi feita, NÃO apaga dados do usuário
+      localStorage.setItem('sw_cleanup_v3', 'true');
+      // Recarrega suavemente após a limpeza
       setTimeout(function() { window.location.reload(); }, 300);
     }
   })();
