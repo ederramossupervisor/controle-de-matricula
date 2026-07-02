@@ -1,7 +1,7 @@
-// Versão do cache – altere este número a cada deploy
-const CACHE_NAME = 'matriculas-v12';
+// service-worker.js (versão final otimizada)
+const CACHE_NAME = 'matriculas-v1';
 
-// Arquivos estáticos que serão cacheados (apenas recursos locais)
+// Arquivos que serão pré-cacheados na instalação
 const urlsToCache = [
   './',
   './index.html',
@@ -35,16 +35,16 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // 🔥 NUNCA cacheia chamadas à API do Google Scripts
+  // 🔥 NUNCA cacheia chamadas ao Google Apps Script
   if (url.hostname === 'script.google.com') {
     return; // Deixa a requisição seguir normalmente (network only)
   }
 
-  // Para outros recursos, tenta rede primeiro, cache como fallback
+  // Para outros recursos, SEMPRE tenta a rede primeiro (ignorando cache HTTP)
   event.respondWith(
-    fetch(event.request)
+    fetch(event.request, { cache: 'no-cache' })
       .then(networkResponse => {
-        // Se for resposta válida, atualiza o cache em segundo plano
+        // Se a resposta for válida, atualiza o cache em segundo plano
         if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
@@ -52,7 +52,7 @@ self.addEventListener('fetch', event => {
         return networkResponse;
       })
       .catch(() => {
-        // Se offline, tenta servir do cache
+        // Se offline, serve do cache (fallback)
         return caches.match(event.request);
       })
   );
