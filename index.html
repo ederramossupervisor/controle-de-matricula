@@ -2723,45 +2723,29 @@
       })();
     </script>
 
-    <!-- SCRIPTS MODULARIZADOS - ORDEM IMPORTANTE -->
-    <script src="js/config.js?v=30062026"></script>
-    <script src="js/utils.js?v=30062026"></script>
-    <script src="js/data.js?v=30062026"></script>
-    <script src="js/ui.js?v=30062026"></script>
-    <script src="js/modals.js?v=30062026"></script>
-    <script src="js/filtros.js?v=30062026"></script>
-    <script src="js/main.js?v=30062026"></script>
-    <script src="js/notificacoes.js?v=30062026"></script>
-    <script src="js/perfil.js?v=30062026"></script>
-    <script src="js/agenda.js?v=30062026"></script>
-    <script src="js/dashboard.js?v=30062026"></script>
-    <script src="js/log.js?v=30062026"></script>
-    <script src="js/termo.js?v=30062026"></script>
-    <script src="js/planotatico.js?v=30062026"></script>
-    <script src="js/gerador-documentos.js?v=30062026"></script>
-    <script src="js/dados-escolas.js?v=30062026"></script>
-    <script src="js/monitoramento.js?v=30062026"></script>
-    <script src="js/orgs-curriculares.js?v=30062026"></script>
-    <script src="js/importar-profissionais.js?v=30062026"></script>
-    <script src="js/profissionais.js?v=30062026"></script>
-    <link rel="stylesheet" href="style.css?v=30062026">
+    <script src="js/version.js"></script>
+    <script src="js/loader.js"></script>
+    <link rel="stylesheet" href="style.css?v=" id="estiloPrincipal">
+    <script>document.getElementById('estiloPrincipal').href += APP_VERSION;</script>
     <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./service-worker.js')
-          .then(reg => {
-            // Se houver uma atualização pendente, recarrega a página automaticamente
-            reg.addEventListener('updatefound', () => {
-              const newWorker = reg.installing;
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
-                  // SW novo assumiu – recarrega para usar a versão atualizada
-                  window.location.reload();
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js?v=' + APP_VERSION)
+        .then(reg => {
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+                // Nova versão pronta! Recarrega a página automaticamente.
+                if (typeof mostrarToast === 'function') {
+                  mostrarToast('Nova versão disponível. Atualizando...', 'info', 2000);
                 }
-              });
+                setTimeout(() => window.location.reload(), 2000);
+              }
             });
-          })
-          .catch(err => console.error('Erro ao registrar SW:', err));
-      }
+          });
+        })
+        .catch(err => console.error('Erro no SW:', err));
+    }
     </script>
     <!-- 🔥 LIMPEZA AUTOMÁTICA DE CACHE E SERVICE WORKERS ANTIGOS -->
 <script>
