@@ -14,9 +14,18 @@ const urlsToCache = [
 // Instalação
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(cache => {
+      // Tenta adicionar cada arquivo, mas ignora os que falharem
+      return Promise.allSettled(
+        urlsToCache.map(url =>
+          cache.add(url).catch(err => {
+            console.warn('Falha ao cachear (será ignorado):', url, err);
+          })
+        )
+      );
+    })
   );
-  self.skipWaiting(); // Ativa o novo SW imediatamente
+  self.skipWaiting();
 });
 
 // Ativação – limpa caches antigos
