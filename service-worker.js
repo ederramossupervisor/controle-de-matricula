@@ -4,7 +4,7 @@ const CACHE_NAME = 'matriculas-v2';
 // Arquivos que serão pré-cacheados na instalação (apenas essenciais)
 const urlsToCache = [
   './',
-  './index.html',
+  './app_v2.html',
   './style.css',
   './manifest.json',
   './icons/icon-192.png',
