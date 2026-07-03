@@ -3,12 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 🔥 Impede qualquer cache no navegador -->
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Carregando...</title>
   <script>
     // =========================
     // CONTROLE DE VERSÃO (altere a cada deploy)
     // =========================
-    const APP_VERSION = 'v2.0.2'; // ← incremente a cada deploy
+    const APP_VERSION = 'v2.0.4'; // ← incremente aqui e no app.html
   </script>
 </head>
 <body>
@@ -17,9 +21,10 @@
     (function() {
       const versaoSalva = localStorage.getItem('app_version');
 
-      // Se a versão já está correta, apenas redireciona (com cache-busting)
+      // Se a versão já está correta, redireciona com parâmetro único
       if (versaoSalva === APP_VERSION) {
-        window.location.replace('./app.html?_=' + Date.now());
+        // Uso de location.href com replace para evitar cache
+        window.location.href = './app.html?_=' + Date.now();
         return;
       }
 
@@ -42,9 +47,9 @@
       // 3. Atualiza a versão salva
       localStorage.setItem('app_version', APP_VERSION);
 
-      // 4. Pequeno delay e redireciona para o app real (com cache-busting)
+      // 4. Redireciona com cache-busting
       setTimeout(() => {
-        window.location.replace('./app.html?_=' + Date.now());
+        window.location.href = './app.html?_=' + Date.now();
       }, 1000);
     })();
   </script>
