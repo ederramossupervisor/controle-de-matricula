@@ -1,7 +1,7 @@
-// service-worker.js (versão final otimizada)
-const CACHE_NAME = 'matriculas-v1';
+// service-worker.js (versão final definitiva)
+const CACHE_NAME = 'matriculas-v2';
 
-// Arquivos que serão pré-cacheados na instalação
+// Arquivos que serão pré-cacheados na instalação (apenas essenciais)
 const urlsToCache = [
   './',
   './index.html',
@@ -11,11 +11,10 @@ const urlsToCache = [
   './fundos/default.png'
 ];
 
-// Instalação
+// Instalação – ignora falhas em arquivos ausentes
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      // Tenta adicionar cada arquivo, mas ignora os que falharem
       return Promise.allSettled(
         urlsToCache.map(url =>
           cache.add(url).catch(err => {
@@ -37,23 +36,32 @@ self.addEventListener('activate', event => {
       );
     })
   );
-  self.clients.claim(); // Assume controle das páginas
+  self.clients.claim();
 });
 
 // Interceptação de requisições
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // 🔥 NUNCA cacheia chamadas ao Google Apps Script
-  if (url.hostname === 'script.google.com') {
-    return; // Deixa a requisição seguir normalmente (network only)
+  // 🚫 NÃO intercepta requisições para domínios externos (CDNs, APIs, etc.)
+  if (url.hostname !== 'ederramossupervisor.github.io') {
+    return; // Deixa o navegador lidar normalmente
   }
 
-  // Para outros recursos, SEMPRE tenta a rede primeiro (ignorando cache HTTP)
+  // 🚫 NUNCA cacheia chamadas ao Google Apps Script
+  if (url.hostname === 'script.google.com') {
+    return;
+  }
+
+  // Para recursos do nosso domínio, SEMPRE busca da rede (ignorando cache HTTP)
   event.respondWith(
-    fetch(event.request, { cache: 'no-cache' })
+    fetch(event.request, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+      }
+    })
       .then(networkResponse => {
-        // Se a resposta for válida, atualiza o cache em segundo plano
         if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseClone));
@@ -61,7 +69,6 @@ self.addEventListener('fetch', event => {
         return networkResponse;
       })
       .catch(() => {
-        // Se offline, serve do cache (fallback)
         return caches.match(event.request);
       })
   );
