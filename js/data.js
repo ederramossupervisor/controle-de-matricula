@@ -2295,7 +2295,7 @@ const CAMPANHAS = {
   },
   6: { // Junho (mês 5, pois janeiro=0)
     cor: '#f59e0b',
-    texto: '🌿 Julho Amarelo: Mês de prevenção e controle de hepatites virais.',
+    texto: 'Julho Amarelo: Mês de prevenção e controle de hepatites virais.',
     link: 'https://saude.es.gov.br/julho-amarelo-saude-fortalece-as-acoes-de-capacitacoes-para-deteccao-das-hepatites-virais'
   }
 };
