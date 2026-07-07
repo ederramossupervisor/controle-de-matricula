@@ -1014,10 +1014,10 @@
                 <div id="headerActionsRight" style="flex: 1; display: flex; align-items: center; gap: 10px; justify-content: flex-end;">
             <!-- 🔍 CAMPO DE BUSCA GLOBAL -->
           <div style="position: relative;">
-          <input type="text" id="inputBuscaGlobal" placeholder="Buscar no sistema..."
+          <input type="text" id="inputBuscaGlobal" placeholder="Buscar no sistema... (pressione Enter)"
                 style="padding: 8px 12px; border-radius: 20px; border: 1px solid var(--input-border);
                         background: var(--input-bg); color: var(--text-primary); width: 220px;"
-                oninput="buscarGlobalComDebounce()" onfocus="buscarGlobalComDebounce()">
+                onkeydown="if(event.key==='Enter'){buscarGlobalmente(); event.preventDefault();}">
             <div id="dropdownBuscaGlobal" style="position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg);
                   border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
                   z-index: 10000; max-height: 60vh; overflow-y: auto; display: none;"></div>
