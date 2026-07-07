@@ -2222,23 +2222,6 @@ function abrirResultadoBusca(link) {
       }
       break;
     case 'legislacao':
-      abrirModalLegislacao();
-      setTimeout(() => {
-        abrirDetalheLegislacao(id);
-      }, 300);
-      break;
-    case 'comunicado':
-      abrirModalComunicado();
-      break;
-    case 'processo':
-      abrirModalProcessos();
-      break;
-    case 'ata':
-      abrirModalAtas();
-      break;
-    default:
-      break;
-    case 'legislacao':
       // Fecha o dropdown do buscador global
       fecharDropdownBusca();
       
@@ -2251,8 +2234,8 @@ function abrirResultadoBusca(link) {
       // Garante que estamos na aba "Consultar"
       mostrarAbaConsultaLegislacao();
       
-      // Preenche o campo de busca com o termo pesquisado
-      const campoBusca = document.getElementById('filtroAssuntoLegislacao'); // ou filtroPalavrasChaveLegislacao, escolha um
+      // Preenche o campo de busca com o termo pesquisado (usamos o campo "Buscar por assunto...")
+      const campoBusca = document.getElementById('filtroAssuntoLegislacao');
       if (campoBusca) {
         campoBusca.value = termo;
       }
@@ -2260,13 +2243,24 @@ function abrirResultadoBusca(link) {
       // Dispara a busca (que agora vai destacar os itens)
       setTimeout(() => {
         buscarLegislacao();
-        // Opcional: após a busca, abrir o detalhe do item específico (id)
-        // Se quiser abrir o detalhe automaticamente, descomente a linha abaixo:
+        // Se quiser abrir o detalhe do item específico, descomente a linha abaixo:
         // abrirDetalheLegislacao(id);
       }, 500); // pequeno atraso para garantir que o modal foi renderizado
       break;
+    case 'comunicado':
+      abrirModalComunicado();
+      break;
+    case 'processo':
+      abrirModalProcessos();
+      break;
+    case 'ata':
+      abrirModalAtas();
+      break;
+    default:
+      break;
   }
 }
+
 function atualizarCampoNomeTitular() {
   const tipoSelecionado = document.getElementById("uploadTipoDoc").value;
   const campoNome = document.getElementById("campoNomeTitular");
