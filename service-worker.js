@@ -1,5 +1,5 @@
 // service-worker.js (versão final definitiva)
-const CACHE_NAME = 'matriculas-v2';
+const CACHE_NAME = 'matriculas-v3';
 
 // Arquivos que serão pré-cacheados na instalação (apenas essenciais)
 const urlsToCache = [
