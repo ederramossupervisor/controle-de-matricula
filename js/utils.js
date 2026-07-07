@@ -496,3 +496,62 @@ function gerarLinkWhatsApp(aluno) {
 
   return { url, pendentes: docsPendentes, mensagem };
 }
+// =========================
+// COMPARTILHAR LEGISLAÇÃO
+// =========================
+function compartilharLegislacao(item) {
+  // Monta os dados para compartilhamento
+  const titulo = `${item.tipo} ${item.numero}/${item.ano}`;
+  const texto = `${titulo} - ${item.assunto || 'Sem assunto'}`;
+  
+  // Link para visualização do PDF (se existir)
+  const viewUrl = item.arquivoId 
+    ? `https://drive.google.com/file/d/${item.arquivoId}/view` 
+    : '';
+  
+  // Texto completo para compartilhar
+  const shareText = `📜 ${texto}\n\n${viewUrl ? `🔗 Acesse o documento: ${viewUrl}` : 'Documento sem PDF anexado.'}`;
+
+  // Verifica se a API Web Share está disponível
+  if (navigator.share) {
+    navigator.share({
+      title: titulo,
+      text: shareText,
+      url: viewUrl || window.location.href
+    })
+    .then(() => mostrarToast('Compartilhado com sucesso!', 'success'))
+    .catch(err => {
+      if (err.name !== 'AbortError') {
+        // Se falhar (ex.: navegador não suporta), copia para área de transferência
+        copiarTexto(shareText);
+      }
+    });
+  } else {
+    // Fallback: copia o texto para a área de transferência
+    copiarTexto(shareText);
+  }
+}
+
+// Função auxiliar para copiar texto
+function copiarTexto(texto) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto)
+      .then(() => mostrarToast('Link copiado! Cole no aplicativo desejado.', 'success'))
+      .catch(() => mostrarToast('Não foi possível copiar o link.', 'error'));
+  } else {
+    // Fallback para navegadores antigos
+    const textarea = document.createElement('textarea');
+    textarea.value = texto;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      mostrarToast('Link copiado! Cole no aplicativo desejado.', 'success');
+    } catch (e) {
+      mostrarToast('Não foi possível copiar o link.', 'error');
+    }
+    document.body.removeChild(textarea);
+  }
+}
