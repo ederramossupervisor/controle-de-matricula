@@ -21,6 +21,17 @@ function abrirAluno(row) {
   abrirModalDetalhes(aluno);
 }
 
+// Adiciona estilo para destaque (no final do arquivo, fora de qualquer função)
+const style = document.createElement('style');
+style.textContent = `
+  .legislacao-destaque {
+    background-color: #fef9e7 !important;  /* amarelo bem clarinho */
+    border-left: 5px solid #f1c40f !important;
+    box-shadow: 0 0 8px rgba(241, 196, 15, 0.3);
+  }
+`;
+document.head.appendChild(style);
+
 function abrirModalDetalhes(aluno) {
   // 🔒 Trava rolagem da página
   document.body.style.position = 'fixed';
