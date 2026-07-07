@@ -2238,6 +2238,33 @@ function abrirResultadoBusca(link) {
       break;
     default:
       break;
+    case 'legislacao':
+      // Fecha o dropdown do buscador global
+      fecharDropdownBusca();
+      
+      // Obtém o termo que foi digitado no campo de busca global
+      const termo = document.getElementById('inputBuscaGlobal').value.trim();
+      
+      // Abre o modal de Legislação
+      abrirModalLegislacao();
+      
+      // Garante que estamos na aba "Consultar"
+      mostrarAbaConsultaLegislacao();
+      
+      // Preenche o campo de busca com o termo pesquisado
+      const campoBusca = document.getElementById('filtroAssuntoLegislacao'); // ou filtroPalavrasChaveLegislacao, escolha um
+      if (campoBusca) {
+        campoBusca.value = termo;
+      }
+      
+      // Dispara a busca (que agora vai destacar os itens)
+      setTimeout(() => {
+        buscarLegislacao();
+        // Opcional: após a busca, abrir o detalhe do item específico (id)
+        // Se quiser abrir o detalhe automaticamente, descomente a linha abaixo:
+        // abrirDetalheLegislacao(id);
+      }, 500); // pequeno atraso para garantir que o modal foi renderizado
+      break;
   }
 }
 function atualizarCampoNomeTitular() {
