@@ -1433,8 +1433,18 @@ function renderizarListaLegislacao(lista) {
   const podeGerenciar = emailsPermitidos.includes(emailUsuario);
 
   lista.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'usuario-card';
+  const div = document.createElement('div');
+  
+  // 🔍 Verifica se o item corresponde ao termo buscado (último termo usado)
+  const termoBuscado = document.getElementById('filtroAssuntoLegislacao')?.value.trim().toLowerCase() || 
+                       document.getElementById('filtroPalavrasChaveLegislacao')?.value.trim().toLowerCase();
+  let destaque = false;
+  if (termoBuscado) {
+    const textoItem = `${item.tipo} ${item.numero}/${item.ano} ${item.assunto} ${item.palavrasChave || ''}`.toLowerCase();
+    destaque = textoItem.includes(termoBuscado);
+  }
+  
+  div.className = 'usuario-card' + (destaque ? ' legislacao-destaque' : '');
 
     // Estilo especial se revogado
     if (idsRevogados.has(item.id)) {
