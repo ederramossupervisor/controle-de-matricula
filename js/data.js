@@ -1756,11 +1756,9 @@ function alterarMinhaSenha() {
       mostrarToast(resultado.msg, "success");
       
       if (isPrimeiroAcesso) {
-        // Remove a classe de obrigatório e fecha o modal
         document.getElementById("modalAlterarSenha").classList.remove("primeiro-acesso");
         fecharModalAlterarSenha();
-        // Agora carrega o sistema
-        carregarAlunos();
+        verificarStatusTermoEAcessar();
       } else {
         fecharModalAlterarSenha();
       }
