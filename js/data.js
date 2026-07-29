@@ -2291,10 +2291,15 @@ const CAMPANHAS = {
     texto: '🌿 Junho Verde: Educação Ambiental se constrói em rede.',
     link: 'https://drive.google.com/drive/u/0/mobile/folders/1xEo6qYJ7oHl-3PoSe3jhqFUlNY5kjQkA'
   },
-  6: { // Junho (mês 5, pois janeiro=0)
+  6: { // Julho (mês 6, pois janeiro=0)
     cor: '#f59e0b',
     texto: 'Julho Amarelo: Mês de prevenção e controle de hepatites virais.',
     link: 'https://saude.es.gov.br/julho-amarelo-saude-fortalece-as-acoes-de-capacitacoes-para-deteccao-das-hepatites-virais'
+  },
+  7: { // Agosto (mês 7, pois janeiro=0)
+    cor: '#c8a2c8',
+    texto: 'Agosto Lilás: Prevenção e enfrentamento à violência doméstica e familiar contra a mulher.',
+    link: 'https://agostolilas.com.br/'
   }
 };
 
