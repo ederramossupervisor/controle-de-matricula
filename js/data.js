@@ -1597,14 +1597,15 @@ function login() {
   }
 
   mostrarLoading();
-  const url = `${API_URL}?tipo=auth&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`;
+  // 🔥 Cache-busting adicionado com &_=${Date.now()}
+  const url = `${API_URL}?tipo=auth&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&_=${Date.now()}`;
 
   jsonp(url, function(resultado) {
     esconderLoading();
 
     if (resultado.autorizado) {
       emailUsuario = email.toLowerCase();
-      nomeUsuario = resultado.nome || emailUsuario; // 🔥 ADICIONE ESTA LINHA
+      nomeUsuario = resultado.nome || emailUsuario;
       localStorage.setItem("emailUsuario", emailUsuario);
       localStorage.setItem("nomeUsuario", nomeUsuario);
 
@@ -1614,7 +1615,6 @@ function login() {
       }
 
       carregarAlunos();
-
     } else {
       mostrarToast(resultado.msg || "Credenciais inválidas.", "error");
     }
