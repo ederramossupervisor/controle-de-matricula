@@ -1511,13 +1511,13 @@ function renderizarListaLegislacao(lista) {
             <i class="fas fa-info-circle"></i> Detalhes
           </button>
           <button class="btn-pequeno" onclick="event.stopPropagation(); compartilharLegislacao({
-            tipo: '${item.tipo.replace(/'/g, "\\'")}',
-            numero: '${item.numero.replace(/'/g, "\\'")}',
-            ano: '${item.ano}',
-            assunto: '${(item.assunto || '').replace(/'/g, "\\'")}',
-            arquivoId: '${item.arquivoId || ''}'
-          })" style="background:#4CAF50;color:white;">
-            <i class="fas fa-share-alt"></i> Compartilhar
+              tipo: '${String(item.tipo || '').replace(/'/g, "\\'")}',
+              numero: '${String(item.numero || '').replace(/'/g, "\\'")}',
+              ano: '${item.ano || ''}',
+              assunto: '${String(item.assunto || '').replace(/'/g, "\\'")}',
+              arquivoId: '${item.arquivoId || ''}'
+            })" style="background:#4CAF50;color:white;">
+              <i class="fas fa-share-alt"></i> Compartilhar
           </button>
           ${botaoEditar}
           ${botaoExcluir}
