@@ -1411,7 +1411,65 @@ function gerarFichaPDF(aluno) {
   w.document.write(html);
   w.document.close();
 }
+// =========================
+// COMPARTILHAR LEGISLAÇÃO
+// =========================
+function compartilharLegislacao(item) {
+  // Garante que os campos sejam strings
+  const tipo = String(item.tipo || '');
+  const numero = String(item.numero || '');
+  const ano = String(item.ano || '');
+  const assunto = String(item.assunto || '');
 
+  const titulo = `${tipo} ${numero}/${ano}`;
+  const texto = `${titulo} - ${assunto || 'Sem assunto'}`;
+  
+  const viewUrl = item.arquivoId 
+    ? `https://drive.google.com/file/d/${item.arquivoId}/view` 
+    : '';
+  
+  const shareText = `📜 ${texto}\n\n${viewUrl ? `🔗 Acesse o documento: ${viewUrl}` : 'Documento sem PDF anexado.'}`;
+
+  // Verifica se a API Web Share está disponível
+  if (navigator.share) {
+    navigator.share({
+      title: titulo,
+      text: shareText,
+      url: viewUrl || window.location.href
+    })
+    .then(() => mostrarToast('Compartilhado com sucesso!', 'success'))
+    .catch(err => {
+      if (err.name !== 'AbortError') {
+        copiarTexto(shareText);
+      }
+    });
+  } else {
+    copiarTexto(shareText);
+  }
+}
+
+// Função auxiliar para copiar texto
+function copiarTexto(texto) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto)
+      .then(() => mostrarToast('Link copiado! Cole no aplicativo desejado.', 'success'))
+      .catch(() => mostrarToast('Não foi possível copiar o link.', 'error'));
+  } else {
+    const textarea = document.createElement('textarea');
+    textarea.value = texto;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      document.execCommand('copy');
+      mostrarToast('Link copiado! Cole no aplicativo desejado.', 'success');
+    } catch (e) {
+      mostrarToast('Não foi possível copiar o link.', 'error');
+    }
+    document.body.removeChild(textarea);
+  }
+}
 function renderListaProfissionais(dados) {
   const lista = document.getElementById("lista");
   lista.innerHTML = "";
