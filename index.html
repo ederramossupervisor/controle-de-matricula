@@ -3,54 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 🔥 Meta tags anti-cache (reforço) -->
-  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>Carregando...</title>
-  <script>
-    // =========================
-    // CONTROLE DE VERSÃO (altere a cada deploy)
-    // =========================
-    const APP_VERSION = 'v3.0.1'; // ← incremente sempre
-  </script>
 </head>
 <body>
   <h1 style="text-align:center; margin-top:40vh; font-family:sans-serif;">Atualizando o sistema...</h1>
   <script>
-    (function() {
-      const versaoSalva = localStorage.getItem('app_version');
+    const APP_VERSION = 'v3.0.2'; // ← incremente sempre que fizer um novo deploy
 
-      if (versaoSalva === APP_VERSION) {
-        // Redireciona para o arquivo com cache-busting
-        window.location.href = './app_v2.html?_=' + Date.now();
-        return;
+    async function limparTudoEIr() {
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(reg => reg.unregister()));
+        }
+        if ('caches' in window) {
+          const nomes = await caches.keys();
+          await Promise.all(nomes.map(nome => caches.delete(nome)));
+        }
+      } catch (e) {
+        console.warn('Limpeza parcial:', e);
       }
-
-      console.log('🧹 Limpando caches antigos...');
-
-      // 1. Remove todos os service workers
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          registrations.forEach(reg => reg.unregister());
-        });
-      }
-
-      // 2. Remove todos os caches
-      if ('caches' in window) {
-        caches.keys().then(names => {
-          names.forEach(name => caches.delete(name));
-        });
-      }
-
-      // 3. Atualiza a versão salva
       localStorage.setItem('app_version', APP_VERSION);
+      window.location.href = './app_v2.html?_=' + Date.now();
+    }
 
-      // 4. Redireciona para o novo nome de arquivo
-      setTimeout(() => {
-        window.location.href = './app_v2.html?_=' + Date.now();
-      }, 1000);
-    })();
+    const versaoSalva = localStorage.getItem('app_version');
+    if (versaoSalva === APP_VERSION) {
+      window.location.href = './app_v2.html?_=' + Date.now();
+    } else {
+      limparTudoEIr();
+    }
   </script>
 </body>
 </html>
