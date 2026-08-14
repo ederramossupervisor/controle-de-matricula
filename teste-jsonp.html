@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Teste JSONP</title>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+  <h2>Teste de conexão com o backend</h2>
+  <pre id="resultado" style="background:#f4f4f4; padding:12px;">Testando...</pre>
+  <script>
+    function minhaCallback(dados) {
+      document.getElementById('resultado').textContent = 'FUNCIONOU:\n' + JSON.stringify(dados, null, 2);
+    }
+    const script = document.createElement('script');
+    script.src = 'https://script.google.com/macros/s/AKfycbzonYYSmXmy1UkmnZGou6bRfdJOoLUmrnw5fFfp1EU4cyB-EkGOmxzfxTA6LfDdc56_FA/exec?tipo=auth&email=teste&senha=teste&callback=minhaCallback';
+    script.onerror = function() {
+      document.getElementById('resultado').textContent = 'ERRO: o navegador bloqueou ou falhou ao carregar o script.';
+    };
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>
