@@ -11,17 +11,24 @@
     const APP_VERSION = 'v3.0.2'; // ← incremente sempre que fizer um novo deploy
 
     async function limparTudoEIr() {
-  try {
-    if ('caches' in window) {
-      const nomes = await caches.keys();
-      await Promise.all(nomes.map(nome => caches.delete(nome)));
+      try {
+        if ('caches' in window) {
+          const nomes = await caches.keys();
+          await Promise.all(nomes.map(nome => caches.delete(nome)));
+        }
+      } catch (e) {
+        console.warn('Limpeza parcial:', e);
+      }
+      localStorage.setItem('app_version', APP_VERSION);
+      window.location.href = './app_v2.html?_=' + Date.now();
     }
-  } catch (e) {
-    console.warn('Limpeza parcial:', e);
-  }
-  localStorage.setItem('app_version', APP_VERSION);
-  window.location.href = './app_v2.html?_=' + Date.now();
-}
+
+    const versaoSalva = localStorage.getItem('app_version');
+    if (versaoSalva === APP_VERSION) {
+      window.location.href = './app_v2.html?_=' + Date.now();
+    } else {
+      limparTudoEIr();
+    }
   </script>
 </body>
 </html>
