@@ -2734,7 +2734,25 @@
     </script>
 
 <script src="js/loader.js"></script>
-  
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js?v=' + APP_VERSION)
+    .then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+            if (typeof mostrarToast === 'function') {
+              mostrarToast('Nova versão disponível. Atualizando...', 'info', 2000);
+            }
+            setTimeout(() => window.location.reload(), 2000);
+          }
+        });
+      });
+    })
+    .catch(err => console.error('Erro no SW:', err));
+}
+</script>
 <!-- SISTEMA DE GRADE 11x6 COM PADRÃO XADREZ (33 escolas, 33 vazios) -->
 <script>
   (function() {
