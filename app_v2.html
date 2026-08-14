@@ -2733,58 +2733,8 @@
       })();
     </script>
 
-<script>
-(function() {
-  const versaoSalva = localStorage.getItem('app_version');
-  
-  if (versaoSalva !== APP_VERSION) {
-    console.log('🆕 Nova versão detectada! Limpando caches...');
-    
-    // 1. Desregistra todos os service workers
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        registrations.forEach(reg => reg.unregister());
-      });
-    }
-    
-    // 2. Apaga todos os caches do domínio
-    if ('caches' in window) {
-      caches.keys().then(names => {
-        names.forEach(name => caches.delete(name));
-      });
-    }
-    
-    // 3. Atualiza a versão salva
-    localStorage.setItem('app_version', APP_VERSION);
-    
-    // 4. Recarrega a página do zero
-    setTimeout(() => {
-      window.location.reload(true);
-    }, 500);
-  }
-})();
-</script>
 <script src="js/loader.js"></script>
-  <script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js?v=' + APP_VERSION)
-    .then(reg => {
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
-            if (typeof mostrarToast === 'function') {
-              mostrarToast('Nova versão disponível. Atualizando...', 'info', 2000);
-            }
-            setTimeout(() => window.location.reload(), 2000);
-          }
-        });
-      });
-    })
-    .catch(err => console.error('Erro no SW:', err));
-}
-</script>
-
+  
 <!-- SISTEMA DE GRADE 11x6 COM PADRÃO XADREZ (33 escolas, 33 vazios) -->
 <script>
   (function() {
