@@ -1601,9 +1601,14 @@ function login() {
   const url = `${API_URL}?tipo=auth&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&_=${Date.now()}`;
 
   jsonp(url, function(resultado) {
-    esconderLoading();
+  esconderLoading();
 
-    if (resultado.autorizado) {
+  if (resultado.erro === 'falha_rede') {
+    mostrarToast("Não foi possível conectar ao servidor. Verifique sua internet ou desative bloqueadores/VPN.", "error");
+    return;
+  }
+
+  if (resultado.autorizado) {
       emailUsuario = email.toLowerCase();
       nomeUsuario = resultado.nome || emailUsuario;
       localStorage.setItem("emailUsuario", emailUsuario);
@@ -1615,7 +1620,7 @@ function login() {
       }
 
       carregarAlunos();
-    } else {
+     } else {
       mostrarToast(resultado.msg || "Credenciais inválidas.", "error");
     }
   });
