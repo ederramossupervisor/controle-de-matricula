@@ -4,7 +4,6 @@ let loadingButton = null;
 // =========================
 
 function jsonp(url, callback) {
-  // Inicia a barra de progresso (se existir)
   const barra = document.getElementById('nprogress-bar');
   if (barra) { barra.style.width = '90%'; barra.style.opacity = '1'; }
 
@@ -13,33 +12,26 @@ function jsonp(url, callback) {
     showButtonLoading(btn);
   }
 
-  const callbackName = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-  window[callbackName] = function(data) {
-    // Finaliza a barra
+  function finalizar() {
     if (barra) { barra.style.width = '100%'; setTimeout(() => { barra.style.opacity = '0'; }, 200); }
-    callback(data);
-    document.body.removeChild(script);
-    delete window[callbackName];
     if (btn && typeof hideButtonLoading === 'function') {
       hideButtonLoading(btn);
     }
     window._clickedButton = null;
-  };
-  const script = document.createElement('script');
-  script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + callbackName;
-  script.onerror = function() {
-    if (barra) { barra.style.width = '100%'; setTimeout(() => { barra.style.opacity = '0'; }, 200); }
-    callback({ erro: 'falha_rede' });
-    document.body.removeChild(script);
-    delete window[callbackName];
-    if (btn && typeof hideButtonLoading === 'function') {
-      hideButtonLoading(btn);
-    }
-    window._clickedButton = null;
-  };
-  document.body.appendChild(script);
-}
+  }
 
+  fetch(url)
+    .then(resp => resp.json())
+    .then(data => {
+      finalizar();
+      callback(data);
+    })
+    .catch(erro => {
+      console.error('Erro na chamada à API:', erro);
+      finalizar();
+      callback({ erro: 'falha_rede' });
+    });
+}
 // ------ POST sem esperar resposta (evita CORS) ------
 function postSemResposta(dados, msgSucesso, callback) {
   const barra = document.getElementById('nprogress-bar');
