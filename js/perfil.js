@@ -23,14 +23,21 @@ function carregarFotoPerfil() {
 }
 
 // Dispara o seletor de arquivo quando o usuário clica na foto
-document.addEventListener('DOMContentLoaded', function() {
+// (o script é injetado dinamicamente pelo loader.js, então o DOM já está
+// pronto quando este arquivo roda — ver explicação em js/main.js)
+function iniciarEventosPerfil() {
   const container = document.getElementById('fotoPerfilContainer');
   if (container) {
     container.addEventListener('click', function() {
       document.getElementById('inputUploadFoto').click();
     });
   }
-});
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', iniciarEventosPerfil);
+} else {
+  iniciarEventosPerfil();
+}
 
 // Faz o upload da foto selecionada
 function fazerUploadFoto(file) {
