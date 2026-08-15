@@ -59,52 +59,75 @@ function esconderSplash() {
 }
 
 // =========================
+// LISTA CENTRAL DE MODAIS/PÁGINAS DO SISTEMA
+// Usada tanto pela tecla Esc quanto pelo clique fora (overlay).
+// Para que um novo modal feche com Esc/clique-fora, basta adicioná-lo aqui.
+// =========================
+function obterModaisEPaginasAbertos() {
+  return [
+    // Filhos (formulários sobre listas)
+    { element: document.getElementById('modalFormAto'), close: fecharFormAto },
+    { element: document.getElementById('modalCadastroTurma'), close: fecharModalCadastroTurma },
+    { element: document.getElementById('modalCadastroUsuario'), close: fecharModalCadastroUsuario },
+    { element: document.getElementById('modalEditarLegislacao'), close: fecharEdicaoLegislacao },
+    { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
+    { element: document.getElementById('modalAlterarSenha'), close: fecharModalAlterarSenha },
+    { element: document.getElementById('modalImportacao'), close: fecharModalImportacao },
+    { element: document.getElementById('modalImportacaoProfissionais'), close: fecharModalImportacaoProfissionais },
+    { element: document.getElementById('modalExportacao'), close: fecharModalExportacao },
+    { element: document.getElementById('modalPromocao'), close: fecharModalPromocao },
+    { element: document.getElementById('modalAtualizarMatriculados'), close: fecharModalAtualizarMatriculados },
+    { element: document.getElementById('modalConsentimento'), close: logout }, // logout fecha o consentimento
+    { element: document.getElementById('modalGeradorDocumentos'), close: fecharModalGeradorDocumentos },
+    { element: document.getElementById('modalPlanoTaticoMensal'), close: fecharModalPlanoTaticoMensal },
+    { element: document.getElementById('modalPlanoTaticoTrimestral'), close: fecharModalPlanoTaticoTrimestral },
+    { element: document.getElementById('modalAcompanhamentoPT'), close: fecharModalAcompanhamentoPT },
+
+    // Pais (listas e modais principais)
+    { element: document.getElementById('modalDetalhes'), close: fecharModalDetalhes },
+    { element: document.getElementById('modalChecklistLote'), close: fecharModalChecklistLote },
+    { element: document.getElementById('modalDocumentos'), close: fecharModalDocumentos },
+    { element: document.getElementById('modalModelos'), close: fecharModalModelos },
+    { element: document.getElementById('modalInativos'), close: fecharModalInativos },
+    { element: document.getElementById('modalProcessos'), close: fecharModalProcessos },
+    { element: document.getElementById('modalLegalizacao'), close: fecharModalLegalizacao },
+    { element: document.getElementById('modalLegislacao'), close: fecharModalLegislacao },
+    { element: document.getElementById('modalTurmas'), close: fecharModalTurmas },
+    { element: document.getElementById('modalListaUsuarios'), close: fecharModalListaUsuarios },
+    { element: document.getElementById('modalNotificacoes'), close: fecharNotificacoes },
+    { element: document.getElementById('modalAgenda'), close: fecharModalAgenda },
+    { element: document.getElementById('modalDashboard'), close: fecharModalDashboard },
+    { element: document.getElementById('modalHistorico'), close: fecharModalHistorico },
+    { element: document.getElementById('modalAprovacaoTermos'), close: fecharModalAprovacaoTermos },
+    { element: document.getElementById('modalMonitoramento'), close: fecharModalMonitoramento },
+    { element: document.getElementById('modalDadosEscola'), close: fecharModalDadosEscola },
+    { element: document.getElementById('modalDetalhesProfissional'), close: fecharModalDetalhesProfissional },
+    { element: document.getElementById('modalDashboardProfissionais'), close: fecharDashboardProfissionais },
+    { element: document.getElementById('modalDesempenho'), close: fecharModalDesempenho },
+    { element: document.getElementById('modalRanking'), close: fecharModalRanking },
+
+    // Páginas do sistema (telas de tela cheia que também usam .modal-overlay)
+    { element: document.getElementById('novoAluno'), close: voltarApp }
+  ];
+}
+
+// =========================
 // EVENTOS GLOBAIS (quando o DOM estiver pronto)
 // =========================
 document.addEventListener('DOMContentLoaded', function() {
-  // --- Fechar modais ao clicar fora (overlay) ---
-  document.getElementById("novoAluno").addEventListener("click", function(e) {
-    if (e.target === this) voltarApp();
-  });
+  // --- Fechar modais/janelas/páginas ao clicar fora (overlay) ---
+  // Centralizado: cobre TODOS os modais e páginas listados em obterModaisEPaginasAbertos(),
+  // inclusive os que forem adicionados no futuro (basta incluir na lista da função).
+  document.addEventListener('click', function(e) {
+    const alvo = e.target;
+    if (!alvo || !alvo.classList) return;
+    if (!alvo.classList.contains('modal-overlay') && !alvo.classList.contains('mini-modal-overlay')) return;
+    if (alvo.style.display !== 'flex') return; // só fecha se o clique foi no fundo (overlay) de algo visível
 
-  document.getElementById('modalEditarLegislacao').addEventListener('click', function(e) {
-    if (e.target === this) fecharEdicaoLegislacao();
-  });
-
-  document.getElementById('modalHistorico').addEventListener('click', function(e) {
-      if (e.target === this) fecharModalHistorico();
-  });
-
-  document.getElementById("modalDetalhes").addEventListener("click", function(e) {
-    if (e.target === this) fecharModalDetalhes();
-  });
-
-  document.getElementById("modalListaUsuarios").addEventListener("click", function(e) {
-    if (e.target === this) fecharModalListaUsuarios();
-  });
-
-  document.getElementById("modalCadastroUsuario").addEventListener("click", function(e) {
-    if (e.target === this) fecharModalCadastroUsuario();
-  });
-
-  document.getElementById('modalAtualizarMatriculados').addEventListener('click', function(e) {
-    if (e.target === this) fecharModalAtualizarMatriculados();
-  });
-
-  document.getElementById('modalDashboard').addEventListener('click', function(e) {
-    if (e.target === this) fecharModalDashboard();
-  });
-
-  document.getElementById('modalComunicado').addEventListener('click', function(e) {
-    if (e.target === this) fecharModalComunicado();
-  });
-
-  document.getElementById('modalAprovacaoTermos').addEventListener('click', function(e) {
-    if (e.target === this) fecharModalAprovacaoTermos();
-  });
-
-  document.getElementById('modalPromocao').addEventListener('click', function(e) {
-    if (e.target === this) fecharModalPromocao();
+    const item = obterModaisEPaginasAbertos().find(function(m) { return m.element === alvo; });
+    if (item && typeof item.close === 'function') {
+      item.close();
+    }
   });
 
   // --- Listener do filtro de turma (guardar valor anterior) ---
@@ -122,7 +145,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const tag = e.target.tagName.toLowerCase();
     if (tag === 'input' || tag === 'textarea' || tag === 'select') {
-      if (!(e.ctrlKey && e.key === 'f')) {
+      // Esc precisa funcionar mesmo com o foco em um campo dentro do modal
+      if (!(e.ctrlKey && e.key === 'f') && e.key !== 'Escape') {
         return;
       }
     }
@@ -155,55 +179,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
 
-// Esc: Fechar menu dropdown ou modais abertos
+// Esc: Fechar menu dropdown ou modais/páginas abertos
 if (e.key === 'Escape') {
   const menuDropdown = document.getElementById('menuDropdown');
 
-  // Lista de modais em ordem de fechamento: filhos primeiro, depois pais
-  const modaisAbertos = [
-    // Filhos (formulários sobre listas)
-    { element: document.getElementById('modalFormAto'), close: fecharFormAto },
-    { element: document.getElementById('modalCadastroTurma'), close: fecharModalCadastroTurma },
-    { element: document.getElementById('modalCadastroUsuario'), close: fecharModalCadastroUsuario },
-    { element: document.getElementById('modalEditarLegislacao'), close: fecharEdicaoLegislacao },
-    { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
-    { element: document.getElementById('modalAlterarSenha'), close: fecharModalAlterarSenha },
-    { element: document.getElementById('modalImportacao'), close: fecharModalImportacao },
-    { element: document.getElementById('modalExportacao'), close: fecharModalExportacao },
-    { element: document.getElementById('modalPromocao'), close: fecharModalPromocao },
-    { element: document.getElementById('modalAtualizarMatriculados'), close: fecharModalAtualizarMatriculados },
-    { element: document.getElementById('modalConsentimento'), close: logout }, // logout fecha o consentimento
-    { element: document.getElementById('modalGeradorDocumentos'), close: fecharModalGeradorDocumentos },
-    { element: document.getElementById('modalPlanoTaticoMensal'), close: fecharModalPlanoTaticoMensal },
-    { element: document.getElementById('modalPlanoTaticoTrimestral'), close: fecharModalPlanoTaticoTrimestral },
-    { element: document.getElementById('modalAcompanhamentoPT'), close: fecharModalAcompanhamentoPT },
-    
-    // Pais (listas e modais principais)
-    { element: document.getElementById('modalDetalhes'), close: fecharModalDetalhes },
-    { element: document.getElementById('modalChecklistLote'), close: fecharModalChecklistLote },
-    { element: document.getElementById('modalDocumentos'), close: fecharModalDocumentos },
-    { element: document.getElementById('modalModelos'), close: fecharModalModelos },
-    { element: document.getElementById('modalInativos'), close: fecharModalInativos },
-    { element: document.getElementById('modalProcessos'), close: fecharModalProcessos },
-    { element: document.getElementById('modalLegalizacao'), close: fecharModalLegalizacao },
-    { element: document.getElementById('modalLegislacao'), close: fecharModalLegislacao },
-    { element: document.getElementById('modalTurmas'), close: fecharModalTurmas },
-    { element: document.getElementById('modalListaUsuarios'), close: fecharModalListaUsuarios },
-    { element: document.getElementById('modalNotificacoes'), close: fecharNotificacoes },
-    { element: document.getElementById('modalAgenda'), close: fecharModalAgenda },
-    { element: document.getElementById('modalDashboard'), close: fecharModalDashboard },
-    { element: document.getElementById('modalHistorico'), close: fecharModalHistorico },
-    { element: document.getElementById('modalAprovacaoTermos'), close: fecharModalAprovacaoTermos },
-    { element: document.getElementById('modalMonitoramento'), close: fecharModalMonitoramento },
-    { element: document.getElementById('modalDadosEscola'), close: fecharModalDadosEscola },
-    { element: document.getElementById('modalDetalhesProfissional'), close: fecharModalDetalhesProfissional },
-    { element: document.getElementById('modalDashboardProfissionais'), close: fecharDashboardProfissionais },
-    { element: document.getElementById('modalDetalhesProfissional'), close: fecharModalDetalhesProfissional },
-    { element: document.getElementById('modalDesempenho'), close: fecharModalDesempenho },
-    { element: document.getElementById('modalDesempenho'), close: fecharModalDesempenho },
-    { element: document.getElementById('modalRanking'), close: fecharModalRanking },
-    { element: document.getElementById('novoAluno'), close: voltarApp }
-  ];
+  const modaisAbertos = obterModaisEPaginasAbertos();
 
   let modalFechado = false;
   for (let modal of modaisAbertos) {

@@ -2441,15 +2441,8 @@ function fecharModalDesempenho() {
   document.getElementById('modalDesempenho').style.display = 'none';
 }
 
-// Fechar ao clicar fora (overlay)
-document.addEventListener('DOMContentLoaded', function() {
-  const modal = document.getElementById('modalDesempenho');
-  if (modal) {
-    modal.addEventListener('click', function(e) {
-      if (e.target === this) fecharModalDesempenho();
-    });
-  }
-});
+// Fechar com Esc e clique fora: tratado de forma central em main.js
+// (função obterModaisEPaginasAbertos), não precisa de listener aqui.
 
 // =========================
 // RANKING – BADGE E MODAL
@@ -2683,12 +2676,5 @@ function fecharModalRanking() {
   document.getElementById('modalRanking').style.display = 'none';
 }
 
-// Fechar ao clicar fora
-document.addEventListener('DOMContentLoaded', function() {
-  var modal = document.getElementById('modalRanking');
-  if (modal) {
-    modal.addEventListener('click', function(e) {
-      if (e.target === this) fecharModalRanking();
-    });
-  }
-});
+// Fechar com Esc e clique fora: tratado de forma central em main.js
+// (função obterModaisEPaginasAbertos), não precisa de listener aqui.

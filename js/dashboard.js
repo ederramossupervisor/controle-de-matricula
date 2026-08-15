@@ -17,17 +17,8 @@ function fecharModalDashboard() {
   document.getElementById('modalDashboard').style.display = 'none';
 }
 
-// Fechar ao clicar fora do modal (overlay)
-document.addEventListener('DOMContentLoaded', function() {
-  const modal = document.getElementById('modalDashboard');
-  if (modal) {
-    modal.addEventListener('click', function(e) {
-      if (e.target === this) fecharModalDashboard();
-    });
-  }
-});
-
-// Fechar com tecla Esc (tratado no main.js via array modaisAbertos)
+// Fechar com Esc e clique fora: tratado de forma central em main.js
+// (função obterModaisEPaginasAbertos), não precisa de listener aqui.
 
 function carregarEscolasDashboard() {
   const select = document.getElementById('dashboardFiltroEscola');
