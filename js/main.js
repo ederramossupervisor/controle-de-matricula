@@ -114,7 +114,16 @@ function obterModaisEPaginasAbertos() {
 // =========================
 // EVENTOS GLOBAIS (quando o DOM estiver pronto)
 // =========================
-document.addEventListener('DOMContentLoaded', function() {
+// IMPORTANTE: os scripts do sistema são injetados dinamicamente pelo
+// js/loader.js (via document.createElement('script')), e não com <script>
+// estático no HTML. Isso significa que, quando este arquivo é executado,
+// o evento 'DOMContentLoaded' quase sempre JÁ disparou (o parsing do HTML
+// termina bem antes do loader.js buscar e rodar cada script em sequência).
+// Um listener 'DOMContentLoaded' registrado aqui, portanto, nunca seria
+// chamado — e nada dentro dele (atalhos de teclado, Esc, clique fora)
+// funcionaria. Por isso rodamos a função direto se o documento já estiver
+// pronto, e só usamos o listener como fallback.
+function iniciarEventosGlobais() {
   // --- Fechar modais/janelas/páginas ao clicar fora (overlay) ---
   // Centralizado: cobre TODOS os modais e páginas listados em obterModaisEPaginasAbertos(),
   // inclusive os que forem adicionados no futuro (basta incluir na lista da função).
@@ -349,7 +358,13 @@ if (e.key === 'Escape') {
     });
   });
   observer.observe(document.body, { childList: true, subtree: true });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', iniciarEventosGlobais);
+} else {
+  iniciarEventosGlobais();
+}
 
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('button');
