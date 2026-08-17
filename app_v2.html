@@ -2072,13 +2072,50 @@
           <div style="border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; margin-bottom: 16px; background: var(--card-bg);">
             <h4><i class="fas fa-file-signature"></i> Termo de Sigilo e Confidencialidade</h4>
             <p style="font-size:14px; color: var(--text-muted);">
-              É obrigatório o envio do <strong>Termo de Sigilo, Compromisso e Confidencialidade</strong> preenchido e assinado.
+              Preencha os campos abaixo para gerar o Termo em PDF, assine no <strong>e-docs</strong> e depois envie o arquivo assinado.
             </p>
-            <!-- Link para download do modelo editável (substitua SEU_ID_AQUI pelo ID real do arquivo) -->
-            <a href="https://docs.google.com/document/d/1UAyD8g2QAssDfkeZu1EL29v7TMu2ZFZLWa1G2G5f_88/export?format=docx" target="_blank" class="btn-pequeno" style="margin-bottom: 12px;">
-              <i class="fas fa-download"></i> Baixar modelo editável
-            </a>
 
+            <!-- Passo 1: preencher e gerar o PDF -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+              <div class="input-icon" style="grid-column: 1 / -1;">
+                <span class="icon"><i class="fas fa-user"></i></span>
+                <input type="text" id="termoNome" placeholder="Nome completo">
+              </div>
+              <div class="input-icon">
+                <span class="icon"><i class="fas fa-id-card"></i></span>
+                <input type="text" id="termoCpf" placeholder="CPF" maxlength="14" oninput="aplicarMascaraCPF(this)">
+              </div>
+              <div class="input-icon">
+                <span class="icon"><i class="fas fa-briefcase"></i></span>
+                <input type="text" id="termoFuncao" placeholder="Cargo / função">
+              </div>
+              <div class="input-icon">
+                <span class="icon"><i class="fas fa-school"></i></span>
+                <input type="text" id="termoEscola" placeholder="Escola ou SRE">
+              </div>
+              <div class="input-icon">
+                <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+                <input type="text" id="termoCidade" placeholder="Cidade" value="Afonso Cláudio">
+              </div>
+              <div class="input-icon" style="grid-column: 1 / -1;">
+                <span class="icon"><i class="fas fa-calendar"></i></span>
+                <input type="text" id="termoData" placeholder="Data (dd/mm/aaaa)" maxlength="10" oninput="aplicarMascaraData(this)">
+              </div>
+            </div>
+
+            <div style="display:flex; flex-wrap:wrap; gap: 8px; margin-bottom: 12px;">
+              <button type="button" class="btn-pequeno" id="btnGerarTermoPDF" onclick="gerarBaixarTermoPDF()">
+                <i class="fas fa-file-pdf"></i> <span class="btn-text">Gerar e baixar PDF</span>
+              </button>
+              <a href="https://e-docs.es.gov.br/Internal" target="_blank" rel="noopener" class="btn-pequeno">
+                <i class="fas fa-signature"></i> Abrir e-docs para assinar
+              </a>
+            </div>
+            <p style="font-size:13px; color: var(--text-muted); margin-top:-4px; margin-bottom:12px;">
+              1) Gere o PDF preenchido → 2) assine no e-docs → 3) baixe o assinado e envie abaixo.
+            </p>
+
+            <!-- Passo 2: enviar o PDF assinado -->
             <div class="input-icon" style="margin-top: 8px;">
               <span class="icon"><i class="fas fa-upload"></i></span>
               <input type="file" id="arquivoTermo" accept=".pdf" onchange="validarArquivoTermo(this)">
