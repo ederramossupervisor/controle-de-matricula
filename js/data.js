@@ -64,6 +64,9 @@ function continuarCarregamentoAlunos(pagina, filtros) {
         return;
       } else {
         esconderLoading();
+        esconderSplash();
+        document.getElementById("app").style.display = "none";
+        document.getElementById("login").style.display = "";
         mostrarToast("Erro de conexão. Tente novamente.", "warning");
         return;
       }
@@ -130,6 +133,9 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       console.error("Resposta inválida, 'alunos' não é array:", dados);
       mostrarToast("Erro na comunicação com o servidor.", "error");
       esconderLoading();
+      esconderSplash();
+      document.getElementById("app").style.display = "none";
+      document.getElementById("login").style.display = "";
       return;
     }
 

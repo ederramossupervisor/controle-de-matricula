@@ -36,6 +36,20 @@ window.onload = function () {
     if (nomeSalvo) nomeUsuario = nomeSalvo;
     document.getElementById("email").value = emailSalvo;
     carregarAlunos();
+    // Trava de segurança: se por qualquer motivo imprevisto o carregamento
+    // automático não terminar (não chamar esconderSplash) em 15s, força a
+    // saída da splash e mostra a tela de login em vez de travar para sempre.
+    setTimeout(function () {
+      const splash = document.getElementById("splash");
+      if (splash && splash.style.display !== "none") {
+        esconderSplash();
+        document.getElementById("app").style.display = "none";
+        document.getElementById("login").style.display = "";
+        if (typeof mostrarToast === "function") {
+          mostrarToast("Não foi possível carregar os dados. Tente novamente.", "warning");
+        }
+      }
+    }, 15000);
   } else {
     esconderSplash();
     document.getElementById("login").style.display = "";
