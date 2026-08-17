@@ -33,13 +33,16 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     if (dados.erro === "termo_pendente") {
       esconderLoading();
 
-      if (dados.status === 'pendente' || dados.status === 'recusado') {
+      if (dados.status === 'pendente') {
         document.getElementById('app').style.display = 'none';
         document.getElementById('login').style.display = '';
-        const mensagem = dados.status === 'pendente'
-          ? 'Seu termo de compromisso ainda não foi aprovado. Você receberá um e‑mail quando o acesso for liberado.'
-          : 'Seu termo de compromisso foi recusado. Entre em contato com a SRE.';
-        exibirMensagemLogin(mensagem);
+        exibirMensagemLogin('Seu termo de compromisso ainda não foi aprovado. Você receberá um e‑mail quando o acesso for liberado.');
+      } else if (dados.status === 'recusado') {
+        // Recusado: leva direto para a tela de reenvio do termo corrigido,
+        // sem bloquear o usuário e sem pedir para "entrar em contato com a SRE".
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        exibirTelaRecusado(dados.obs || '');
       } else {
         document.getElementById('login').style.display = 'none';
         document.getElementById('app').style.display = 'block';

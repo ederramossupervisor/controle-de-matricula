@@ -292,6 +292,45 @@ function lerArquivoBase64(file) {
     reader.readAsDataURL(file);
   });
 }
+// Tela de "aguardando aprovação" (termo enviado, ainda não avaliado pelo
+// supervisor). Estas duas funções eram chamadas por verificarStatusTermoEAcessar()
+// (js/data.js) mas nunca haviam sido definidas em lugar nenhum do código — ao
+// serem chamadas, isso gerava um ReferenceError dentro do callback de sucesso
+// do jsonp(), que era capturado pelo .catch() interno do jsonp e reexecutava o
+// MESMO callback com {erro:'falha_rede'}. Como esse retorno não tem
+// "res.enviado", o fluxo caía no "else" final e reabria o modalConsentimento
+// completo (LGPD + termo do zero) em vez de mostrar a tela de espera — este
+// era o motivo de o modal reaparecer depois do reenvio do termo corrigido.
+function exibirTelaEsperaAprovacao() {
+  const msgEspera = document.getElementById('mensagemEspera');
+  if (!msgEspera) return;
+  msgEspera.style.display = 'block';
+  msgEspera.innerHTML = `
+    <h2><i class="fas fa-hourglass-half"></i> Aguardando aprovação</h2>
+    <p style="color: var(--text-secondary);">Seu termo de compromisso foi enviado e está aguardando a aprovação do supervisor.</p>
+    <p style="color: var(--text-muted);">Você receberá um e-mail assim que ele for avaliado.</p>
+    <button class="btn-cancelar" onclick="logout()" style="margin-top: 12px;">Sair</button>
+  `;
+  const telaRecusado = document.getElementById('telaTermoRecusado');
+  if (telaRecusado) telaRecusado.style.display = 'none';
+}
+
+function removerTelaEspera() {
+  const msgEspera = document.getElementById('mensagemEspera');
+  if (msgEspera) msgEspera.style.display = 'none';
+  const telaRecusado = document.getElementById('telaTermoRecusado');
+  if (telaRecusado) telaRecusado.style.display = 'none';
+
+  // Restaura os componentes que verificarStatusTermoEAcessar() havia escondido
+  const idsParaMostrar = ['painel', 'lista', 'paginacao', 'muralComunicados'];
+  idsParaMostrar.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = '';
+  });
+  const barraTitulo = document.querySelector('#app > div[style*="justify-content: space-between"]');
+  if (barraTitulo) barraTitulo.style.display = '';
+}
+
 function exibirTelaRecusado(motivo) {
   // Esconde a tela de espera e garante que o app esteja visível
   const msgEspera = document.getElementById('mensagemEspera');
