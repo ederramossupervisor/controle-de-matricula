@@ -47,6 +47,7 @@ function continuarCarregamentoAlunos(pagina, filtros) {
         document.getElementById('arquivoTermo').value = '';
         document.getElementById('statusUploadTermo').innerHTML = '';
         if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
+        if (typeof prepararFormularioTermo === 'function') prepararFormularioTermo();
       }
       return;
     }
@@ -2105,6 +2106,7 @@ function verificarConsentimentoUsuario() {
       document.getElementById('arquivoTermo').value = '';
       document.getElementById('statusUploadTermo').innerHTML = '';
       if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
+      if (typeof prepararFormularioTermo === 'function') prepararFormularioTermo();
     } else {
       // Já consentiu – verifica termo
       verificarStatusTermoEAcessar();
@@ -2153,6 +2155,7 @@ function verificarStatusTermoEAcessar() {
       document.getElementById('arquivoTermo').value = '';
       document.getElementById('statusUploadTermo').innerHTML = '';
       if (typeof arquivoTermoSelecionado !== 'undefined') arquivoTermoSelecionado = null;
+      if (typeof prepararFormularioTermo === 'function') prepararFormularioTermo();
     }
   }, function() {
     // ERRO na requisição: mostra tela de espera (não libera!)

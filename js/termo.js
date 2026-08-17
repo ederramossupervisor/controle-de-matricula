@@ -1,6 +1,99 @@
 // js/termo.js
 let arquivoTermoSelecionado = null;
 
+// ------ PREENCHIMENTO AUTOMÁTICO DO TERMO ------
+// Tenta pré-preencher nome/cargo/escola com o que já se sabe do usuário logado.
+// Os campos continuam editáveis — isso é só um atalho, não uma trava.
+function prepararFormularioTermo() {
+  const mapaFuncao = {
+    SUPERVISOR: 'Supervisor(a)',
+    SECRETARIA: 'Secretaria Escolar',
+    PEDAGOGICO: 'Pedagógico(a)',
+    DIRETOR: 'Diretor(a)'
+  };
+
+  const campoNome = document.getElementById('termoNome');
+  const campoFuncao = document.getElementById('termoFuncao');
+  const campoEscola = document.getElementById('termoEscola');
+  const campoData = document.getElementById('termoData');
+
+  if (campoNome && !campoNome.value && typeof nomeUsuario !== 'undefined' && nomeUsuario) {
+    campoNome.value = nomeUsuario;
+  }
+  if (campoFuncao && !campoFuncao.value && typeof perfilUsuario !== 'undefined' && perfilUsuario) {
+    campoFuncao.value = mapaFuncao[perfilUsuario] || perfilUsuario;
+  }
+  if (campoEscola && !campoEscola.value) {
+    if (typeof perfilUsuario !== 'undefined' && perfilUsuario === 'SUPERVISOR') {
+      campoEscola.value = 'SRE Afonso Cláudio';
+    } else if (typeof escolaUsuario !== 'undefined' && escolaUsuario) {
+      campoEscola.value = escolaUsuario;
+    }
+  }
+  if (campoData && !campoData.value) {
+    const hoje = new Date();
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    campoData.value = `${dia}/${mes}/${hoje.getFullYear()}`;
+  }
+}
+
+// ------ GERAR PDF DO TERMO A PARTIR DO TEMPLATE ------
+function gerarBaixarTermoPDF() {
+  const nome = document.getElementById('termoNome').value.trim();
+  const cpf = document.getElementById('termoCpf').value.trim();
+  const funcao = document.getElementById('termoFuncao').value.trim();
+  const escola = document.getElementById('termoEscola').value.trim();
+  const cidade = document.getElementById('termoCidade').value.trim();
+  const data = document.getElementById('termoData').value.trim();
+
+  if (!nome || !cpf || !funcao || !escola || !cidade || !data) {
+    mostrarToast('Preencha todos os campos do termo antes de gerar o PDF.', 'warning');
+    return;
+  }
+  if (!validarCPF(cpf)) {
+    mostrarToast('CPF inválido. Confira o número digitado.', 'warning');
+    return;
+  }
+
+  window._clickedButton = document.getElementById('btnGerarTermoPDF');
+
+  const url = `${API_URL}?tipo=gerarTermoPDF`
+    + `&nome=${encodeURIComponent(nome)}`
+    + `&cpf=${encodeURIComponent(cpf)}`
+    + `&funcao=${encodeURIComponent(funcao)}`
+    + `&escola=${encodeURIComponent(escola)}`
+    + `&cidade=${encodeURIComponent(cidade)}`
+    + `&data=${encodeURIComponent(data)}`;
+
+  jsonp(url, function(resposta) {
+    if (!resposta || resposta.erro || !resposta.pdfBase64) {
+      mostrarToast('Não foi possível gerar o PDF do termo. Tente novamente.', 'error');
+      return;
+    }
+    try {
+      const bytes = atob(resposta.pdfBase64);
+      const array = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) array[i] = bytes.charCodeAt(i);
+      const blob = new Blob([array], { type: 'application/pdf' });
+      const linkUrl = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = linkUrl;
+      a.download = resposta.nomeArquivo || 'Termo_Compromisso.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(linkUrl), 5000);
+
+      mostrarToast('PDF gerado! Agora assine no e-docs e envie o arquivo assinado abaixo.', 'success');
+    } catch (e) {
+      console.error('Erro ao processar PDF do termo:', e);
+      mostrarToast('Erro ao processar o PDF gerado.', 'error');
+    }
+  });
+}
+
 function validarArquivoTermo(input) {
   const file = input.files[0];
   const statusEl = document.getElementById('statusUploadTermo') || document.getElementById('statusUploadTermoRecusado');
