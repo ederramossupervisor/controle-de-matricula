@@ -1,6 +1,18 @@
 // js/termo.js
 let arquivoTermoSelecionado = null;
 
+const MESES_POR_EXTENSO = [
+  'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+];
+
+function formatarDataPorExtenso(data) {
+  const dia = data.getDate();
+  const mes = MESES_POR_EXTENSO[data.getMonth()];
+  const ano = data.getFullYear();
+  return `${dia} de ${mes} de ${ano}`;
+}
+
 // ------ PREENCHIMENTO AUTOMÁTICO DO TERMO ------
 // Tenta pré-preencher nome/cargo/escola com o que já se sabe do usuário logado.
 // Os campos continuam editáveis — isso é só um atalho, não uma trava.
@@ -17,6 +29,16 @@ function prepararFormularioTermo() {
   const campoEscola = document.getElementById('termoEscola');
   const campoData = document.getElementById('termoData');
 
+  // Popula o dropdown de escolas (uma vez só) com a lista oficial + SRE
+  if (campoEscola && campoEscola.options.length <= 2 && typeof LISTA_ESCOLAS !== 'undefined') {
+    const jaTem = new Set(Array.from(campoEscola.options).map(o => o.value));
+    LISTA_ESCOLAS.forEach(esc => {
+      if (!jaTem.has(esc)) {
+        campoEscola.appendChild(new Option(esc, esc));
+      }
+    });
+  }
+
   if (campoNome && !campoNome.value && typeof nomeUsuario !== 'undefined' && nomeUsuario) {
     campoNome.value = nomeUsuario;
   }
@@ -31,10 +53,7 @@ function prepararFormularioTermo() {
     }
   }
   if (campoData && !campoData.value) {
-    const hoje = new Date();
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    campoData.value = `${dia}/${mes}/${hoje.getFullYear()}`;
+    campoData.value = formatarDataPorExtenso(new Date());
   }
 }
 
