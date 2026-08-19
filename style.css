@@ -4015,3 +4015,29 @@ select.select-moderno option {
   background: var(--card-bg);
   color: var(--text-primary);
 }
+
+/* Dropdown de modelos de documentos */
+#selectModeloVisualizar {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* Painel de detalhe do modelo selecionado */
+#detalheModeloSelecionado {
+  overflow: hidden;
+}
+
+#detalheModeloSelecionado .usuario-card {
+  animation: detalheModeloEntrada 0.28s ease-out;
+}
+
+@keyframes detalheModeloEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

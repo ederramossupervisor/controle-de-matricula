@@ -1480,9 +1480,12 @@
           <!-- Aba Listar -->
           <div id="abaListarModelos">
             <p style="margin-bottom:16px; color:#64748b;">
-              <i class="fas fa-info-circle"></i> Selecione um modelo para baixar.
+              <i class="fas fa-info-circle"></i> Selecione um modelo para visualizar ou baixar.
             </p>
-            <div id="listaModelosContainer" style="max-height: 500px; overflow-y: auto;"></div>
+            <select id="selectModeloVisualizar" class="select-moderno" onchange="mostrarDetalheModelo(this.value)">
+              <option value="">Selecione um modelo...</option>
+            </select>
+            <div id="detalheModeloSelecionado"></div>
           </div>
           
           <!-- Aba Upload (visível apenas para Admin) -->
