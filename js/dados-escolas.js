@@ -10,11 +10,11 @@ const ESCOLAS_DADOS = {
     city: "Conceição do Castelo",
     director: "Rosangela Vargas Davel Pinto"
   },
-  "EEEF Ivana Casagrande Scabelo": {
+  "EE Ivana Casagrande Scabelo": {
     city: "Venda Nova do Imigrante",
     director: "Maristela Broedel"
   },
-  "EEEF Severino Paste": {
+  "EE Severino Paste": {
     city: "Venda Nova do Imigrante",
     director: "Maristela Broedel"
   },
@@ -86,7 +86,7 @@ const ESCOLAS_DADOS = {
     city: "Afonso Cláudio",
     director: "Maria das Graças Fabio Costa"
   },
-  "EEEFM Mário Bergamin": {
+  "EE Mário Bergamin": {
     city: "Venda Nova do Imigrante",
     director: "Celina Januário Moreira"  
   },
