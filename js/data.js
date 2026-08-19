@@ -582,53 +582,81 @@ async function excluirAto(id) {
   carregarAtos();
 }
 
+let _modelosEscolaCache = [];
+
 function carregarModelosEscola() {
   mostrarLoading();
   const url = `${API_URL}?tipo=listarModelosEscola&email=${emailUsuario}&_=${new Date().getTime()}`;
   jsonp(url, function(modelos) {
     esconderLoading();
-    const container = document.getElementById("listaModelosContainer");
-    container.innerHTML = "";
-    
+    const select = document.getElementById("selectModeloVisualizar");
+    const detalhe = document.getElementById("detalheModeloSelecionado");
+    _modelosEscolaCache = modelos || [];
+    detalhe.innerHTML = "";
+
     if (!modelos || modelos.length === 0) {
-      container.innerHTML = "<p>Nenhum modelo disponível no momento.</p>";
+      select.innerHTML = '<option value="">Nenhum modelo disponível no momento.</option>';
       return;
     }
 
-    let html = '<h3 style="margin-top:0;">Modelos Oficiais</h3>';
+    let optionsHtml = '<option value="">Selecione um modelo...</option>';
+    let optgroupOficiaisAberto = '<optgroup label="Modelos Oficiais">';
+    let optgroupEscolaAberto = '<optgroup label="Modelos da Escola">';
+    let temOficiais = false;
     let temPersonalizados = false;
 
-    modelos.forEach(modelo => {
+    modelos.forEach((modelo, index) => {
+      const optionHtml = `<option value="${index}">${modelo.nome}</option>`;
       if (modelo.isPersonalizado) {
-        if (!temPersonalizados) {
-          html += '<h3 style="margin-top:16px;">Modelos da Escola</h3>';
-          temPersonalizados = true;
-        }
+        optgroupEscolaAberto += optionHtml;
+        temPersonalizados = true;
+      } else {
+        optgroupOficiaisAberto += optionHtml;
+        temOficiais = true;
       }
-
-      const div = document.createElement('div');
-      div.className = 'usuario-card';
-      div.style.marginBottom = '8px';
-      div.innerHTML = `
-        <div class="usuario-avatar"><i class="fas fa-file-word"></i></div>
-        <div class="usuario-info">
-          <strong>${modelo.nome}</strong>
-          <p>${modelo.fileName || '<span style="color:#ef4444;">Nenhum arquivo</span>'}</p>
-          <div style="margin-top:8px;">
-            ${modelo.viewUrl ? `
-              <a href="${modelo.viewUrl}" target="_blank" class="btn-pequeno"><i class="fas fa-eye"></i> Visualizar</a>
-              <a href="${modelo.downloadUrl}" class="btn-pequeno"><i class="fas fa-download"></i> Baixar</a>
-            ` : `
-              <button class="btn-pequeno" disabled style="opacity:0.5;"><i class="fas fa-exclamation-triangle"></i> Sem arquivo</button>
-            `}
-          </div>
-        </div>
-      `;
-      container.appendChild(div);
     });
 
+    if (temOficiais) optionsHtml += optgroupOficiaisAberto + '</optgroup>';
+    if (temPersonalizados) optionsHtml += optgroupEscolaAberto + '</optgroup>';
+
+    select.innerHTML = optionsHtml;
     esconderLoading();
   });
+}
+
+function mostrarDetalheModelo(indice) {
+  const detalhe = document.getElementById("detalheModeloSelecionado");
+  if (indice === "" || indice === null || indice === undefined) {
+    detalhe.innerHTML = "";
+    return;
+  }
+
+  const modelo = _modelosEscolaCache[indice];
+  if (!modelo) {
+    detalhe.innerHTML = "";
+    return;
+  }
+
+  const div = document.createElement('div');
+  div.className = 'usuario-card';
+  div.style.marginBottom = '8px';
+  div.innerHTML = `
+    <div class="usuario-avatar"><i class="fas fa-file-word"></i></div>
+    <div class="usuario-info">
+      <strong>${modelo.nome}</strong>
+      <p>${modelo.fileName || '<span style="color:#ef4444;">Nenhum arquivo</span>'}</p>
+      <div style="margin-top:8px;">
+        ${modelo.viewUrl ? `
+          <a href="${modelo.viewUrl}" target="_blank" class="btn-pequeno"><i class="fas fa-eye"></i> Visualizar</a>
+          <a href="${modelo.downloadUrl}" class="btn-pequeno"><i class="fas fa-download"></i> Baixar</a>
+        ` : `
+          <button class="btn-pequeno" disabled style="opacity:0.5;"><i class="fas fa-exclamation-triangle"></i> Sem arquivo</button>
+        `}
+      </div>
+    </div>
+  `;
+  detalhe.innerHTML = "";
+  detalhe.appendChild(div);
 }
 
 async function fazerUploadModeloEscola() {
