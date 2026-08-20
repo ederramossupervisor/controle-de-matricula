@@ -11,7 +11,7 @@ let turmasDisponiveis = [];
 let resumoPorEscolaGlobal = {};
 
 let paginaAtual = 1;
-let alunosPorPagina = 50;
+let alunosPorPagina = 200;
 let dadosFiltradosGlobais = [];
 
 let alunosImportados = [];
