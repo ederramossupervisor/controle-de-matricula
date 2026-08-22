@@ -83,6 +83,7 @@ function obterModaisEPaginasAbertos() {
     { element: document.getElementById('modalFormAto'), close: fecharFormAto },
     { element: document.getElementById('modalCadastroTurma'), close: fecharModalCadastroTurma },
     { element: document.getElementById('modalCadastroUsuario'), close: fecharModalCadastroUsuario },
+    { element: document.getElementById('modalEdicaoUsuario'), close: fecharModalEdicaoUsuario },
     { element: document.getElementById('modalEditarLegislacao'), close: fecharEdicaoLegislacao },
     { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
     { element: document.getElementById('modalAlterarSenha'), close: fecharModalAlterarSenha },

@@ -215,14 +215,20 @@ function atualizarSubcategorias() {
 }
 
 // ------ AJUSTES DE INTERFACE POR PERFIL ------
+function getPerfisSelecionados(nomeGrupo) {
+  return Array.from(document.querySelectorAll(`input[name="${nomeGrupo}"]:checked`)).map(el => el.value);
+}
+
 function ajustarOpcoesCadastroUsuario() {
-  const perfil = document.getElementById('perfil').value;
+  const perfis = getPerfisSelecionados('perfilCadastro');
   const campoEscola = document.getElementById('campoEscolaContainer');
-  if (perfil === 'SECRETARIA' || perfil === 'PEDAGOGICO') {
-    campoEscola.style.display = 'block';
-  } else {
-    campoEscola.style.display = 'none';
-  }
+  campoEscola.style.display = (perfis.includes('SECRETARIA') || perfis.includes('PEDAGOGICO')) ? 'block' : 'none';
+}
+
+function ajustarOpcoesEdicaoUsuario() {
+  const perfis = getPerfisSelecionados('perfilEdicao');
+  const campoEscola = document.getElementById('campoEscolaEdicaoContainer');
+  campoEscola.style.display = (perfis.includes('SECRETARIA') || perfis.includes('PEDAGOGICO')) ? 'block' : 'none';
 }
 
 function ajustarInterfacePorPerfil() {

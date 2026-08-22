@@ -933,21 +933,35 @@ function renderUsuarios(usuarios) {
     return;
   }
 
-  usuarios.forEach(u => {
+  window._usuariosCache = usuarios;
+
+  const classesPerfil = { SUPERVISOR: 'perfil-supervisor', SECRETARIA: 'perfil-secretaria', PEDAGOGICO: 'perfil-pedagogico' };
+
+  usuarios.forEach((u, idx) => {
     const div = document.createElement("div");
     div.className = "usuario-card";
-    
-    const perfilClass = u.PERFIL === "SUPERVISOR" ? "perfil-supervisor" : "perfil-secretaria";
-    const avatarIcon = u.PERFIL === 'SUPERVISOR' ? '<i class="fas fa-crown"></i>' : '<i class="fas fa-user-tie"></i>';
-    
+
+    const perfisArray = (u.PERFIL || "").toString().split(',').map(p => p.trim().toUpperCase()).filter(Boolean);
+    const avatarIcon = perfisArray.includes('SUPERVISOR') ? '<i class="fas fa-crown"></i>' : '<i class="fas fa-user-tie"></i>';
+    const badges = perfisArray.map(p => `<span class="perfil-badge ${classesPerfil[p] || 'perfil-secretaria'}">${p}</span>`).join('');
+
     div.innerHTML = `
       <div class="usuario-avatar">${avatarIcon}</div>
       <div class="usuario-info">
         <strong>${u.NOME || u.EMAIL}</strong>
-        <p><i class="fas fa-envelope"></i> ${u.EMAIL} · <i class="fas fa-school"></i> ${u.ESCOLA || "—"} · <span class="perfil-badge ${perfilClass}">${u.PERFIL}</span></p>
-        <button class="btn-pequeno" onclick="resetarSenhaUsuario('${u.EMAIL}')" style="margin-top:8px;">
-          <i class="fas fa-key"></i> Resetar senha
-        </button>
+        <p><i class="fas fa-envelope"></i> ${u.EMAIL} · <i class="fas fa-school"></i> ${u.ESCOLA || "—"}</p>
+        <p>${badges}</p>
+        <div class="usuario-acoes">
+          <button class="btn-pequeno" onclick="resetarSenhaUsuario('${u.EMAIL}')">
+            <i class="fas fa-key"></i> Resetar senha
+          </button>
+          <button class="btn-pequeno" onclick="abrirModalEdicaoUsuario(window._usuariosCache[${idx}])">
+            <i class="fas fa-edit"></i> Editar
+          </button>
+          <button class="btn-pequeno btn-excluir" onclick="excluirUsuarioAdmin('${u.EMAIL}')">
+            <i class="fas fa-trash"></i> Excluir
+          </button>
+        </div>
       </div>
     `;
     container.appendChild(div);

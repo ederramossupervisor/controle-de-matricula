@@ -728,8 +728,9 @@ function abrirModalCadastroUsuario() {
     mostrarToast('Perfil pedagógico não pode cadastrar usuários.', 'warning');
     return;
   }
+  document.getElementById("novoNome").value = "";
   document.getElementById("novoEmail").value = "";
-  document.getElementById("perfil").value = "SECRETARIA";
+  document.querySelectorAll('input[name="perfilCadastro"]').forEach(el => el.checked = (el.value === 'SECRETARIA'));
   document.getElementById("erroUsuario").style.display = "none";
 
   const selectEscola = document.getElementById("escola");
@@ -750,6 +751,36 @@ function abrirModalCadastroUsuario() {
 
 function fecharModalCadastroUsuario() {
   document.getElementById("modalCadastroUsuario").style.display = "none";
+}
+
+// ------ MODAL EDIÇÃO DE USUÁRIO ------
+function abrirModalEdicaoUsuario(usuario) {
+  document.getElementById("edicaoNome").value = usuario.NOME || "";
+  document.getElementById("edicaoEmail").value = usuario.EMAIL || "";
+  document.getElementById("edicaoEmail").dataset.emailOriginal = usuario.EMAIL || "";
+  document.getElementById("erroEdicaoUsuario").style.display = "none";
+
+  const perfisAtuais = (usuario.PERFIL || "").toString().split(',').map(p => p.trim().toUpperCase()).filter(Boolean);
+  document.querySelectorAll('input[name="perfilEdicao"]').forEach(el => el.checked = perfisAtuais.includes(el.value));
+
+  const selectEscola = document.getElementById("escolaEdicao");
+  const escolas = getEscolasPermitidas();
+  selectEscola.innerHTML = '<option value="">Selecione a escola</option>';
+  escolas.forEach(esc => {
+    const opt = document.createElement("option");
+    opt.value = esc;
+    opt.textContent = esc;
+    selectEscola.appendChild(opt);
+  });
+  selectEscola.value = usuario.ESCOLA || "";
+
+  ajustarOpcoesEdicaoUsuario();
+
+  document.getElementById("modalEdicaoUsuario").style.display = "flex";
+}
+
+function fecharModalEdicaoUsuario() {
+  document.getElementById("modalEdicaoUsuario").style.display = "none";
 }
 
 // ------ MODAL ALTERAR SENHA ------

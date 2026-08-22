@@ -1195,9 +1195,9 @@ async function salvarChecklistEmLote() {
 
 // ------ USUÁRIOS ------
 async function salvarUsuario() {
-  const nome = document.getElementById("novoNome").value.trim(); // 🔥 NOVO
+  const nome = document.getElementById("novoNome").value.trim();
   const email = document.getElementById("novoEmail").value.trim();
-  const perfil = document.getElementById("perfil").value;
+  const perfis = getPerfisSelecionados('perfilCadastro');
   const escola = document.getElementById("escola").value.trim();
   const erroDiv = document.getElementById("erroUsuario");
   const btnSalvar = document.getElementById("btnSalvarUsuario");
@@ -1212,8 +1212,13 @@ async function salvarUsuario() {
     erroDiv.style.display = "block";
     return;
   }
-  if ((perfil === "SECRETARIA" || perfil === "PEDAGOGICO") && !escola) {
-    erroDiv.textContent = "Escola obrigatória para este perfil";
+  if (perfis.length === 0) {
+    erroDiv.textContent = "Selecione ao menos um perfil";
+    erroDiv.style.display = "block";
+    return;
+  }
+  if ((perfis.includes("SECRETARIA") || perfis.includes("PEDAGOGICO")) && !escola) {
+    erroDiv.textContent = "Escola obrigatória para este(s) perfil(is)";
     erroDiv.style.display = "block";
     return;
   }
@@ -1224,8 +1229,8 @@ async function salvarUsuario() {
   const dados = {
     acao: "cadastrarUsuario",
     email: email,
-    nome: nome, // 🔥 NOVO
-    perfil: perfil,
+    nome: nome,
+    perfis: perfis,
     escola: escola,
     emailLogado: emailUsuario
   };
@@ -1237,6 +1242,70 @@ async function salvarUsuario() {
       carregarUsuarios();
     }
   });
+}
+
+async function salvarEdicaoUsuario() {
+  const emailAlvo = document.getElementById("edicaoEmail").dataset.emailOriginal;
+  const nome = document.getElementById("edicaoNome").value.trim();
+  const perfis = getPerfisSelecionados('perfilEdicao');
+  const escola = document.getElementById("escolaEdicao").value.trim();
+  const erroDiv = document.getElementById("erroEdicaoUsuario");
+  const btnSalvar = document.getElementById("btnSalvarEdicaoUsuario");
+
+  if (perfis.length === 0) {
+    erroDiv.textContent = "Selecione ao menos um perfil";
+    erroDiv.style.display = "block";
+    return;
+  }
+  if ((perfis.includes("SECRETARIA") || perfis.includes("PEDAGOGICO")) && !escola) {
+    erroDiv.textContent = "Escola obrigatória para este(s) perfil(is)";
+    erroDiv.style.display = "block";
+    return;
+  }
+  erroDiv.style.display = "none";
+
+  showButtonLoading(btnSalvar);
+
+  const dados = {
+    acao: "editarUsuario",
+    email: emailAlvo,
+    nome: nome,
+    perfis: perfis,
+    escola: escola,
+    emailLogado: emailUsuario
+  };
+
+  postSemResposta(dados, "Usuário atualizado com sucesso!", async () => {
+    hideButtonLoading(btnSalvar);
+    fecharModalEdicaoUsuario();
+    if (document.getElementById("modalListaUsuarios").style.display === "flex") {
+      carregarUsuarios();
+    }
+  });
+}
+
+async function excluirUsuarioAdmin(emailAlvo) {
+  if (!confirm(`Deseja realmente excluir o usuário ${emailAlvo}? Esta ação não pode ser desfeita.`)) return;
+
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        acao: "excluirUsuario",
+        emailLogado: emailUsuario,
+        email: emailAlvo
+      })
+    });
+    const result = await resp.json();
+    esconderLoading();
+    mostrarToast(result.msg, result.status === "ok" ? "success" : "error");
+    if (result.status === "ok") carregarUsuarios();
+  } catch (e) {
+    esconderLoading();
+    mostrarToast("Erro ao excluir usuário.", "error");
+  }
 }
 
 async function resetarSenhaUsuario(emailAlvo) {
