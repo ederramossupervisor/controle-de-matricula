@@ -3,7 +3,8 @@
 // =========================
 let dadosGlobais = [];
 let emailUsuario = "";
-let perfilUsuario = "";
+let perfilUsuario = ""; // "perfil principal" (maior privilégio) — mantido por compatibilidade
+let perfisUsuario = []; // 🔥 NOVO: lista completa de perfis do usuário logado
 let escolaUsuario = "";
 let alteracoesPendentes = {};
 let dadosAlunoAtual = null;

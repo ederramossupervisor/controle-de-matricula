@@ -246,51 +246,42 @@ function ajustarInterfacePorPerfil() {
   const btnAlterarSenha = document.getElementById("btnAlterarSenha");
   if (btnAlterarSenha) btnAlterarSenha.style.display = "inline-block";
 
-  const btnInativos = document.getElementById("btnInativos");
-  if (perfilUsuario === "SECRETARIA" || perfilUsuario === "SUPERVISOR") {
-    if (btnInativos) btnInativos.style.display = "inline-block";
-  } else {
-    if (btnInativos) btnInativos.style.display = "none";
-  }
-
+  // 🔥 Múltiplos perfis: em vez de escolher um único ramo (secretaria OU
+  // supervisor), somamos as permissões de todos os perfis do usuário —
+  // assim quem acumula SECRETARIA + SUPERVISOR, por exemplo, não perde
+  // nenhum botão que teria isoladamente em cada perfil.
+  const hasSecretaria = temPerfilUsuario("SECRETARIA");
+  const hasSupervisor = temPerfilUsuario("SUPERVISOR");
   const isAdministrador = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+
+  const btnInativos = document.getElementById("btnInativos");
+  if (btnInativos) btnInativos.style.display = (hasSecretaria || hasSupervisor) ? "inline-block" : "none";
+
   const btnLegalizacao = document.getElementById("btnLegalizacao");
-  if (perfilUsuario === "SUPERVISOR" || perfilUsuario === "SECRETARIA") {
-  if (btnLegalizacao) btnLegalizacao.style.display = "inline-block";
-} else {
-  if (btnLegalizacao) btnLegalizacao.style.display = "none";
-}
+  if (btnLegalizacao) btnLegalizacao.style.display = (hasSupervisor || hasSecretaria) ? "inline-block" : "none";
 
-  if (perfilUsuario === "SECRETARIA") {
-    if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "none";
-    if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
-    if (filtroStatusWrapper) filtroStatusWrapper.style.display = "block";
-    if (btnCadastroUsuario) btnCadastroUsuario.style.display = "none";
-    if (btnListarUsuarios) btnListarUsuarios.style.display = "none";
-    if (btnNovoAluno) btnNovoAluno.style.display = "inline-block";
-    if (btnImportarCSV) btnImportarCSV.style.display = "inline-block";
-    if (filtrosContainer) filtrosContainer.style.display = "flex";
-    if (btnTurmas) btnTurmas.style.display = "inline-block";
-    if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "none";
-    if (btnModelos) btnModelos.style.display = "inline-block";
+  // Itens que já eram iguais nos dois ramos originais — ficam fixos.
+  if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
+  if (filtroStatusWrapper) filtroStatusWrapper.style.display = "block";
+  if (filtrosContainer) filtrosContainer.style.display = "flex";
+  if (btnTurmas) btnTurmas.style.display = "inline-block";
+  if (btnModelos) btnModelos.style.display = "inline-block";
 
-  } else if (perfilUsuario === "SUPERVISOR") {
-    if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = "block";
-    if (filtroTurmaWrapper) filtroTurmaWrapper.style.display = "block";
-    if (filtroStatusWrapper) filtroStatusWrapper.style.display = "block";
-    if (btnCadastroUsuario) btnCadastroUsuario.style.display = "inline-block";
-    if (btnListarUsuarios) btnListarUsuarios.style.display = "inline-block";
-    if (btnNovoAluno) btnNovoAluno.style.display = "none";
-    if (filtrosContainer) filtrosContainer.style.display = "flex";
-    if (btnTurmas) btnTurmas.style.display = "inline-block";
-    if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = "block";
-    if (btnModelos) btnModelos.style.display = "inline-block";
+  // Filtro de escola e de situação: só quem enxerga várias escolas precisa deles.
+  if (filtroEscolaWrapper) filtroEscolaWrapper.style.display = hasSupervisor ? "block" : "none";
+  if (filtroSituacaoWrapper) filtroSituacaoWrapper.style.display = hasSupervisor ? "block" : "none";
 
-    if (isAdministrador) {
-      if (btnImportarCSV) btnImportarCSV.style.display = "inline-block";
-    } else {
-      if (btnImportarCSV) btnImportarCSV.style.display = "none";
-    }
+  // Gestão de usuários: exclusiva de quem tem SUPERVISOR.
+  if (btnCadastroUsuario) btnCadastroUsuario.style.display = hasSupervisor ? "inline-block" : "none";
+  if (btnListarUsuarios) btnListarUsuarios.style.display = hasSupervisor ? "inline-block" : "none";
+
+  // Novo Aluno: exclusivo de quem tem SECRETARIA (mesmo que também seja supervisor).
+  if (btnNovoAluno) btnNovoAluno.style.display = hasSecretaria ? "inline-block" : "none";
+
+  // Importar CSV: secretaria sempre vê; supervisor só se também for o administrador
+  // (mantém a mesma regra de negócio que já existia para supervisores "comuns").
+  if (btnImportarCSV) {
+    btnImportarCSV.style.display = (hasSecretaria || (hasSupervisor && isAdministrador)) ? "inline-block" : "none";
   }
 }
 

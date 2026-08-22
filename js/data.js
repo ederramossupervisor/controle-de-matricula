@@ -89,27 +89,20 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       escolas.forEach(esc => selectHistoricoEscola.appendChild(new Option(esc, esc)));
     }
 
-    perfilUsuario = dados.perfil;
+    // 🔥 Suporte a múltiplos perfis: PERFIL agora pode vir como "SECRETARIA,PEDAGOGICO".
+    // perfisUsuario guarda a lista completa; perfilUsuario vira o "perfil principal"
+    // (o de maior alcance), usado nos vários lugares do sistema que ainda comparam
+    // com um valor só. Ordem de prioridade: SUPERVISOR > SECRETARIA > PEDAGOGICO > outros.
+    perfisUsuario = (dados.perfil || '').toString().split(',').map(p => p.trim().toUpperCase()).filter(Boolean);
+    const ordemPrioridade = ['SUPERVISOR', 'SECRETARIA', 'PEDAGOGICO'];
+    perfilUsuario = ordemPrioridade.find(p => perfisUsuario.includes(p)) || perfisUsuario[0] || '';
     const perfilSpan = document.getElementById('perfilUsuarioTexto');
     if (perfilSpan) {
-        let nomePerfil = '';
-        switch (perfilUsuario) {
-            case 'SUPERVISOR':
-                nomePerfil = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'Administrador' : 'Supervisor';
-                break;
-            case 'SECRETARIA':
-                nomePerfil = 'Secretaria';
-                break;
-            case 'PEDAGOGICO':
-                nomePerfil = 'Pedagógico';
-                break;
-            case 'DIRETOR':
-                nomePerfil = 'Diretor';
-                break;
-            default:
-                nomePerfil = perfilUsuario;
-        }
-        perfilSpan.textContent = nomePerfil;
+        const nomesPerfil = { SUPERVISOR: (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'Administrador' : 'Supervisor', SECRETARIA: 'Secretaria', PEDAGOGICO: 'Pedagógico', DIRETOR: 'Diretor' };
+        const nomesExibidos = perfisUsuario.length > 0
+          ? perfisUsuario.map(p => nomesPerfil[p] || p)
+          : [perfilUsuario];
+        perfilSpan.textContent = nomesExibidos.join(' + ');
     }
     document.body.classList.remove('perfil-supervisor', 'perfil-secretaria');
     document.body.classList.add(perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria');
@@ -266,7 +259,7 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     botoesPlano.forEach(id => {
       const btn = document.getElementById(id);
       if (btn) {
-        btn.style.display = (perfilUsuario === 'PEDAGOGICO' || perfilUsuario === 'SUPERVISOR') ? 'block' : 'none';
+        btn.style.display = algumPerfilUsuario(['PEDAGOGICO', 'SUPERVISOR']) ? 'block' : 'none';
       }
     });
 
