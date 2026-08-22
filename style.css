@@ -1410,6 +1410,16 @@ button .spinner-btn { margin-left: 8px; margin-right: 0; }
 
 .perfil-supervisor { background: #fef3c7; color: #92400e; }
 .perfil-secretaria { background: #dcfce7; color: #166534; }
+.perfil-pedagogico { background: #dbeafe; color: #1e40af; }
+
+.usuario-info .perfil-badge { margin-right: 4px; margin-top: 4px; display: inline-block; }
+.usuario-acoes { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.usuario-acoes .btn-pequeno.btn-excluir { background: #fee2e2; color: #b91c1c; }
+.usuario-acoes .btn-pequeno.btn-excluir:hover { background: #fecaca; }
+
+.checkbox-perfis { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 10px; }
+.checkbox-perfis label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-primary); cursor: pointer; }
+.checkbox-perfis input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
 
 /* ==========================================
    PAGINAÇÃO
