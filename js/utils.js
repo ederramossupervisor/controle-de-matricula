@@ -343,18 +343,6 @@ function getDocIconStatus(entregue, prazoFinal, nomeDoc) {
   };
 }
 
-// ------ VERIFICAÇÃO DE MÚLTIPLOS PERFIS ------
-// Use estas funções (em vez de comparar perfilUsuario === 'X') sempre que um
-// recurso deve ficar visível para um perfil que NÃO é o de maior prioridade
-// (ex: um recurso exclusivo de PEDAGOGICO deve aparecer mesmo se o usuário
-// também for SECRETARIA, já que perfilUsuario nesse caso vira "SECRETARIA").
-function temPerfilUsuario(perfil) {
-  return Array.isArray(perfisUsuario) && perfisUsuario.includes(perfil);
-}
-function algumPerfilUsuario(perfis) {
-  return Array.isArray(perfisUsuario) && perfis.some(p => perfisUsuario.includes(p));
-}
-
 // ------ ESCOLAS PERMITIDAS ------
 function getEscolasPermitidas() {
   if (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') {

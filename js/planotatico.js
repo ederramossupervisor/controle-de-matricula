@@ -2,7 +2,7 @@
 // Módulo de preenchimento do Plano Tático (indicadores mensais)
 
 function abrirModalPlanoTaticoMensal() {
-  if (!algumPerfilUsuario(['PEDAGOGICO', 'SUPERVISOR'])) {
+  if (perfilUsuario !== 'PEDAGOGICO' && perfilUsuario !== 'SUPERVISOR') {
     mostrarToast('Acesso restrito a pedagogos e supervisores.', 'warning');
     return;
   }
@@ -160,7 +160,7 @@ async function salvarPlanoTaticoMensal() {
 // =========================
 
 function abrirModalPlanoTaticoTrimestral() {
-  if (!algumPerfilUsuario(['PEDAGOGICO', 'SUPERVISOR'])) {
+  if (perfilUsuario !== 'PEDAGOGICO' && perfilUsuario !== 'SUPERVISOR') {
     mostrarToast('Acesso restrito a pedagogos e supervisores.', 'warning');
     return;
   }
@@ -462,7 +462,7 @@ function renderizarTabelaAcompanhamento(dados) {
   container.innerHTML = html;
 }
 function abrirModalPlanoTaticoTrimestral() {
-  if (!algumPerfilUsuario(['PEDAGOGICO', 'SUPERVISOR'])) {
+  if (perfilUsuario !== 'PEDAGOGICO' && perfilUsuario !== 'SUPERVISOR') {
     mostrarToast('Acesso restrito a pedagogos e supervisores.', 'warning');
     return;
   }

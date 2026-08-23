@@ -184,25 +184,13 @@ function fecharProgressoImportacao() {
   }
 }
 
-// Função de desfazer: exclui todos os alunos importados nesta leva
-function desfazerImportacao() {
-  if (ImportProgress.alunosEnviadosIds.length === 0) {
-    mostrarToast('Nenhum aluno para desfazer.', 'info');
-    return;
-  }
-  mostrarLoading();
-  const dados = {
-    acao: 'excluirAlunosLote',
-    email: emailUsuario,
-    alunos: ImportProgress.alunosEnviadosIds
-  };
-  postSemResposta(dados, 'Alunos removidos com sucesso!', () => {
-    ImportProgress.alunosEnviadosIds = [];
-    ImportProgress.esconder();
-    const btn = document.getElementById('btnDesfazerImport');
-    if (btn) btn.style.display = 'none';
-    if (typeof carregarAlunos === 'function') carregarAlunos();
-  });
+// Função de desfazer: exclui todos os alunos importados nesta leva.
+// Dados de aluno agora vivem no Supabase — ver desfazerImportacaoSupabase()
+// em js/api-alunos.js.
+async function desfazerImportacao() {
+  await desfazerImportacaoSupabase();
+  const btn = document.getElementById('btnDesfazerImport');
+  if (btn) btn.style.display = 'none';
 }
 
 window.addEventListener('load', function () {
