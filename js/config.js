@@ -3,15 +3,6 @@
 // =========================
 
 const API_URL = "https://script.google.com/macros/s/AKfycbzonYYSmXmy1UkmnZGou6bRfdJOoLUmrnw5fFfp1EU4cyB-EkGOmxzfxTA6LfDdc56_FA/exec";
-// Backend do Supabase/Vercel (repositório "controle-de-matricula-teste") — usado
-// só pelas funções de ALUNOS (js/api-alunos.js). Domínio do deploy na Vercel.
-// TODO: trocar pela URL real depois que você promover o projeto pra produção.
-const API_BASE_ALUNOS = "https://controle-matricula-api.vercel.app";
-// Liga/desliga a migração de ALUNOS pro Supabase. Com true, a listagem,
-// cadastro, edição, exclusão e importação de alunos passam a usar
-// js/api-alunos.js em vez do Apps Script. Deixe false pra voltar
-// rapidamente ao Sheets se algo der errado.
-const ALUNOS_VIA_SUPABASE = true;
 const API_URL_PROFISSIONAIS = API_URL
 // Lista oficial de escolas (disponível para o supervisor)
 const LISTA_ESCOLAS = [

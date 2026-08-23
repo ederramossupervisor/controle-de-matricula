@@ -17,7 +17,6 @@
   const scripts = [
     'config.js',
     'utils.js',
-    'api-alunos.js',
     'data.js',
     'ui.js',
     'modals.js',

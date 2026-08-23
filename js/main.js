@@ -3,7 +3,8 @@
 // =========================
 let dadosGlobais = [];
 let emailUsuario = "";
-let perfilUsuario = "";
+let perfilUsuario = ""; // "perfil principal" (maior privilégio) — mantido por compatibilidade
+let perfisUsuario = []; // 🔥 NOVO: lista completa de perfis do usuário logado
 let escolaUsuario = "";
 let alteracoesPendentes = {};
 let dadosAlunoAtual = null;
@@ -11,7 +12,7 @@ let turmasDisponiveis = [];
 let resumoPorEscolaGlobal = {};
 
 let paginaAtual = 1;
-let alunosPorPagina = 50;
+let alunosPorPagina = 200;
 let dadosFiltradosGlobais = [];
 
 let alunosImportados = [];
@@ -83,6 +84,7 @@ function obterModaisEPaginasAbertos() {
     { element: document.getElementById('modalFormAto'), close: fecharFormAto },
     { element: document.getElementById('modalCadastroTurma'), close: fecharModalCadastroTurma },
     { element: document.getElementById('modalCadastroUsuario'), close: fecharModalCadastroUsuario },
+    { element: document.getElementById('modalEdicaoUsuario'), close: fecharModalEdicaoUsuario },
     { element: document.getElementById('modalEditarLegislacao'), close: fecharEdicaoLegislacao },
     { element: document.getElementById('modalComunicado'), close: fecharModalComunicado },
     { element: document.getElementById('modalAlterarSenha'), close: fecharModalAlterarSenha },

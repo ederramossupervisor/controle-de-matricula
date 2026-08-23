@@ -730,10 +730,7 @@ function abrirModalCadastroUsuario() {
   }
   document.getElementById("novoNome").value = "";
   document.getElementById("novoEmail").value = "";
-  document.getElementById("novoEmail").disabled = false;
-  document.getElementById("emailUsuarioEditando").value = "";
-  document.getElementById("tituloModalUsuario").innerHTML = '<i class="fas fa-user-plus"></i> Cadastrar usuário';
-  document.querySelectorAll('.perfil-checkbox').forEach(cb => cb.checked = false);
+  document.querySelectorAll('input[name="perfilCadastro"]').forEach(el => el.checked = (el.value === 'SECRETARIA'));
   document.getElementById("erroUsuario").style.display = "none";
 
   const selectEscola = document.getElementById("escola");
@@ -752,22 +749,21 @@ function abrirModalCadastroUsuario() {
   document.getElementById("modalCadastroUsuario").style.display = "flex";
 }
 
-// Reaproveita o mesmo modal de cadastro pra editar um usuário existente.
-// Recebe o objeto do usuário como já vem de renderUsuarios() (chaves
-// maiúsculas: EMAIL, NOME, PERFIL, ESCOLA).
-function abrirModalEditarUsuario(usuario) {
-  if (perfilUsuario === 'PEDAGOGICO') {
-    mostrarToast('Perfil pedagógico não pode editar usuários.', 'warning');
-    return;
-  }
-  document.getElementById("novoNome").value = usuario.NOME || "";
-  document.getElementById("novoEmail").value = usuario.EMAIL || "";
-  document.getElementById("novoEmail").disabled = true; // e-mail é a chave; não dá pra trocar por aqui
-  document.getElementById("emailUsuarioEditando").value = usuario.EMAIL || "";
-  document.getElementById("tituloModalUsuario").innerHTML = '<i class="fas fa-user-edit"></i> Editar usuário';
-  document.getElementById("erroUsuario").style.display = "none";
+function fecharModalCadastroUsuario() {
+  document.getElementById("modalCadastroUsuario").style.display = "none";
+}
 
-  const selectEscola = document.getElementById("escola");
+// ------ MODAL EDIÇÃO DE USUÁRIO ------
+function abrirModalEdicaoUsuario(usuario) {
+  document.getElementById("edicaoNome").value = usuario.NOME || "";
+  document.getElementById("edicaoEmail").value = usuario.EMAIL || "";
+  document.getElementById("edicaoEmail").dataset.emailOriginal = usuario.EMAIL || "";
+  document.getElementById("erroEdicaoUsuario").style.display = "none";
+
+  const perfisAtuais = (usuario.PERFIL || "").toString().split(',').map(p => p.trim().toUpperCase()).filter(Boolean);
+  document.querySelectorAll('input[name="perfilEdicao"]').forEach(el => el.checked = perfisAtuais.includes(el.value));
+
+  const selectEscola = document.getElementById("escolaEdicao");
   const escolas = getEscolasPermitidas();
   selectEscola.innerHTML = '<option value="">Selecione a escola</option>';
   escolas.forEach(esc => {
@@ -778,19 +774,13 @@ function abrirModalEditarUsuario(usuario) {
   });
   selectEscola.value = usuario.ESCOLA || "";
 
-  const perfisAtuais = (usuario.PERFIL || "").split(',').map(p => p.trim().toUpperCase()).filter(Boolean);
-  document.querySelectorAll('.perfil-checkbox').forEach(cb => {
-    cb.checked = perfisAtuais.includes(cb.value);
-  });
+  ajustarOpcoesEdicaoUsuario();
 
-  ajustarOpcoesCadastroUsuario();
-
-  document.getElementById("modalCadastroUsuario").style.display = "flex";
+  document.getElementById("modalEdicaoUsuario").style.display = "flex";
 }
 
-function fecharModalCadastroUsuario() {
-  document.getElementById("modalCadastroUsuario").style.display = "none";
-  document.getElementById("novoEmail").disabled = false;
+function fecharModalEdicaoUsuario() {
+  document.getElementById("modalEdicaoUsuario").style.display = "none";
 }
 
 // ------ MODAL ALTERAR SENHA ------

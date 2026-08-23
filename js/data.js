@@ -26,7 +26,7 @@ function continuarCarregamentoAlunos(pagina, filtros) {
   if (filtros.status) url += `&status=${encodeURIComponent(filtros.status)}`;
   if (filtros.situacao) url += `&situacao=${encodeURIComponent(filtros.situacao)}`;
   
-  jsonp(url, async function(dados) {
+  jsonp(url, function(dados) {
     esconderLoading();
 
     // 🔒 Tratamento do erro de termo (mantém na tela de login)
@@ -89,27 +89,20 @@ function continuarCarregamentoAlunos(pagina, filtros) {
       escolas.forEach(esc => selectHistoricoEscola.appendChild(new Option(esc, esc)));
     }
 
-    perfilUsuario = dados.perfil;
+    // 🔥 Suporte a múltiplos perfis: PERFIL agora pode vir como "SECRETARIA,PEDAGOGICO".
+    // perfisUsuario guarda a lista completa; perfilUsuario vira o "perfil principal"
+    // (o de maior alcance), usado nos vários lugares do sistema que ainda comparam
+    // com um valor só. Ordem de prioridade: SUPERVISOR > SECRETARIA > PEDAGOGICO > outros.
+    perfisUsuario = (dados.perfil || '').toString().split(',').map(p => p.trim().toUpperCase()).filter(Boolean);
+    const ordemPrioridade = ['SUPERVISOR', 'SECRETARIA', 'PEDAGOGICO'];
+    perfilUsuario = ordemPrioridade.find(p => perfisUsuario.includes(p)) || perfisUsuario[0] || '';
     const perfilSpan = document.getElementById('perfilUsuarioTexto');
     if (perfilSpan) {
-        let nomePerfil = '';
-        switch (perfilUsuario) {
-            case 'SUPERVISOR':
-                nomePerfil = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'Administrador' : 'Supervisor';
-                break;
-            case 'SECRETARIA':
-                nomePerfil = 'Secretaria';
-                break;
-            case 'PEDAGOGICO':
-                nomePerfil = 'Pedagógico';
-                break;
-            case 'DIRETOR':
-                nomePerfil = 'Diretor';
-                break;
-            default:
-                nomePerfil = perfilUsuario;
-        }
-        perfilSpan.textContent = nomePerfil;
+        const nomesPerfil = { SUPERVISOR: (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'Administrador' : 'Supervisor', SECRETARIA: 'Secretaria', PEDAGOGICO: 'Pedagógico', DIRETOR: 'Diretor' };
+        const nomesExibidos = perfisUsuario.length > 0
+          ? perfisUsuario.map(p => nomesPerfil[p] || p)
+          : [perfilUsuario];
+        perfilSpan.textContent = nomesExibidos.join(' + ');
     }
     document.body.classList.remove('perfil-supervisor', 'perfil-secretaria');
     document.body.classList.add(perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria');
@@ -131,40 +124,6 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     if (emailSpan) emailSpan.textContent = emailUsuario;
 
     atualizarLogoEscola(escolaUsuario);
-
-    // ------ ALUNOS VIA SUPABASE ------
-    // Login/sessão/perfil continuam vindo do Apps Script (código acima).
-    // A lista de alunos em si, se ALUNOS_VIA_SUPABASE estiver ligado,
-    // vem do Supabase — filtrada e paginada aqui no navegador, já que
-    // /api/alunos não faz isso no servidor (ver js/api-alunos.js).
-    if (typeof ALUNOS_VIA_SUPABASE !== 'undefined' && ALUNOS_VIA_SUPABASE) {
-      let dadosSupabase;
-      try {
-        dadosSupabase = await montarPaginaAlunosSupabase(pagina, filtros, alunosPorPagina);
-      } catch (e) {
-        esconderLoading();
-        esconderSplash();
-        mostrarToast('Erro ao carregar alunos: ' + e.message, 'error');
-        return;
-      }
-
-      if (dadosSupabase && dadosSupabase.erro === 'termo_pendente') {
-        // mesmo tratamento de termo pendente que o bloco lá em cima já faz
-        esconderLoading();
-        if (dadosSupabase.status === 'pendente') {
-          document.getElementById('app').style.display = 'none';
-          document.getElementById('login').style.display = '';
-          exibirMensagemLogin('Seu termo de compromisso ainda não foi aprovado. Você receberá um e‑mail quando o acesso for liberado.');
-        } else if (dadosSupabase.status === 'recusado') {
-          document.getElementById('login').style.display = 'none';
-          document.getElementById('app').style.display = 'block';
-          exibirTelaRecusado(dadosSupabase.obs || '');
-        }
-        return;
-      }
-
-      Object.assign(dados, dadosSupabase);
-    }
 
     if (!Array.isArray(dados.alunos)) {
       console.error("Resposta inválida, 'alunos' não é array:", dados);
@@ -300,7 +259,7 @@ function continuarCarregamentoAlunos(pagina, filtros) {
     botoesPlano.forEach(id => {
       const btn = document.getElementById(id);
       if (btn) {
-        btn.style.display = (perfilUsuario === 'PEDAGOGICO' || perfilUsuario === 'SUPERVISOR') ? 'block' : 'none';
+        btn.style.display = algumPerfilUsuario(['PEDAGOGICO', 'SUPERVISOR']) ? 'block' : 'none';
       }
     });
 
@@ -1025,28 +984,30 @@ async function salvarDadosAluno() {
 
   const btn = document.getElementById("btnSalvarInfoAluno");
   showButtonLoading(btn);
-
-  const dadosParaSalvar = {
+  
+  const dados = {
+    acao: "atualizarDadosAluno",
+    row: dadosAlunoAtual._row,
+    escola: dadosAlunoAtual.ESCOLA,
     nome: nome,
-    id: idAluno,
+    idAluno: idAluno,
     responsavel: responsavel,
     telefone: telefone,
     turma: turma,
     edEspecial: edEspecial,
     observacoes: observacoes,
-    cpfAluno: cpfNumero,
+    cpfNumero: cpfNumero,
     racaCor: racaCor,
     filiacao1: filiacao1,
     filiacao2: filiacao2,
     dataNascimento: dataNascimento,
     naturalidade: naturalidade,
     ufNascimento: ufNascimento,
-    nacionalidade: nacionalidade
+    nacionalidade: nacionalidade,
+    email: emailUsuario
   };
-
-  try {
-    await editarAlunoSupabase(dadosAlunoAtual.codigo || dadosAlunoAtual._row, dadosParaSalvar);
-    invalidarCacheAlunosSupabase();
+  
+  postSemResposta(dados, "Dados atualizados com sucesso!", () => {
     registrarUltimaAcao('Dados de aluno atualizados');
 
     dadosAlunoAtual.ALUNO = nome;
@@ -1064,13 +1025,11 @@ async function salvarDadosAluno() {
     dadosAlunoAtual.NATURALIDADE = naturalidade;
     dadosAlunoAtual.UF_NASCIMENTO = ufNascimento;
     dadosAlunoAtual.NACIONALIDADE = nacionalidade;
-
+    
     document.getElementById("detalhesTitulo").textContent = nome;
-  } catch (e) {
-    // erro já mostrado via mostrarToast() dentro de editarAlunoSupabase()
-  } finally {
+    
     hideButtonLoading(btn);
-  }
+  });
 }
 
 async function salvarAlteracoesEmLote(row) {
@@ -1080,7 +1039,12 @@ async function salvarAlteracoesEmLote(row) {
   for (let chave in alteracoesPendentes) {
     const [linha, coluna] = chave.split('_').map(Number);
     if (linha === row) {
-      alteracoesDocs.push({ coluna: coluna, valor: alteracoesPendentes[chave] });
+      alteracoesDocs.push({
+        row: linha,
+        coluna: coluna,
+        valor: alteracoesPendentes[chave],
+        escola: dadosAlunoAtual.ESCOLA
+      });
     }
   }
   
@@ -1112,16 +1076,24 @@ async function salvarAlteracoesEmLote(row) {
   
   try {
     if (dadosBasicosAlterados) {
-      await editarCamposAlunoSupabase(row, {
+      const dadosBasicos = {
+        acao: "atualizarDadosAluno",
+        row: row,
+        escola: dadosAlunoAtual.ESCOLA,
         nome: nome,
         responsavel: responsavel,
         telefone: telefone,
         turma: turma,
         edEspecial: edEspecial,
         observacoes: observacoes,
-        cpfNumero: cpfNumero
+        cpfNumero: cpfNumero,
+        email: emailUsuario
+      };
+      
+      await new Promise((resolve) => {
+        postSemResposta(dadosBasicos, "", () => resolve());
       });
-
+      
       dadosAlunoAtual.ALUNO = nome;
       dadosAlunoAtual.RESPONSAVEL = responsavel;
       dadosAlunoAtual.TELEFONE = telefone;
@@ -1133,17 +1105,22 @@ async function salvarAlteracoesEmLote(row) {
     }
     
     if (alteracoesDocs.length > 0) {
-      await Promise.all(
-        alteracoesDocs.map(({ coluna, valor }) => atualizarDocumentoPorColunaSupabase(row, coluna, valor))
-      );
-
+      const dadosLote = {
+        acao: "atualizarDocumentosEmLote",
+        alteracoes: alteracoesDocs,
+        email: emailUsuario
+      };
+      
+      await new Promise((resolve) => {
+        postSemResposta(dadosLote, "", () => resolve());
+      });
+      
       for (let chave in alteracoesPendentes) {
         const [linha] = chave.split('_').map(Number);
         if (linha === row) delete alteracoesPendentes[chave];
       }
     }
     
-    invalidarCacheAlunosSupabase();
     mostrarToast("Alterações salvas com sucesso!", "success");
     fecharModalDetalhes();
     carregarAlunos();
@@ -1161,7 +1138,8 @@ async function salvarChecklistEmLote() {
   const alteracoes = [];
 
   checkboxes.forEach(cb => {
-    const codigo = cb.dataset.row; // continua se chamando "row" no HTML, mas já é o código do aluno
+    const row = parseInt(cb.dataset.row);
+    const escola = cb.dataset.escola;
     const coluna = cb.dataset.col;
     const original = cb.dataset.original === 'true';
     const atual = cb.checked;
@@ -1174,7 +1152,12 @@ async function salvarChecklistEmLote() {
       };
       const colIndex = colunasIndices[coluna];
       if (colIndex !== undefined) {
-        alteracoes.push({ codigo, coluna: colIndex, valor: atual });
+        alteracoes.push({
+          row: row,
+          coluna: colIndex,
+          valor: atual,
+          escola: escola
+        });
       }
     }
   });
@@ -1184,34 +1167,33 @@ async function salvarChecklistEmLote() {
     return;
   }
 
+  console.log("📦 Alterações em lote:", alteracoes);
+
   const btn = document.querySelector('#modalChecklistLote .btn-salvar');
   showButtonLoading(btn);
 
-  try {
-    await Promise.all(
-      alteracoes.map(({ codigo, coluna, valor }) => atualizarDocumentoPorColunaSupabase(codigo, coluna, valor))
-    );
-    invalidarCacheAlunosSupabase();
-    registrarUltimaAcao('Checklist em lote atualizado');
-    mostrarToast("Documentação atualizada em lote com sucesso!", "success");
+  const dados = {
+    acao: "atualizarDocumentosEmLote",
+    alteracoes: alteracoes,
+    email: emailUsuario
+  };
+
+  postSemResposta(dados, "Documentação atualizada em lote com sucesso!", () => {
+    registrarUltimaAcao('Checklist em lote atualizado');   // 🔥
+    hideButtonLoading(btn);
     fecharModalChecklistLote();
     carregarAlunos();
-  } catch (e) {
-    mostrarToast("Erro ao salvar checklist: " + e.message, "error");
-  } finally {
-    hideButtonLoading(btn);
-  }
+  });
 }
 
 // ------ USUÁRIOS ------
 async function salvarUsuario() {
   const nome = document.getElementById("novoNome").value.trim();
   const email = document.getElementById("novoEmail").value.trim();
-  const perfisSelecionados = Array.from(document.querySelectorAll('.perfil-checkbox:checked')).map(cb => cb.value);
+  const perfis = getPerfisSelecionados('perfilCadastro');
   const escola = document.getElementById("escola").value.trim();
   const erroDiv = document.getElementById("erroUsuario");
   const btnSalvar = document.getElementById("btnSalvarUsuario");
-  const emailEditando = document.getElementById("emailUsuarioEditando").value;
 
   if (!nome) {
     erroDiv.textContent = "Nome completo é obrigatório";
@@ -1223,13 +1205,12 @@ async function salvarUsuario() {
     erroDiv.style.display = "block";
     return;
   }
-  if (perfisSelecionados.length === 0) {
+  if (perfis.length === 0) {
     erroDiv.textContent = "Selecione ao menos um perfil";
     erroDiv.style.display = "block";
     return;
   }
-  const precisaEscola = perfisSelecionados.includes("SECRETARIA") || perfisSelecionados.includes("PEDAGOGICO");
-  if (precisaEscola && !escola) {
+  if ((perfis.includes("SECRETARIA") || perfis.includes("PEDAGOGICO")) && !escola) {
     erroDiv.textContent = "Escola obrigatória para este(s) perfil(is)";
     erroDiv.style.display = "block";
     return;
@@ -1239,21 +1220,85 @@ async function salvarUsuario() {
   showButtonLoading(btnSalvar);
 
   const dados = {
-    acao: emailEditando ? "editarUsuario" : "cadastrarUsuario",
+    acao: "cadastrarUsuario",
     email: email,
     nome: nome,
-    perfis: perfisSelecionados,
+    perfis: perfis,
     escola: escola,
     emailLogado: emailUsuario
   };
 
-  postSemResposta(dados, emailEditando ? "Usuário atualizado com sucesso!" : "Usuário cadastrado com sucesso!", async () => {
+  postSemResposta(dados, "Usuário cadastrado com sucesso!", async () => {
     hideButtonLoading(btnSalvar);
     fecharModalCadastroUsuario();
     if (document.getElementById("modalListaUsuarios").style.display === "flex") {
       carregarUsuarios();
     }
   });
+}
+
+async function salvarEdicaoUsuario() {
+  const emailAlvo = document.getElementById("edicaoEmail").dataset.emailOriginal;
+  const nome = document.getElementById("edicaoNome").value.trim();
+  const perfis = getPerfisSelecionados('perfilEdicao');
+  const escola = document.getElementById("escolaEdicao").value.trim();
+  const erroDiv = document.getElementById("erroEdicaoUsuario");
+  const btnSalvar = document.getElementById("btnSalvarEdicaoUsuario");
+
+  if (perfis.length === 0) {
+    erroDiv.textContent = "Selecione ao menos um perfil";
+    erroDiv.style.display = "block";
+    return;
+  }
+  if ((perfis.includes("SECRETARIA") || perfis.includes("PEDAGOGICO")) && !escola) {
+    erroDiv.textContent = "Escola obrigatória para este(s) perfil(is)";
+    erroDiv.style.display = "block";
+    return;
+  }
+  erroDiv.style.display = "none";
+
+  showButtonLoading(btnSalvar);
+
+  const dados = {
+    acao: "editarUsuario",
+    email: emailAlvo,
+    nome: nome,
+    perfis: perfis,
+    escola: escola,
+    emailLogado: emailUsuario
+  };
+
+  postSemResposta(dados, "Usuário atualizado com sucesso!", async () => {
+    hideButtonLoading(btnSalvar);
+    fecharModalEdicaoUsuario();
+    if (document.getElementById("modalListaUsuarios").style.display === "flex") {
+      carregarUsuarios();
+    }
+  });
+}
+
+async function excluirUsuarioAdmin(emailAlvo) {
+  if (!confirm(`Deseja realmente excluir o usuário ${emailAlvo}? Esta ação não pode ser desfeita.`)) return;
+
+  mostrarLoading();
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        acao: "excluirUsuario",
+        emailLogado: emailUsuario,
+        email: emailAlvo
+      })
+    });
+    const result = await resp.json();
+    esconderLoading();
+    mostrarToast(result.msg, result.status === "ok" ? "success" : "error");
+    if (result.status === "ok") carregarUsuarios();
+  } catch (e) {
+    esconderLoading();
+    mostrarToast("Erro ao excluir usuário.", "error");
+  }
 }
 
 async function resetarSenhaUsuario(emailAlvo) {
@@ -1294,17 +1339,25 @@ async function importarDaPlanilha() {
   carregarAlunos();
 }
 
-async function executarImportacao() {
+function executarImportacao() {
   console.log("Email:", emailUsuario, "Alunos:", alunosImportados.length);
   if (alunosImportados.length === 0) {
     mostrarToast("Nenhum aluno para importar.", "warning");
     return;
   }
 
-  // Dados de aluno agora vivem no Supabase (js/api-alunos.js), não mais no
-  // Apps Script/Sheets — por isso não usamos mais postSemResposta() aqui.
-  await importarAlunosSupabase(alunosImportados);
-  alunosImportados = [];
+  mostrarLoading();
+  const dados = {
+    acao: "enviarCSVParaFila",
+    email: emailUsuario,
+    alunos: alunosImportados   // array de objetos de aluno
+  };
+
+  postSemResposta(dados, "Importação agendada!...", () => {
+    esconderLoading();
+    fecharModalImportacao();
+    alunosImportados = [];
+  });
 }
 
 function processarCSV() {
@@ -1428,27 +1481,28 @@ async function salvarAluno() {
 
   showButtonLoading(btnSalvar);
 
-  const dadosAluno = {
+  const dados = {
+    acao: "cadastrarAluno",
     nome: nome,
-    id: idAluno,
+    idAluno: idAluno,
     responsavel: responsavel,
     telefone: telefone,
     turma: turma,
     dataMatricula: dataMatriculaInput,
     edEspecial: edEspecial,
     observacoes: observacoes,
-    cpfAluno: cpfNumero,
+    cpfNumero: cpfNumero,
     racaCor: racaCor,
     filiacao1: filiacao1,
     filiacao2: filiacao2,
     dataNascimento: dataNascimento,
     naturalidade: naturalidade,
     ufNascimento: ufNascimento,
-    nacionalidade: nacionalidade
+    nacionalidade: nacionalidade,
+    email: emailUsuario
   };
 
-  try {
-    await cadastrarAlunoSupabase(dadosAluno);
+  postSemResposta(dados, "Aluno cadastrado com sucesso!", () => {
     registrarUltimaAcao('Novo aluno cadastrado');
 
     if (nomeInput) nomeInput.value = "";
@@ -1476,11 +1530,8 @@ async function salvarAluno() {
     document.getElementById("painel").style.display = "";
 
     carregarAlunos();
-  } catch (e) {
-    // erro já mostrado via mostrarToast() dentro de cadastrarAlunoSupabase()
-  } finally {
     hideButtonLoading(btnSalvar);
-  }
+  });
 }
 
 // ------ ALTERAR SITUAÇÃO / EXCLUIR ALUNO ------
@@ -1489,15 +1540,18 @@ async function alterarSituacaoAluno(novaSituacao) {
   
   const confirmacao = confirm(`Deseja marcar este aluno como "${novaSituacao}"?`);
   if (!confirmacao) return;
-
-  try {
-    await editarCamposAlunoSupabase(dadosAlunoAtual._row, { situacao: novaSituacao }, `Aluno marcado como ${novaSituacao}.`);
-    invalidarCacheAlunosSupabase();
-    fecharModalDetalhes();
-    carregarAlunos();
-  } catch (e) {
-    // erro já mostrado via mostrarToast() dentro de editarCamposAlunoSupabase()
-  }
+  
+  const dados = {
+    acao: "alterarSituacao",
+    row: dadosAlunoAtual._row,
+    escola: dadosAlunoAtual.ESCOLA,
+    situacao: novaSituacao,
+    email: emailUsuario
+  };
+  
+  postSemResposta(dados, `Aluno marcado como ${novaSituacao}.`);
+  fecharModalDetalhes();
+  carregarAlunos();
 }
 
 async function excluirAlunoPermanentemente() {
@@ -1507,17 +1561,20 @@ async function excluirAlunoPermanentemente() {
   const confirmacao = confirm(`ATENÇÃO! Você está prestes a EXCLUIR PERMANENTEMENTE o aluno:\n\n${nomeAluno}\n\nEsta ação NÃO PODE SER DESFEITA. Deseja continuar?`);
   if (!confirmacao) return;
   
-  const confirmacao2 = confirm(`Tem certeza absoluta? O registro será removido para sempre.`);
+  const confirmacao2 = confirm(`Tem certeza absoluta? O registro será removido da planilha para sempre.`);
   if (!confirmacao2) return;
-
-  try {
-    await excluirAlunoSupabase(dadosAlunoAtual._row);
-    invalidarCacheAlunosSupabase();
+  
+  const dados = {
+    acao: "excluirAluno",
+    email: emailUsuario,
+    row: dadosAlunoAtual._row,
+    escola: dadosAlunoAtual.ESCOLA
+  };
+  
+  postSemResposta(dados, "Aluno excluído com sucesso!", () => {
     fecharModalDetalhes();
     carregarAlunos();
-  } catch (e) {
-    // erro já mostrado via mostrarToast() dentro de excluirAlunoSupabase()
-  }
+  });
 }
 
 function executarExportacaoPDF(opcoes = {}) {
@@ -1929,18 +1986,54 @@ function executarPromocaoCSV() {
   const statusDiv = document.getElementById('statusPromocao');
   showButtonLoading(btn);
 
+  const loteSize = 50;
+  const atrasoEntreLotes = 2000;
+  let totalEnviados = 0;
+
   (async () => {
-    try {
-      if (statusDiv) statusDiv.innerHTML = 'Processando promoção...';
-      const resultado = await promoverAlunosSupabase(alunosPromocao);
-      mostrarToast(resultado.msg || 'Promoção concluída!', 'success');
-      hideButtonLoading(btn);
-      fecharModalPromocao();
-      carregarAlunos();
-    } catch (e) {
-      mostrarToast('Erro ao promover alunos: ' + e.message, 'error');
-      hideButtonLoading(btn);
+    for (let i = 0; i < alunosPromocao.length; i += loteSize) {
+      const lote = alunosPromocao.slice(i, i + loteSize);
+
+      await new Promise((resolve) => {
+        postSemResposta(
+          {
+            acao: 'promoverAlunosLote',
+            email: emailUsuario,
+            alunos: lote
+          },
+          null,
+          () => {
+            totalEnviados += lote.length;
+            if (statusDiv) {
+              statusDiv.innerHTML = `Enviando lote ${Math.floor(i / loteSize) + 1} de ${Math.ceil(alunosPromocao.length / loteSize)}...`;
+            }
+            resolve();
+          }
+        );
+      });
+
+      await new Promise(r => setTimeout(r, atrasoEntreLotes));
     }
+
+    // Chama a finalização da promoção após todos os lotes
+    await new Promise((resolve) => {
+      postSemResposta(
+        {
+          acao: 'finalizarPromocao',
+          email: emailUsuario,
+          alunos: alunosPromocao
+        },
+        null,
+        () => {
+          resolve();
+        }
+      );
+    });
+
+    mostrarToast(`Promoção concluída! ${alunosPromocao.length} alunos processados.`, 'success');
+    hideButtonLoading(btn);
+    fecharModalPromocao();
+    carregarAlunos();
   })();
 }
 
