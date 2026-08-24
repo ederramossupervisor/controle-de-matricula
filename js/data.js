@@ -760,6 +760,65 @@ async function buscarProcessos() {
   });
 }
 
+function exportarRelatorioProcessos() {
+  const tipo = document.getElementById("filtroProcessoTipo").value;
+  const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroProcessoEscola").value : "";
+  const aluno = document.getElementById("filtroProcessoAluno")?.value.trim() || "";
+
+  mostrarLoading();
+  let url = `${API_URL}?tipo=processos&email=${emailUsuario}`;
+  if (tipo) url += `&filtroTipo=${encodeURIComponent(tipo)}`;
+  if (perfilUsuario === "SUPERVISOR" && escola) url += `&filtroEscola=${encodeURIComponent(escola)}`;
+  if (aluno) url += `&filtroAluno=${encodeURIComponent(aluno)}`;
+
+  jsonp(url, function(processos) {
+    esconderLoading();
+    if (!processos || !processos.length) {
+      mostrarToast('Nenhum processo encontrado para os filtros selecionados.', 'warning');
+      return;
+    }
+
+    let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Processos (Edocs)</title>`;
+    html += `<style>
+      body { font-family: 'Segoe UI', Arial, sans-serif; margin: 30px; color: #333; }
+      h1 { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; }
+      .info { margin-bottom: 20px; }
+      table { width: 100%; border-collapse: collapse; }
+      th { background: #1e3a8a; color: white; padding: 8px; text-align: left; }
+      td { padding: 8px; border: 1px solid #ccc; }
+      tr:nth-child(even) { background: #f8fafc; }
+      @page { size: A4 landscape; margin: 15mm; }
+    </style></head><body>`;
+    html += `<h1>Relatório de Processos (Edocs)</h1>`;
+    html += `<div class="info">`;
+    html += `<p><strong>Escola:</strong> ${escola || (perfilUsuario === "SUPERVISOR" ? "Todas" : escolaUsuario)}</p>`;
+    html += `<p><strong>Tipo:</strong> ${tipo || "Todos"}</p>`;
+    if (aluno) html += `<p><strong>Aluno:</strong> ${aluno}</p>`;
+    html += `<p><strong>Total de processos:</strong> ${processos.length}</p>`;
+    html += `<p><strong>Data de emissão:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>`;
+    html += `</div>`;
+    html += `<table><thead><tr><th>Código</th><th>Tipo</th><th>Escola</th><th>Aluno</th><th>Categoria</th><th>Subcategoria</th><th>Observações</th></tr></thead><tbody>`;
+    processos.forEach(p => {
+      html += `<tr>
+        <td>${p.codigo || '—'}</td>
+        <td>${p.tipo || '—'}</td>
+        <td>${p.escola || '—'}</td>
+        <td>${p.aluno || '—'}</td>
+        <td>${p.categoria || '—'}</td>
+        <td>${p.subcategoria || '—'}</td>
+        <td>${p.observacoes || '—'}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></body></html>`;
+
+    const printWindow = window.open('', '_blank', 'width=1000,height=700');
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.onload = () => printWindow.print();
+  });
+}
+
 async function cadastrarProcesso() {
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("cadastroProcessoEscola").value : escolaUsuario;
   const tipo = document.getElementById("cadastroProcessoTipo").value;
