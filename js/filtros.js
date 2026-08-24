@@ -94,6 +94,69 @@ function preencherSelectsProcessos() {
     if (cadWrapper) cadWrapper.style.display = "block";
     if (filtroWrapper) filtroWrapper.style.display = "block";
   }
+
+  carregarTiposProcesso();
+  if (selectEscolaCad) selectEscolaCad.onchange = carregarTiposProcesso;
+}
+
+// ------ TIPOS DE PROCESSO (fixos + personalizados por escola, com "+ Novo tipo...") ------
+function carregarTiposProcesso() {
+  const selectCad = document.getElementById('cadastroProcessoTipo');
+  const selectFiltro = document.getElementById('filtroProcessoTipo');
+  if (!selectCad && !selectFiltro) return;
+
+  const escolaSelecionada = document.getElementById('cadastroProcessoEscola')?.value || '';
+  const url = `${API_URL}?tipo=listarTiposProcesso&email=${emailUsuario}&escola=${encodeURIComponent(escolaSelecionada)}`;
+
+  jsonp(url, function(tipos) {
+    if (selectCad) {
+      const valorAtual = selectCad.value;
+      selectCad.innerHTML = '<option value="">Tipo de processo / Documento</option>';
+      if (Array.isArray(tipos)) {
+        tipos.forEach(t => selectCad.appendChild(new Option(t, t)));
+      }
+      const optOutro = document.createElement('option');
+      optOutro.value = '__novo__';
+      optOutro.textContent = '+ Novo tipo...';
+      selectCad.appendChild(optOutro);
+      if (valorAtual && tipos.includes(valorAtual)) selectCad.value = valorAtual;
+
+      selectCad.onchange = function() {
+        if (this.value === '__novo__') {
+          const novoTipo = prompt('Digite o nome do novo tipo de processo/documento:');
+          if (novoTipo && novoTipo.trim()) {
+            const escolaAlvo = document.getElementById('cadastroProcessoEscola')?.value || '';
+            if (perfilUsuario !== 'SECRETARIA' && !escolaAlvo) {
+              mostrarToast('Selecione a escola antes de cadastrar um novo tipo.', 'warning');
+              this.value = '';
+              return;
+            }
+            postSemResposta({
+              acao: 'cadastrarTipoProcesso',
+              email: emailUsuario,
+              tipo: novoTipo.trim(),
+              escola: escolaAlvo
+            }, 'Tipo cadastrado!', () => {
+              carregarTiposProcesso();
+              setTimeout(() => { selectCad.value = novoTipo.trim(); }, 300);
+            });
+          } else {
+            this.value = '';
+          }
+        }
+        atualizarCamposProcesso();
+      };
+    }
+
+    if (selectFiltro) {
+      const valorAtualFiltro = selectFiltro.value;
+      selectFiltro.innerHTML = '<option value="">Todos os tipos</option>';
+      if (Array.isArray(tipos)) {
+        tipos.forEach(t => selectFiltro.appendChild(new Option(t, t)));
+      }
+      if (valorAtualFiltro) selectFiltro.value = valorAtualFiltro;
+    }
+  });
 }
 
 // ------ SELECTS DE GESTÃO DE DOCUMENTOS ------

@@ -590,6 +590,23 @@ function mostrarAbaUploadModeloEscola() {
   document.getElementById('abaListarModelos').style.display = 'none';
   document.getElementById('abaUploadModelo').style.display = 'none';
   document.getElementById('abaUploadModeloEscola').style.display = 'block';
+  preencherDatalistModelosExistentes();
+}
+
+function preencherDatalistModelosExistentes() {
+  const datalist = document.getElementById('listaModelosExistentes');
+  if (!datalist) return;
+  const url = `${API_URL}?tipo=listarModelosEscola&email=${emailUsuario}&_=${new Date().getTime()}`;
+  jsonp(url, function(modelos) {
+    datalist.innerHTML = '';
+    if (!Array.isArray(modelos)) return;
+    const nomesEscola = [...new Set(modelos.filter(m => m.isPersonalizado).map(m => m.nome))];
+    nomesEscola.forEach(nome => {
+      const opt = document.createElement('option');
+      opt.value = nome;
+      datalist.appendChild(opt);
+    });
+  });
 }
 
 function fecharModalModelos() {

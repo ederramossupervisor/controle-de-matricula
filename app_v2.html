@@ -4,7 +4,7 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script>const APP_VERSION = 'v3.0.13';</script>  
+<script>const APP_VERSION = 'v3.0.14';</script>  
 <script>
   // Se este arquivo foi aberto direto (atalho/favorito salvo aponta para
   // app_v2.html em vez da raiz do site), a rotina de limpeza de cache e
@@ -1236,26 +1236,6 @@
               <span class="icon"><i class="fas fa-tag"></i></span>
               <select id="cadastroProcessoTipo" onchange="atualizarCamposProcesso()">
                 <option value="">Tipo de processo / Documento</option>
-                <option value="Cuidador">Cuidador</option>
-                <option value="Regularização AEE">Regularização AEE</option>
-                <option value="Calendário">Calendário</option>
-                <option value="Livro de ponto">Livro de ponto</option>
-                <option value="Regimento Escolar">Regimento Escolar</option>
-                <option value="PPP">PPP (Projeto Político-Pedagógico)</option>
-                <option value="PDI">PDI (Plano de Desenvolvimento Institucional)</option>
-                <option value="PAI">PAI (Programa de Autoavaliação Institucional)</option>
-                <option value="Credenciamento">Credenciamento</option>
-                <option value="Renovação de credenciamento">Renovação de credenciamento</option>
-                <option value="Aprovação de curso/etapa/modalidade">Aprovação de curso/etapa/modalidade</option>
-                <option value="Renovação de aprovação de curso/etapa/modalidade">Renovação de aprovação de curso/etapa/modalidade</option>
-                <option value="Regularização de Vida Escolar">Regularização de Vida Escolar</option>
-                <option value="Manifestação GENPRO">Manifestação GENPRO</option>
-                <option value="Ata Especial de RVE">Ata Especial de RVE</option>
-                <option value="Ata de Classificação/Reclassificação/Avanço Escolar">Ata de Classificação/Reclassificação/Avanço Escolar</option>
-                <option value="Atas de Conselho de Classe">Atas de Conselho de Classe</option>
-                <option value="Listas de Alunos Concluintes">Listas de Alunos Concluintes</option>
-                <option value="Plano de Curso (Técnico)">Plano de Curso (Técnico)</option>
-                <option value="Plano de Intervenção PFA">Plano de Intervenção PFA</option>
               </select>
             </div>
             <div class="input-icon">
@@ -1285,26 +1265,6 @@
                 <span class="icon"><i class="fas fa-tag"></i></span>
                 <select id="filtroProcessoTipo">
                   <option value="">Todos os tipos</option>
-                  <option value="Cuidador">Cuidador</option>
-                  <option value="Regularização AEE">Regularização AEE</option>
-                  <option value="Calendário">Calendário</option>
-                  <option value="Livro de ponto">Livro de ponto</option>
-                  <option value="Regimento Escolar">Regimento Escolar</option>
-                  <option value="PPP">PPP</option>
-                  <option value="PDI">PDI</option>
-                  <option value="PAI">PAI</option>
-                  <option value="Credenciamento">Credenciamento</option>
-                  <option value="Renovação de credenciamento">Renovação de credenciamento</option>
-                  <option value="Aprovação de curso/etapa/modalidade">Aprovação de curso/etapa/modalidade</option>
-                  <option value="Renovação de aprovação de curso/etapa/modalidade">Renovação de aprovação de curso/etapa/modalidade</option>
-                  <option value="Regularização de Vida Escolar">Regularização de Vida Escolar</option>
-                  <option value="Manifestação GENPRO">Manifestação GENPRO</option>
-                  <option value="Ata Especial de RVE">Ata Especial de RVE</option>
-                  <option value="Ata de Classificação/Reclassificação/Avanço Escolar">Ata de Classificação/Reclassificação/Avanço Escolar</option>
-                  <option value="Atas de Conselho de Classe">Atas de Conselho de Classe</option>
-                  <option value="Listas de Alunos Concluintes">Listas de Alunos Concluintes</option>
-                  <option value="Plano de Curso (Técnico)">Plano de Curso (Técnico)</option>
-                  <option value="Plano de Intervenção PFA">Plano de Intervenção PFA</option>
                 </select>
               </div>
               <div class="input-icon" id="filtroProcessoEscolaWrapper">
@@ -1506,7 +1466,8 @@
           <div id="abaUploadModeloEscola" style="display:none;">
             <div class="input-icon">
               <span class="icon"><i class="fas fa-tag"></i></span>
-              <input type="text" id="nomeModeloEscola" placeholder="Nome do modelo (ex.: Formulário de Autorização)">
+              <input type="text" id="nomeModeloEscola" list="listaModelosExistentes" placeholder="Nome do modelo (ex.: Formulário de Autorização)">
+              <datalist id="listaModelosExistentes"></datalist>
             </div>
             <div class="input-icon">
               <span class="icon"><i class="fas fa-paperclip"></i></span>
