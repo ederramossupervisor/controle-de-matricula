@@ -1419,7 +1419,33 @@ button .spinner-btn { margin-left: 8px; margin-right: 0; }
 
 .checkbox-perfis { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 10px; }
 .checkbox-perfis label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-primary); cursor: pointer; }
-.checkbox-perfis input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+.checkbox-perfis input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  padding: 0;
+  margin: 0;
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+  flex-shrink: 0;
+}
+.checkbox-perfis input[type="checkbox"]:checked {
+  background: var(--btn-primary-bg);
+  border-color: var(--btn-primary-bg);
+}
+.checkbox-perfis input[type="checkbox"]:checked::after {
+  content: "✓";
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
 
 /* ==========================================
    PAGINAÇÃO
