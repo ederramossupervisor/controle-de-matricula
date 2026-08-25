@@ -707,7 +707,7 @@ function mostrarAbaListagem() {
 function abrirModalProcessos() {
   document.getElementById("modalProcessos").style.display = "flex";
   preencherSelectsProcessos();   // ← chamada movida para cá
-  mostrarAbaCadastroProcesso();
+  mostrarAbaBuscaProcesso();
   ativarEnterNoModal('#modalProcessos', buscarProcessos);
 }
 
