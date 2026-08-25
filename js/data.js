@@ -760,6 +760,59 @@ async function buscarProcessos() {
   });
 }
 
+// Decide quais colunas o relatório exportado deve ter, de acordo com o tipo
+// de processo filtrado. Usa o mesmo agrupamento de tipos que já existe em
+// atualizarCamposProcesso() (js/filtros.js) para os campos extras do
+// cadastro, então uma coluna só aparece se aquele tipo de processo
+// realmente costuma preencher o campo correspondente.
+function obterColunasRelatorioProcesso(tipo) {
+  // Nenhum tipo específico selecionado ("Todos"): mantém o relatório
+  // genérico, já que a lista pode misturar processos de tipos diferentes.
+  if (!tipo) {
+    return [
+      { chave: 'codigo', rotulo: 'Código' },
+      { chave: 'tipo', rotulo: 'Tipo' },
+      { chave: 'escola', rotulo: 'Escola' },
+      { chave: 'aluno', rotulo: 'Aluno' },
+      { chave: 'categoria', rotulo: 'Categoria' },
+      { chave: 'subcategoria', rotulo: 'Subcategoria' },
+      { chave: 'observacoes', rotulo: 'Observações' }
+    ];
+  }
+
+  const tiposComAluno = [
+    "Cuidador",
+    "Regularização AEE",
+    "Regularização de Vida Escolar",
+    "Manifestação GENPRO",
+    "Ata Especial de RVE",
+    "Ata de Classificação/Reclassificação/Avanço Escolar"
+  ];
+
+  // Código e Escola valem para qualquer processo. "Tipo" fica fora da
+  // tabela aqui porque, com um tipo específico filtrado, ele já aparece
+  // fixo no cabeçalho do relatório — repeti-lo em toda linha só ocuparia
+  // espaço à toa.
+  const colunas = [
+    { chave: 'codigo', rotulo: 'Código' },
+    { chave: 'escola', rotulo: 'Escola' }
+  ];
+
+  if (tiposComAluno.includes(tipo)) {
+    colunas.push({ chave: 'aluno', rotulo: 'Aluno' });
+  } else if (tipo === 'Livro de ponto') {
+    colunas.push({ chave: 'categoria', rotulo: 'Categoria' });
+    colunas.push({ chave: 'subcategoria', rotulo: 'Subcategoria' });
+  } else if (tipo === 'Plano de Intervenção PFA') {
+    colunas.push({ chave: 'subcategoria', rotulo: 'Componente' });
+  }
+  // Tipos personalizados (cadastrados via "+ Novo tipo...") não têm campo
+  // extra no formulário, então caem aqui só com Código, Escola e Observações.
+
+  colunas.push({ chave: 'observacoes', rotulo: 'Observações' });
+  return colunas;
+}
+
 function exportarRelatorioProcessos() {
   const tipo = document.getElementById("filtroProcessoTipo").value;
   const escola = (perfilUsuario === "SUPERVISOR") ? document.getElementById("filtroProcessoEscola").value : "";
@@ -777,6 +830,8 @@ function exportarRelatorioProcessos() {
       mostrarToast('Nenhum processo encontrado para os filtros selecionados.', 'warning');
       return;
     }
+
+    const colunas = obterColunasRelatorioProcesso(tipo);
 
     let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Relatório de Processos (Edocs)</title>`;
     html += `<style>
@@ -797,17 +852,9 @@ function exportarRelatorioProcessos() {
     html += `<p><strong>Total de processos:</strong> ${processos.length}</p>`;
     html += `<p><strong>Data de emissão:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>`;
     html += `</div>`;
-    html += `<table><thead><tr><th>Código</th><th>Tipo</th><th>Escola</th><th>Aluno</th><th>Categoria</th><th>Subcategoria</th><th>Observações</th></tr></thead><tbody>`;
+    html += `<table><thead><tr>${colunas.map(c => `<th>${c.rotulo}</th>`).join('')}</tr></thead><tbody>`;
     processos.forEach(p => {
-      html += `<tr>
-        <td>${p.codigo || '—'}</td>
-        <td>${p.tipo || '—'}</td>
-        <td>${p.escola || '—'}</td>
-        <td>${p.aluno || '—'}</td>
-        <td>${p.categoria || '—'}</td>
-        <td>${p.subcategoria || '—'}</td>
-        <td>${p.observacoes || '—'}</td>
-      </tr>`;
+      html += `<tr>${colunas.map(c => `<td>${p[c.chave] || '—'}</td>`).join('')}</tr>`;
     });
     html += `</tbody></table></body></html>`;
 
