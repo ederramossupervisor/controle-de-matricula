@@ -4052,17 +4052,6 @@ select.select-moderno option {
   color: var(--text-primary);
 }
 
-/* Quando um select.select-moderno fica dentro de .input-icon (ícone à
-   esquerda, ex: o "Tipo" em Legislação), o padding-left:16px definido acima
-   tem a mesma especificidade do padding-left:50px de .input-icon select e
-   vem depois no arquivo — então ele vence e o texto do select (ex:
-   "Selecione o tipo") passa a ser desenhado por cima do ícone. Este seletor
-   é mais específico que os dois, então resolve o conflito sem mexer no
-   restante do padding. */
-.input-icon select.select-moderno {
-  padding-left: 50px;
-}
-
 /* Dropdown de modelos de documentos */
 #selectModeloVisualizar {
   width: 100%;

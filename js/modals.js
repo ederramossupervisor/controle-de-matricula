@@ -707,7 +707,7 @@ function mostrarAbaListagem() {
 function abrirModalProcessos() {
   document.getElementById("modalProcessos").style.display = "flex";
   preencherSelectsProcessos();   // ← chamada movida para cá
-  mostrarAbaBuscaProcesso();
+  mostrarAbaCadastroProcesso();
   ativarEnterNoModal('#modalProcessos', buscarProcessos);
 }
 
@@ -2279,27 +2279,29 @@ function abrirResultadoBusca(link) {
       }
       break;
     case 'legislacao':
-      // Limpa filtros que possam ter ficado de uma busca manual anterior
-      // dentro do modal — se não fizer isso, a lista pode aparecer vazia
-      // mesmo com o documento existindo.
-      ['filtroTipoLegislacao', 'filtroAnoLegislacao', 'filtroAssuntoLegislacao', 'filtroPalavrasChaveLegislacao'].forEach(elId => {
-        const el = document.getElementById(elId);
-        if (el) el.value = '';
-      });
-
-      // Abre o modal de Legislação (já entra na aba "Consultar", com a
-      // lista completa — abrirModalLegislacao() chama mostrarAbaConsultaLegislacao()
-      // internamente, então não precisa repetir aqui).
+      // Fecha o dropdown do buscador global
+      fecharDropdownBusca();
+      
+      // Obtém o termo que foi digitado no campo de busca global
+      const termo = document.getElementById('inputBuscaGlobal').value.trim();
+      
+      // Abre o modal de Legislação
       abrirModalLegislacao();
-
-      // Abre o detalhe do item específico pelo id (busca exata no backend).
-      // Não reaplicamos o termo digitado na busca global como filtro de
-      // Assunto: a busca global também bate com tipo, número e palavras-
-      // chave, então se o termo tivesse batido com um desses campos em vez
-      // do assunto, o filtro não encontraria nada. Buscar pelo id evita
-      // esse problema e ainda assim rola a página até o documento certo.
+      
+      // Garante que estamos na aba "Consultar"
+      mostrarAbaConsultaLegislacao();
+      
+      // Preenche o campo de busca com o termo pesquisado (usamos o campo "Buscar por assunto...")
+      const campoBusca = document.getElementById('filtroAssuntoLegislacao');
+      if (campoBusca) {
+        campoBusca.value = termo;
+      }
+      
+      // Dispara a busca (que agora vai destacar os itens)
       setTimeout(() => {
-        abrirDetalheLegislacao(id);
+        buscarLegislacao();
+        // Se quiser abrir o detalhe do item específico, descomente a linha abaixo:
+        // abrirDetalheLegislacao(id);
       }, 500); // pequeno atraso para garantir que o modal foi renderizado
       break;
     case 'comunicado':
