@@ -35,7 +35,8 @@
     'orgs-curriculares.js',
     'importar-profissionais.js',
     'importador.js',
-    'profissionais.js'
+    'profissionais.js',
+    'tour.js'
   ];
 
   function carregarScript(nome) {

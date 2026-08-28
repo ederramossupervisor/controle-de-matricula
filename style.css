@@ -2205,8 +2205,104 @@ select {
 }
 
 /* ==========================================
-   ANIMAÇÕES
+   TOUR GUIADO
    ========================================== */
+.tour-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 20000;
+  pointer-events: none;
+}
+
+.tour-spotlight {
+  position: fixed;
+  border-radius: 12px;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.65);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 20001;
+}
+
+.tour-tooltip {
+  position: fixed;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  padding: 16px;
+  z-index: 20002;
+  pointer-events: auto;
+  animation: fadeIn 0.25s ease;
+}
+
+.tour-tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.tour-tooltip-header span {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.tour-fechar {
+  background: none !important;
+  border: none !important;
+  color: var(--text-muted) !important;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px !important;
+  min-height: auto !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+.tour-fechar:hover { color: var(--text-primary) !important; transform: none !important; }
+
+.tour-tooltip-texto {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 14px;
+}
+
+.tour-tooltip-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tour-contador {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.tour-tooltip-botoes {
+  display: flex;
+  gap: 8px;
+}
+
+.tour-tooltip-botoes button {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .tour-tooltip { width: calc(100vw - 32px); }
+}
+
+/* Botão de ajuda (reabrir tour) */
+#btnAjudaTour i { color: #f59e0b !important; }
+
 @keyframes girar   { to { transform: rotate(360deg); } }
 @keyframes fadeIn  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 @keyframes fadeInUp{ from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }

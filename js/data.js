@@ -192,6 +192,9 @@ function continuarCarregamentoAlunos(pagina, filtros, tentativa = 0) {
       if (typeof carregarRanking === 'function') {
         carregarRanking();   // 🔥 ADICIONE AQUI
       }
+      if (typeof verificarPrimeiroAcessoTour === 'function') {
+        verificarPrimeiroAcessoTour(); // 🎓 tour guiado no primeiro acesso
+      }
     }, 400); // 400 ms após a lista aparecer
 
     // preencherSelectsProcessos() e preencherSelectEscolasDoc() foram movidas
