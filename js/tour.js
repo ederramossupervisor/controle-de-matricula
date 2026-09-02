@@ -10,124 +10,124 @@
 // menor, etc.), o passo é pulado automaticamente — não precisa manter
 // uma lista separada por perfil.
 
-const TOUR_PASSOS = [
-  {
-    seletor: '#headerTitulo',
-    titulo: 'Bem-vindo(a)! 👋',
-    texto: 'Este é o Sistema de Controle de Matrículas. Vamos fazer um tour rápido pelas principais funções — leva menos de um minuto.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '#inputBuscaGlobal',
-    titulo: 'Busca rápida',
-    texto: 'Digite aqui pra encontrar rapidamente um aluno, um processo, uma legislação ou um comunicado — em qualquer parte do sistema.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '#painel',
-    titulo: 'Painel de indicadores',
-    texto: 'Aqui você vê de relance quantos alunos estão com a matrícula completa, pendente ou com prazo vencido.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '.filtros-container',
-    titulo: 'Filtros',
-    texto: 'Filtre a lista por turma, status da documentação ou busque um aluno pelo nome, CPF ou telefone.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '#lista',
-    titulo: 'Lista de alunos',
-    texto: 'Cada card mostra rapidamente a situação da documentação. Clique em um aluno pra ver os detalhes e marcar os documentos entregues.',
-    posicao: 'cima'
-  },
-  {
-    seletor: 'button[onclick*="abrirNovoAluno"]',
-    titulo: 'Novo aluno',
-    texto: 'Cadastre um novo aluno na sua escola por aqui.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: 'button[onclick*="abrirModalImportacao"]',
-    titulo: 'Importar em lote',
-    texto: 'Tem uma planilha ou CSV com vários alunos? Importe todos de uma vez por aqui.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '#btnInativos',
-    titulo: 'Transferidos / Concluídos',
-    texto: 'Alunos que saíram da escola (transferência, conclusão) ficam aqui, fora da lista principal.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '#btnTurmas',
-    titulo: 'Turmas',
-    texto: 'Gerencie as turmas da escola por aqui.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '#btnModelos',
-    titulo: 'Modelos de documentos',
-    texto: 'Baixe modelos oficiais (históricos, certificados, diplomas) ou envie modelos próprios da sua escola.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '#btnLegalizacao',
-    titulo: 'Atos Autorizativos',
-    texto: 'Controle os atos de criação, aprovação e credenciamento da escola, com alerta de vencimento.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '#btnVerUsuarios',
-    titulo: 'Usuários',
-    texto: 'Veja, edite ou remova os usuários que têm acesso ao sistema.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '#btnCadastrarUsuario',
-    titulo: 'Cadastrar usuário',
-    texto: 'Cadastre um novo usuário e escolha um ou mais perfis de acesso pra ele.',
-    posicao: 'baixo'
-  },
-  {
-    seletor: '.btn-menu-brilho',
-    titulo: 'Mais opções',
-    texto: 'Processos (Edocs), Legislação, Agenda, Comunicados, Monitoramento, Dados da Escola e outras funções ficam aqui, no menu.',
-    posicao: 'esquerda'
-  },
-  {
-    seletor: '#btnAjudaTour',
-    titulo: 'Precisa rever isso depois?',
-    texto: 'Pode clicar aqui a qualquer momento pra repetir este tour. Bom trabalho! 🎓',
-    posicao: 'esquerda'
-  }
-];
+// const TOUR_PASSOS = [
+//  {
+//    seletor: '#headerTitulo',
+//    titulo: 'Bem-vindo(a)! 👋',
+//    texto: 'Este é o Sistema de Controle de Matrículas. Vamos fazer um tour rápido pelas principais funções — leva menos de um minuto.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '#inputBuscaGlobal',
+//    titulo: 'Busca rápida',
+//    texto: 'Digite aqui pra encontrar rapidamente um aluno, um processo, uma legislação ou um comunicado — em qualquer parte do sistema.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '#painel',
+//    titulo: 'Painel de indicadores',
+//    texto: 'Aqui você vê de relance quantos alunos estão com a matrícula completa, pendente ou com prazo vencido.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '.filtros-container',
+//    titulo: 'Filtros',
+//    texto: 'Filtre a lista por turma, status da documentação ou busque um aluno pelo nome, CPF ou telefone.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '#lista',
+//    titulo: 'Lista de alunos',
+//    texto: 'Cada card mostra rapidamente a situação da documentação. Clique em um aluno pra ver os detalhes e marcar os documentos entregues.',
+//    posicao: 'cima'
+//  },
+//  {
+//    seletor: 'button[onclick*="abrirNovoAluno"]',
+//    titulo: 'Novo aluno',
+//   texto: 'Cadastre um novo aluno na sua escola por aqui.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: 'button[onclick*="abrirModalImportacao"]',
+//    titulo: 'Importar em lote',
+//    texto: 'Tem uma planilha ou CSV com vários alunos? Importe todos de uma vez por aqui.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '#btnInativos',
+//    titulo: 'Transferidos / Concluídos',
+//    texto: 'Alunos que saíram da escola (transferência, conclusão) ficam aqui, fora da lista principal.',
+//   posicao: 'baixo'
+//  },
+//  {
+//    seletor: '#btnTurmas',
+//    titulo: 'Turmas',
+//    texto: 'Gerencie as turmas da escola por aqui.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '#btnModelos',
+//    titulo: 'Modelos de documentos',
+//    texto: 'Baixe modelos oficiais (históricos, certificados, diplomas) ou envie modelos próprios da sua escola.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '#btnLegalizacao',
+//    titulo: 'Atos Autorizativos',
+//    texto: 'Controle os atos de criação, aprovação e credenciamento da escola, com alerta de vencimento.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '#btnVerUsuarios',
+//    titulo: 'Usuários',
+//    texto: 'Veja, edite ou remova os usuários que têm acesso ao sistema.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '#btnCadastrarUsuario',
+//    titulo: 'Cadastrar usuário',
+//    texto: 'Cadastre um novo usuário e escolha um ou mais perfis de acesso pra ele.',
+//    posicao: 'baixo'
+//  },
+//  {
+//    seletor: '.btn-menu-brilho',
+//    titulo: 'Mais opções',
+//    texto: 'Processos (Edocs), Legislação, Agenda, Comunicados, Monitoramento, Dados da Escola e outras funções ficam aqui, no menu.',
+//    posicao: 'esquerda'
+//  },
+//  {
+//    seletor: '#btnAjudaTour',
+//    titulo: 'Precisa rever isso depois?',
+//    texto: 'Pode clicar aqui a qualquer momento pra repetir este tour. Bom trabalho! 🎓',
+//    posicao: 'esquerda'
+//  }
+// ];
 
-let tourPassoAtual = 0;
-let tourPassosValidos = [];
+//let tourPassoAtual = 0;
+//let tourPassosValidos = [];
 
-function elementoVisivel(el) {
-  if (!el) return false;
-  const rect = el.getBoundingClientRect();
-  if (rect.width === 0 && rect.height === 0) return false;
-  const style = window.getComputedStyle(el);
-  if (style.display === 'none' || style.visibility === 'hidden') return false;
-  // Garante que não está escondido dentro de um menu/dropdown fechado
-  let atual = el;
-  while (atual) {
-    const s = window.getComputedStyle(atual);
-    if (s.display === 'none') return false;
-    atual = atual.parentElement;
-  }
-  return true;
+//function elementoVisivel(el) {
+//  if (!el) return false;
+//  const rect = el.getBoundingClientRect();
+//  if (rect.width === 0 && rect.height === 0) return false;
+//  const style = window.getComputedStyle(el);
+//  if (style.display === 'none' || style.visibility === 'hidden') return false;
+//  // Garante que não está escondido dentro de um menu/dropdown fechado
+//  let atual = el;
+//  while (atual) {
+//    const s = window.getComputedStyle(atual);
+//    if (s.display === 'none') return false;
+//    atual = atual.parentElement;
+//  }
+//  return true;
 }
 
-function elementoDentroDoMenu(el) {
+//function elementoDentroDoMenu(el) {
   const menu = document.getElementById('menuDropdown');
   return !!(menu && el && menu.contains(el));
 }
 
-function garantirMenuAberto() {
+//function garantirMenuAberto() {
   const menu = document.getElementById('menuDropdown');
   if (!menu) return;
   const overlayMenu = document.getElementById('menuOverlay');
@@ -140,7 +140,7 @@ function garantirMenuAberto() {
   }
 }
 
-function fecharMenu() {
+//function fecharMenu() {
   const menu = document.getElementById('menuDropdown');
   if (!menu) return;
   if (window.innerWidth <= 800) {
@@ -152,7 +152,7 @@ function fecharMenu() {
   }
 }
 
-function iniciarTour() {
+//function iniciarTour() {
   garantirMenuAberto();
   tourPassosValidos = TOUR_PASSOS.filter(passo => elementoVisivel(document.querySelector(passo.seletor)));
   fecharMenu();   // ← linha nova
@@ -167,7 +167,7 @@ function iniciarTour() {
   mostrarPassoTour();
 }
 
-function criarOverlayTour() {
+//function criarOverlayTour() {
   if (document.getElementById('tourOverlay')) return;
 
   const overlay = document.createElement('div');
@@ -199,7 +199,7 @@ function criarOverlayTour() {
   overlay.addEventListener('click', (e) => e.stopPropagation());
 }
 
-function mostrarPassoTour() {
+//function mostrarPassoTour() {
   const passo = tourPassosValidos[tourPassoAtual];
   const el = document.querySelector(passo.seletor);
   if (!el) { avancarPassoTour(); return; }
@@ -232,7 +232,7 @@ function mostrarPassoTour() {
   }, 250);
 }
 
-function posicionarTooltipTour(rectAlvo, posicaoPreferida) {
+//function posicionarTooltipTour(rectAlvo, posicaoPreferida) {
   const tooltip = document.getElementById('tourTooltip');
   const margem = 16;
   const larguraTooltip = tooltip.offsetWidth || 320;
@@ -268,7 +268,7 @@ function posicionarTooltipTour(rectAlvo, posicaoPreferida) {
   tooltip.style.left = `${left}px`;
 }
 
-function avancarPassoTour() {
+//function avancarPassoTour() {
   if (tourPassoAtual >= tourPassosValidos.length - 1) {
     encerrarTour();
     return;
@@ -277,13 +277,13 @@ function avancarPassoTour() {
   mostrarPassoTour();
 }
 
-function voltarPassoTour() {
+//function voltarPassoTour() {
   if (tourPassoAtual === 0) return;
   tourPassoAtual--;
   mostrarPassoTour();
 }
 
-function encerrarTour() {
+//function encerrarTour() {
   const overlay = document.getElementById('tourOverlay');
   if (overlay) overlay.remove();
 
@@ -305,7 +305,7 @@ function encerrarTour() {
 }
 
 // ------ DISPARO AUTOMÁTICO NO PRIMEIRO ACESSO ------
-function verificarPrimeiroAcessoTour() {
+//function verificarPrimeiroAcessoTour() {
   if (!emailUsuario) return;
   const chave = 'tourVisto_' + emailUsuario;
   if (localStorage.getItem(chave)) return;
