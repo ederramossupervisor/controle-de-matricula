@@ -249,8 +249,8 @@ function renderizarListaTermos(termos) {
   container.innerHTML = html;
 }
 
-function aprovarTermo(emailAlvo) {
-  if (!confirm(`Aprovar termo de ${emailAlvo}?`)) return;
+async function aprovarTermo(emailAlvo) {
+  if (!await Dialogo.confirmar(`Aprovar termo de ${emailAlvo}?`, { titulo: 'Aprovar termo', textoConfirmar: 'Aprovar' })) return;
   const botoes = document.querySelectorAll(`button[onclick*="${emailAlvo}"]`);
   botoes.forEach(btn => { if (btn.textContent.includes('Aprovar')) btn.disabled = true; });
 
@@ -265,8 +265,8 @@ function aprovarTermo(emailAlvo) {
   setTimeout(() => carregarListaTermos(), 1500);
 }
 
-function recusarTermo(emailAlvo) {
-  const motivo = prompt('Motivo da recusa (opcional):');
+async function recusarTermo(emailAlvo) {
+  const motivo = await Dialogo.perguntar('Motivo da recusa (opcional):', { titulo: 'Recusar termo', textoConfirmar: 'Recusar', perigo: true, multilinha: true });
   if (motivo === null) return;
   const botoes = document.querySelectorAll(`button[onclick*="${emailAlvo}"]`);
   botoes.forEach(btn => { if (btn.textContent.includes('Recusar')) btn.disabled = true; });
