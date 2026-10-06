@@ -708,9 +708,9 @@ function carregarTiposDocumento() {
     select.appendChild(optOutro);
 
     // Evento para capturar quando selecionar "+ Novo tipo..."
-    select.onchange = function() {
-      if (this.value === '__novo__') {
-        const novoTipo = prompt('Digite o nome do novo tipo de documento:');
+    select.onchange = async function() {
+  if (this.value === '__novo__') {
+    const novoTipo = await Dialogo.perguntar('Digite o nome do novo tipo de documento:', { titulo: 'Novo tipo', textoConfirmar: 'Cadastrar' });
         if (novoTipo && novoTipo.trim()) {
           const escolaNovoTipo = usuarioEscolheEscola() ? (document.getElementById('uploadEscola')?.value || '') : '';
           if (usuarioEscolheEscola() && !escolaNovoTipo) {
@@ -951,11 +951,11 @@ function abrirModalChecklistLote() {
   }
 }
 
-function aoMudarEscolaChecklist() {
+async function aoMudarEscolaChecklist() {
   const sel = document.getElementById('selectEscolaChecklist');
   const nova = sel.value;
   if (nova === escolaChecklist) return;
-  if (checklistTemAlteracoes() && !confirm('Você tem alterações não salvas. Deseja trocar de escola mesmo assim?')) {
+  if (checklistTemAlteracoes() && !await Dialogo.confirmar('Você tem alterações não salvas. Deseja trocar de escola mesmo assim?', { titulo: 'Alterações não salvas', textoConfirmar: 'Trocar de escola', perigo: true })) {
     sel.value = escolaChecklist;
     return;
   }
@@ -983,9 +983,9 @@ function checklistTemAlteracoes() {
 }
 
 // Função de fechamento do modal de checklist em lote (ATUALIZADA)
-function fecharModalChecklistLote() {
+async function fecharModalChecklistLote() {
   if (checklistTemAlteracoes()) {
-    if (!confirm('Você tem alterações não salvas. Deseja sair mesmo assim?')) {
+    if (!await Dialogo.confirmar('Você tem alterações não salvas. Deseja sair mesmo assim?', { titulo: 'Alterações não salvas', textoConfirmar: 'Sair', perigo: true })) {
       return; // não fecha se o usuário cancelar
     }
   }
@@ -1352,8 +1352,8 @@ function alterarFotoAluno() {
   reader.readAsDataURL(file);
 }
 
-function removerFotoAluno() {
-  if (!confirm("Remover a foto do aluno?")) return;
+async function removerFotoAluno() {
+  if (!await Dialogo.confirmar("Remover a foto do aluno?", { titulo: 'Remover foto', textoConfirmar: 'Remover', perigo: true })) return;
   // Envia um upload sem arquivo? Não temos backend para excluir, mas podemos limpar a coluna.
   // Para simplificar, apenas limpa a visualização e marca a coluna como vazia enviando uma flag.
   const dados = {
@@ -1860,8 +1860,8 @@ function renderizarVinculosAdicionados() {
   html += '</div>';
   container.innerHTML = html;
 }
-function excluirLegislacaoItem(id) {
-  if (!confirm('Deseja realmente excluir este documento? Esta ação não pode ser desfeita.')) return;
+async function excluirLegislacaoItem(id) {
+  if (!await Dialogo.confirmar('Deseja realmente excluir este documento? Esta ação não pode ser desfeita.', { titulo: 'Excluir documento', textoConfirmar: 'Excluir', perigo: true })) return;
 
   const dados = {
     acao: 'excluirLegislacao',
@@ -2290,8 +2290,8 @@ function toggleMural() {
     btn.innerHTML = '<i class="fas fa-chevron-down"></i> Expandir';
   }
 }
-function excluirComunicadoItem(id) {
-  if (!confirm('Deseja excluir este comunicado?')) return;
+async function excluirComunicadoItem(id) {
+  if (!await Dialogo.confirmar('Deseja excluir este comunicado?', { titulo: 'Excluir comunicado', textoConfirmar: 'Excluir', perigo: true })) return;
 
   postSemResposta({ acao: 'excluirComunicado', email: emailUsuario, id: id }, 'Excluído!', () => {
     carregarComunicados();
@@ -2822,8 +2822,8 @@ function visualizarTermo() {
   abrirArquivoAluno(dadosAlunoAtual._TERMO_RESP_ID);
 }
 
-function removerTermo(row, escola) {
-  if (!confirm("Remover o termo de responsabilidade anexado?")) return;
+async function removerTermo(row, escola) {
+  if (!await Dialogo.confirmar("Remover o termo de responsabilidade anexado?", { titulo: 'Remover termo', textoConfirmar: 'Remover', perigo: true })) return;
   const dados = {
     acao: "uploadTermoResponsabilidade",
     email: emailUsuario,
@@ -2908,9 +2908,8 @@ function visualizarDeclEdEsp() {
   abrirArquivoAluno(dadosAlunoAtual._DECL_ED_ESPECIAL_ID);
 }
 
-function removerDeclEdEsp(row, escola) {
-  if (!confirm("Remover a declaração de educação especial?")) return;
-  const dados = {
+async function removerDeclEdEsp(row, escola) {
+  if (!await Dialogo.confirmar("Remover a declaração de educação especial?", { titulo: 'Remover declaração', textoConfirmar: 'Remover', perigo: true })) return;  const dados = {
     acao: "uploadDeclaracaoEdEspecial",
     email: emailUsuario,
     row: row,
