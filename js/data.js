@@ -552,7 +552,7 @@ async function salvarAto() {
 }
 
 async function excluirAto(id) {
-  if (!confirm("Deseja realmente excluir este ato autorizativo?")) return;
+  if (!await Dialogo.confirmar("Deseja realmente excluir este ato autorizativo?", { titulo: 'Excluir ato autorizativo', textoConfirmar: 'Excluir', perigo: true })) return;
   
   const dados = {
     acao: "excluirAtoAutorizativo",
@@ -970,8 +970,8 @@ function buscarInativos(pagina = 1) {
   });
 }
 
-function reativarAlunoInativo(id, nome, row, escola) {
-  if (!confirm(`Deseja reativar o aluno "${nome}"? Ele voltará a aparecer na lista principal como "Ativo".`)) return;
+async function reativarAlunoInativo(id, nome, row, escola) {
+  if (!await Dialogo.confirmar(`Deseja reativar o aluno "${nome}"? Ele voltará a aparecer na lista principal como "Ativo".`, { titulo: 'Reativar aluno', textoConfirmar: 'Reativar' })) return;
   
   const dados = {
     acao: "alterarSituacao",
@@ -1326,7 +1326,7 @@ async function salvarEdicaoUsuario() {
 }
 
 async function excluirUsuarioAdmin(emailAlvo) {
-  if (!confirm(`Tem certeza que deseja excluir o usuário ${emailAlvo}? Esta ação não pode ser desfeita.`)) return;
+  if (!await Dialogo.confirmar(`Tem certeza que deseja excluir o usuário ${emailAlvo}? Esta ação não pode ser desfeita.`, { titulo: 'Excluir usuário', textoConfirmar: 'Excluir', perigo: true })) return;
 
   mostrarLoading();
   try {
@@ -1341,14 +1341,7 @@ async function excluirUsuarioAdmin(emailAlvo) {
 }
 
 async function resetarSenhaUsuario(emailAlvo) {
-  const confirmou = await confirmarSistema({
-    titulo: 'Redefinir senha',
-    icone: 'fa-key',
-    mensagem: 'Deseja redefinir a senha deste usuário? Será gerada uma senha temporária.',
-    destaque: emailAlvo,
-    textoConfirmar: 'Redefinir senha'
-  });
-  if (!confirmou) return;
+  if (!await Dialogo.confirmar(`Deseja redefinir a senha do usuário ${emailAlvo}? Será gerada uma senha temporária.`, { titulo: 'Redefinir senha', textoConfirmar: 'Redefinir' })) return;
 
   mostrarLoading();
   try {
@@ -1364,7 +1357,7 @@ async function resetarSenhaUsuario(emailAlvo) {
 
 // ------ IMPORTAÇÃO DE DADOS ------
 async function importarDaPlanilha() {
-  if (!confirm("Certifique-se de que os dados do CSV foram colados na aba 'IMPORT_TEMP' da planilha. Deseja continuar?")) {
+  if (!await Dialogo.confirmar("Certifique-se de que os dados do CSV foram colados na aba 'IMPORT_TEMP' da planilha. Deseja continuar?", { titulo: 'Importar da planilha', textoConfirmar: 'Continuar' })) {
     return;
   }
   
@@ -1587,7 +1580,7 @@ async function salvarAluno() {
 async function alterarSituacaoAluno(novaSituacao) {
   if (!dadosAlunoAtual) return;
   
-  const confirmacao = confirm(`Deseja marcar este aluno como "${novaSituacao}"?`);
+  const confirmacao = await Dialogo.confirmar(`Deseja marcar este aluno como "${novaSituacao}"?`, { titulo: 'Alterar situação', textoConfirmar: 'Confirmar' });
   if (!confirmacao) return;
   
   const dados = {
@@ -1607,10 +1600,10 @@ async function excluirAlunoPermanentemente() {
   if (!dadosAlunoAtual) return;
   
   const nomeAluno = dadosAlunoAtual.ALUNO || "este aluno";
-  const confirmacao = confirm(`ATENÇÃO! Você está prestes a EXCLUIR PERMANENTEMENTE o aluno:\n\n${nomeAluno}\n\nEsta ação NÃO PODE SER DESFEITA. Deseja continuar?`);
+  const confirmacao = await Dialogo.confirmar(`Você está prestes a EXCLUIR PERMANENTEMENTE o aluno:\n\n${nomeAluno}\n\nEsta ação NÃO PODE SER DESFEITA. Deseja continuar?`, { titulo: 'Excluir aluno permanentemente', textoConfirmar: 'Continuar', perigo: true });
   if (!confirmacao) return;
   
-  const confirmacao2 = confirm(`Tem certeza absoluta? O registro será removido da planilha para sempre.`);
+  const confirmacao2 = await Dialogo.confirmar(`Tem certeza absoluta? O registro será removido da planilha para sempre.`, { titulo: 'Última confirmação', textoConfirmar: 'Excluir para sempre', perigo: true });
   if (!confirmacao2) return;
   
   const dados = {
@@ -1781,8 +1774,8 @@ function exibirMensagemLogin(mensagem) {
   document.getElementById('login').appendChild(div);
 }
 
-function logout() {
-  if (!confirm("Deseja sair do sistema?")) return;
+async function logout() {
+  if (!await Dialogo.confirmar("Deseja sair do sistema?", { titulo: 'Sair', textoConfirmar: 'Sair' })) return;
 
   if (window._pollingTermo) {
     clearInterval(window._pollingTermo);
@@ -1842,23 +1835,12 @@ function logout() {
 }
 
 async function recuperarSenha() {
-  const r = await abrirDialogoSistema({
-    titulo: 'Esqueci minha senha',
-    icone: 'fa-key',
-    mensagem: 'Digite seu e-mail institucional para receber o link de nova senha.',
-    campos: [
-      { nome: 'email', tipo: 'email', icone: 'fa-envelope', placeholder: 'escola@sedu.es.gov.br', autocomplete: 'email' }
-    ],
+  const email = await Dialogo.perguntar("Digite seu e-mail institucional para receber o link de nova senha:", {
+    titulo: 'Recuperar senha',
     textoConfirmar: 'Enviar link',
-    validar: function (v) {
-      const e = v.email.trim();
-      if (!e) return 'Digite seu e-mail.';
-      if (!e.includes('@') || !e.includes('.')) return 'Formato de e-mail inválido.';
-      return null;
-    }
+    tipoCampo: 'email'
   });
-  if (!r) return;
-  const email = r.email;
+  if (email === null) return;
 
   mostrarLoading();
   try {
