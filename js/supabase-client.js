@@ -63,19 +63,31 @@ async function solicitarNovaSenhaRecuperacao() {
     ],
     textoConfirmar: 'Salvar senha',
     validar: function (v) {
-      if (v.nova.length < 6) return 'A senha precisa ter pelo menos 6 caracteres.';
+      if (!v.nova || v.nova.length < 6) return 'A senha precisa ter pelo menos 6 caracteres.';
       if (v.nova !== v.confirmar) return 'As senhas não coincidem.';
       return null;
     }
   });
+
+  // cancelou
   if (!r) return;
-  const nova = r.nova;
-  const { error } = await sb.auth.updateUser({ password: nova });
-  if (error) { mostrarToast('Não foi possível definir a senha: ' + error.message, 'error'); return; }
-  try { await sb.rpc('concluir_primeiro_acesso'); } catch (_) {}
+
+  const { error } = await sb.auth.updateUser({ password: r.nova });
+  if (error) {
+    mostrarToast('Não foi possível definir a senha: ' + error.message, 'error');
+    return;
+  }
+
+  try {
+    await sb.rpc('concluir_primeiro_acesso');
+  } catch (_) {
+    // silencioso de propósito
+  }
+
   window._recuperandoSenha = false;
   history.replaceState(null, '', window.location.pathname + window.location.search);
   mostrarToast('Senha definida com sucesso!', 'success');
+
   const perfil = await carregarPerfilSb(true);
   if (perfil) {
     emailUsuario = perfil.email;
@@ -178,7 +190,7 @@ function mostrarSenhaTemporaria(email, r) {
       mensagem: 'O e-mail não foi enviado. Copie a senha temporária abaixo e repasse ao usuário:',
       destaque: email,
       campos: [{ nome: 'senha', tipo: 'text', icone: 'fa-lock', valor: r.senhaTemporaria, readonly: true, copiar: true }],
-      textoConfirmar: 'Fechar',
+      textoConfirmar: 'Copiar e fechar',
       textoCancelar: null
     });
   }, 300);
