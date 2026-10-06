@@ -78,8 +78,8 @@ const ImportProgress = {
       btn.className = 'btn-pequeno btn-perigo';
       btn.innerText = 'Desfazer importação';
       btn.style.display = 'none';
-      btn.onclick = function () {
-        if (confirm('Isso excluirá todos os alunos já importados nesta leva. Continuar?')) {
+      btn.onclick = async function () {
+  if (await Dialogo.confirmar('Isso excluirá todos os alunos já importados nesta leva. Continuar?', { titulo: 'Desfazer importação', textoConfirmar: 'Desfazer', perigo: true })) {
           desfazerImportacao();
         }
       };
@@ -186,8 +186,8 @@ const ImportProgress = {
 };
 
 // Função chamada pelo botão de fechar (cancelar)
-function fecharProgressoImportacao() {
-  if (confirm('Tem certeza que deseja interromper a importação?')) {
+async function fecharProgressoImportacao() {
+  if (await Dialogo.confirmar('Tem certeza que deseja interromper a importação?', { titulo: 'Interromper importação', textoConfirmar: 'Interromper', textoCancelar: 'Continuar importando', perigo: true })) {
     ImportProgress.cancelar();
   }
 }
