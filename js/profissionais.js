@@ -975,8 +975,8 @@ async function uploadDocumentoProfissional(idProfissional, escola) {
 // =========================
 // EXCLUIR DOCUMENTO DO PROFISSIONAL
 // =========================
-function excluirDocumentoProfissional(fileId, idProfissional, escola) {
-  if (!confirm('Deseja excluir este documento permanentemente?')) return;
+async function excluirDocumentoProfissional(fileId, idProfissional, escola) {
+  if (!await Dialogo.confirmar('Deseja excluir este documento permanentemente?', { titulo: 'Excluir documento', textoConfirmar: 'Excluir', perigo: true })) return;
 
   const dados = {
     acao: 'excluirDocumentoProfissional',
