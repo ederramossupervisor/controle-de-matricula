@@ -17,6 +17,7 @@
   const scripts = [
     'config.js',
     'utils.js',
+    'dialogs.js',
     'supabase-client.js',
     'data.js',
     'ui.js',
