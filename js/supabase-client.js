@@ -53,13 +53,23 @@ async function loginSb(email, senha) {
 }
 
 async function solicitarNovaSenhaRecuperacao() {
-  let nova = '';
-  while (true) {
-    nova = prompt('Digite sua nova senha (mínimo 6 caracteres):');
-    if (nova === null) return;
-    if (nova.length >= 6) break;
-    alert('A senha precisa ter pelo menos 6 caracteres.');
-  }
+  const r = await abrirDialogoSistema({
+    titulo: 'Criar nova senha',
+    icone: 'fa-key',
+    mensagem: 'Digite a nova senha que você usará para entrar no sistema.',
+    campos: [
+      { nome: 'nova', tipo: 'password', icone: 'fa-key', placeholder: 'Nova senha (mín. 6 caracteres)', autocomplete: 'new-password' },
+      { nome: 'confirmar', tipo: 'password', icone: 'fa-check', placeholder: 'Confirmar nova senha', autocomplete: 'new-password' }
+    ],
+    textoConfirmar: 'Salvar senha',
+    validar: function (v) {
+      if (v.nova.length < 6) return 'A senha precisa ter pelo menos 6 caracteres.';
+      if (v.nova !== v.confirmar) return 'As senhas não coincidem.';
+      return null;
+    }
+  });
+  if (!r) return;
+  const nova = r.nova;
   const { error } = await sb.auth.updateUser({ password: nova });
   if (error) { mostrarToast('Não foi possível definir a senha: ' + error.message, 'error'); return; }
   try { await sb.rpc('concluir_primeiro_acesso'); } catch (_) {}
@@ -162,7 +172,15 @@ async function chamarAdminUsuarios(payload) {
 function mostrarSenhaTemporaria(email, r) {
   if (!r || !r.senhaTemporaria) return;
   setTimeout(function () {
-    prompt('O e-mail não foi enviado. Copie a senha temporária de ' + email + ' e repasse ao usuário:', r.senhaTemporaria);
+    abrirDialogoSistema({
+      titulo: 'Senha temporária',
+      icone: 'fa-key',
+      mensagem: 'O e-mail não foi enviado. Copie a senha temporária abaixo e repasse ao usuário:',
+      destaque: email,
+      campos: [{ nome: 'senha', tipo: 'text', icone: 'fa-lock', valor: r.senhaTemporaria, readonly: true, copiar: true }],
+      textoConfirmar: 'Fechar',
+      textoCancelar: null
+    });
   }, 300);
 }
 
