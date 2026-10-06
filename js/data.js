@@ -110,6 +110,8 @@ function continuarCarregamentoAlunos(pagina, filtros, tentativa = 0) {
     }
     document.body.classList.remove('perfil-supervisor', 'perfil-secretaria');
     document.body.classList.add(perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria');
+    // Guarda a classe para que, ao recarregar a página, a página principal desfocada já apareça com o layout certo
+    try { localStorage.setItem('perfilClasseBody', perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria'); } catch (_) {}
     escolaUsuario = dados.escola;
     const nomeEscolaHeader = document.getElementById('nomeEscolaHeader');
     if (nomeEscolaHeader) {
@@ -1339,7 +1341,14 @@ async function excluirUsuarioAdmin(emailAlvo) {
 }
 
 async function resetarSenhaUsuario(emailAlvo) {
-  if (!confirm(`Deseja redefinir a senha do usuário ${emailAlvo}? Será gerada uma senha temporária.`)) return;
+  const confirmou = await confirmarSistema({
+    titulo: 'Redefinir senha',
+    icone: 'fa-key',
+    mensagem: 'Deseja redefinir a senha deste usuário? Será gerada uma senha temporária.',
+    destaque: emailAlvo,
+    textoConfirmar: 'Redefinir senha'
+  });
+  if (!confirmou) return;
 
   mostrarLoading();
   try {
@@ -1833,13 +1842,23 @@ function logout() {
 }
 
 async function recuperarSenha() {
-  const email = prompt("Digite seu e-mail institucional para receber o link de nova senha:");
-  if (!email || !email.trim()) return;
-
-  if (!email.includes('@') || !email.includes('.')) {
-    mostrarToast("Formato de e-mail inválido.", "warning");
-    return;
-  }
+  const r = await abrirDialogoSistema({
+    titulo: 'Esqueci minha senha',
+    icone: 'fa-key',
+    mensagem: 'Digite seu e-mail institucional para receber o link de nova senha.',
+    campos: [
+      { nome: 'email', tipo: 'email', icone: 'fa-envelope', placeholder: 'escola@sedu.es.gov.br', autocomplete: 'email' }
+    ],
+    textoConfirmar: 'Enviar link',
+    validar: function (v) {
+      const e = v.email.trim();
+      if (!e) return 'Digite seu e-mail.';
+      if (!e.includes('@') || !e.includes('.')) return 'Formato de e-mail inválido.';
+      return null;
+    }
+  });
+  if (!r) return;
+  const email = r.email;
 
   mostrarLoading();
   try {
