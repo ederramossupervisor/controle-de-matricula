@@ -577,3 +577,159 @@ function copiarTexto(texto) {
     document.body.removeChild(textarea);
   }
 }
+
+// ------ CAIXAS DE DIÁLOGO DO SISTEMA ------
+// Substituem prompt()/confirm()/alert() do navegador por caixas no mesmo
+// visual dos modais do sistema. Retornam uma Promise.
+//
+// abrirDialogoSistema({
+//   titulo, icone,                 // cabeçalho (icone = classe Font Awesome, ex.: 'fa-key')
+//   mensagem, destaque,            // texto explicativo e um texto em destaque (ex.: e-mail)
+//   campos: [{ nome, tipo, icone, placeholder, valor, readonly, autocomplete, copiar }],
+//   textoConfirmar, textoCancelar, // textoCancelar: null => sem botão cancelar
+//   validar(valores)               // devolve texto de erro (mantém a caixa aberta) ou null
+// })
+// Resolve com { nomeDoCampo: valor, ... } ao confirmar, ou null se cancelada.
+function _escDialogo(txt) {
+  return String(txt == null ? '' : txt).replace(/[&<>"']/g, function (ch) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+  });
+}
+
+function abrirDialogoSistema(cfg) {
+  cfg = cfg || {};
+  const campos = cfg.campos || [];
+  const textoConfirmar = cfg.textoConfirmar || 'Confirmar';
+  const textoCancelar = (cfg.textoCancelar === undefined) ? 'Cancelar' : cfg.textoCancelar;
+
+  return new Promise(function (resolve) {
+    const focoAnterior = document.activeElement;
+
+    const camposHtml = campos.map(function (c) {
+      const ehSenha = c.tipo === 'password';
+      return '<div class="input-icon">' +
+        '<span class="icon"><i class="fas ' + _escDialogo(c.icone || 'fa-pen') + '"></i></span>' +
+        '<input data-campo="' + _escDialogo(c.nome) + '"' +
+          ' type="' + _escDialogo(c.tipo || 'text') + '"' +
+          ' placeholder="' + _escDialogo(c.placeholder || '') + '"' +
+          ' value="' + _escDialogo(c.valor || '') + '"' +
+          (c.autocomplete ? ' autocomplete="' + _escDialogo(c.autocomplete) + '"' : '') +
+          (c.readonly ? ' readonly' : '') + '>' +
+        (ehSenha ? '<span class="toggle-password" data-acao="olho" title="Mostrar/ocultar"><i class="far fa-eye"></i></span>' : '') +
+        (c.copiar ? '<span class="toggle-password" data-acao="copiar" title="Copiar"><i class="far fa-copy"></i></span>' : '') +
+      '</div>';
+    }).join('');
+
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay dialogo-sistema';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML =
+      '<div class="modal-card">' +
+        '<div class="modal-header">' +
+          '<h2><i class="fas ' + _escDialogo(cfg.icone || 'fa-question-circle') + '"></i> ' + _escDialogo(cfg.titulo || '') + '</h2>' +
+          '<button type="button" class="close-btn" data-acao="cancelar" aria-label="Fechar"><i class="fas fa-times"></i></button>' +
+        '</div>' +
+        '<div class="modal-body">' +
+          (cfg.mensagem ? '<p class="dialogo-msg">' + _escDialogo(cfg.mensagem) + '</p>' : '') +
+          (cfg.destaque ? '<div class="dialogo-destaque">' + _escDialogo(cfg.destaque) + '</div>' : '') +
+          camposHtml +
+          '<div class="dialogo-erro" style="display:none;"></div>' +
+          '<div class="modal-actions">' +
+            (textoCancelar ? '<button type="button" class="btn-cancelar" data-acao="cancelar">' + _escDialogo(textoCancelar) + '</button>' : '') +
+            '<button type="button" class="btn-salvar" data-acao="confirmar">' + _escDialogo(textoConfirmar) + '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    const erroEl = overlay.querySelector('.dialogo-erro');
+
+    function fechar(resultado) {
+      window.removeEventListener('keydown', aoTeclar, true);
+      overlay.remove();
+      try { if (focoAnterior && focoAnterior.focus) focoAnterior.focus(); } catch (_) {}
+      resolve(resultado);
+    }
+
+    function confirmar() {
+      const valores = {};
+      overlay.querySelectorAll('input[data-campo]').forEach(function (inp) {
+        valores[inp.getAttribute('data-campo')] = inp.value;
+      });
+      if (typeof cfg.validar === 'function') {
+        const msg = cfg.validar(valores);
+        if (msg) {
+          erroEl.textContent = msg;
+          erroEl.style.display = 'block';
+          const primeiro = overlay.querySelector('input:not([readonly])');
+          if (primeiro) primeiro.focus();
+          return;
+        }
+      }
+      fechar(valores);
+    }
+
+    function copiarCampo(botao) {
+      const inp = botao.parentElement.querySelector('input');
+      if (!inp) return;
+      const ok = function () {
+        const icone = botao.querySelector('i');
+        if (!icone) return;
+        icone.className = 'fas fa-check';
+        setTimeout(function () { icone.className = 'far fa-copy'; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(inp.value).then(ok).catch(function () {
+          inp.select(); try { document.execCommand('copy'); ok(); } catch (_) {}
+        });
+      } else {
+        inp.select(); try { document.execCommand('copy'); ok(); } catch (_) {}
+      }
+    }
+
+    function aoTeclar(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault(); e.stopPropagation();
+        fechar(null);
+      } else if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT' && !e.target.readOnly) {
+        e.preventDefault(); e.stopPropagation();
+        confirmar();
+      }
+    }
+
+    overlay.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (e.target === overlay) { fechar(null); return; }
+      const alvo = e.target.closest('[data-acao]');
+      if (!alvo) return;
+      const acao = alvo.getAttribute('data-acao');
+      if (acao === 'cancelar') fechar(null);
+      else if (acao === 'confirmar') confirmar();
+      else if (acao === 'copiar') copiarCampo(alvo);
+      else if (acao === 'olho') {
+        const inp = alvo.parentElement.querySelector('input');
+        const icone = alvo.querySelector('i');
+        if (!inp) return;
+        const mostrar = inp.type === 'password';
+        inp.type = mostrar ? 'text' : 'password';
+        if (icone) { icone.classList.toggle('fa-eye', !mostrar); icone.classList.toggle('fa-eye-slash', mostrar); }
+      }
+    });
+
+    window.addEventListener('keydown', aoTeclar, true);
+    document.body.appendChild(overlay);
+
+    const foco = overlay.querySelector('input:not([readonly])') || overlay.querySelector('.btn-salvar');
+    if (foco) setTimeout(function () { foco.focus(); }, 50);
+  });
+}
+
+// Substitui confirm(): resolve true/false.
+function confirmarSistema(opcoes) {
+  return abrirDialogoSistema(Object.assign({
+    titulo: 'Confirmar',
+    icone: 'fa-question-circle',
+    textoConfirmar: 'Confirmar',
+    textoCancelar: 'Cancelar'
+  }, opcoes || {})).then(function (r) { return !!r; });
+}
