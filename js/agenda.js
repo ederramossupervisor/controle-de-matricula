@@ -516,8 +516,8 @@ function renderizarCalendario(mes, ano) {
   
   document.getElementById('eventosDoDia').innerHTML = '';
 }
-function excluirEvento(id) {
-  if (!confirm("Excluir este evento permanentemente?")) return;
+async function excluirEvento(id) {
+  if (!await Dialogo.confirmar("Excluir este evento permanentemente?", { titulo: 'Excluir evento', textoConfirmar: 'Excluir', perigo: true })) return;
   
   const dados = {
     acao: 'excluirEventoAgenda',
