@@ -711,6 +711,11 @@ button:active { transform: scale(0.98); }
 .status-pendente { border-left-color: #f59e0b !important; }
 .status-vencido  { border-left-color: #ef4444 !important; }
 
+/* Card vencido: o tooltip do card some quando o mouse está sobre um ícone com tooltip próprio */
+#lista > div.card-vencido { cursor: default; }
+#lista > div.card-vencido:has([data-tooltip]:hover):before,
+#lista > div.card-vencido:has([data-tooltip]:hover):after { visibility: hidden; opacity: 0; }
+
 /* Avatar */
 .aluno-avatar {
   width: 44px;
@@ -1686,49 +1691,14 @@ body.fundo-personalizado {
 }
 
 /* ==========================================
-   TOGGLE SWITCH
+   SELETOR CARDS / LISTA (segue o estilo das abas)
    ========================================== */
-/* ==========================================
-   TOGGLE SWITCH (CARDS/LISTA) – MODERNO
-   ========================================== */
-.toggle-switch {
-  background: #e2e8f0;
-  border: none;
-  border-radius: 30px;
-  width: 60px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-  -webkit-tap-highlight-color: transparent;
-  padding: 0;
+.seletor-visualizacao .aba-item {
+  padding: 6px 12px;
+  font-size: 13px;
 }
-.toggle-switch i {
-  background: #ffffff;
-  border-radius: 50%;
-  width: 26px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  color: #64748b;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1), color 0.3s;
-  position: absolute;
-  left: 2px;
-}
-.toggle-switch.ativo {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  box-shadow: 0 0 8px rgba(235, 37, 37, 0.3);
-}
-.toggle-switch.ativo i {
-  transform: translateX(30px);
-  color: #2563eb;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+.seletor-visualizacao .aba-item i {
+  font-size: 12px;
 }
 
 /* ==========================================
@@ -2137,30 +2107,6 @@ select {
 }
 
 .check-doc-individual:checked { accent-color: #10b981; }
-
-/* ==========================================
-   ACOMPANHAMENTO PT
-   ========================================== */
-#modalAcompanhamentoPT .modal-body {
-  overflow-x: hidden !important;
-  overflow-y: auto;
-  padding-right: 12px;
-  box-sizing: border-box;
-}
-
-#tabelaAcompanhamentoPT {
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-#tabelaAcompanhamentoPT > div,
-#tabelaAcompanhamentoPT table,
-#tabelaAcompanhamentoPT details {
-  max-width: 100%;
-  word-wrap: break-word;
-  box-sizing: border-box;
-}
 
 /* ==========================================
    IMPRESSÃO
@@ -3483,8 +3429,7 @@ td:has(.check-doc-individual:checked) {
   background: linear-gradient(90deg, #2563eb, #10b981);
 }
 
-/* Garantir que a secretária não veja Parecer Supervisão e Aprovar Termos */
-body.perfil-secretaria #btnGeradorDocumentos,
+/* Garantir que a secretária não veja Aprovar Termos */
 body.perfil-secretaria #btnAprovacaoTermos {
   display: none !important;
 }

@@ -4,6 +4,12 @@
 
 const API_URL = "https://script.google.com/macros/s/AKfycbzonYYSmXmy1UkmnZGou6bRfdJOoLUmrnw5fFfp1EU4cyB-EkGOmxzfxTA6LfDdc56_FA/exec";
 const API_URL_PROFISSIONAIS = API_URL
+// =========================
+// SUPABASE (chave pública; a segurança é feita pelas regras RLS do banco)
+// =========================
+const SUPABASE_URL = 'https://kcdlyfejflyyaplterjt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_KMiNhwsv2_7zDu7xLuAZag_XIeUFYlm';
+
 // Lista oficial de escolas (disponível para o supervisor)
 const LISTA_ESCOLAS = [
   "CEEFMTI Afonso Cláudio",

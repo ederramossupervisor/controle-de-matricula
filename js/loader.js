@@ -17,6 +17,7 @@
   const scripts = [
     'config.js',
     'utils.js',
+    'supabase-client.js',
     'data.js',
     'ui.js',
     'modals.js',
@@ -28,8 +29,6 @@
     'dashboard.js',
     'log.js',
     'termo.js',
-    'planotatico.js',
-    'gerador-documentos.js',
     'dados-escolas.js',
     'monitoramento.js',
     'orgs-curriculares.js',

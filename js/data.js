@@ -19,14 +19,7 @@ function carregarAlunos(pagina = 1, filtros = {}) {
 function continuarCarregamentoAlunos(pagina, filtros, tentativa = 0) {
   mostrarLoading();
   
-  let url = `${API_URL}?email=${emailUsuario}&pagina=${pagina}&limite=${alunosPorPagina}`;
-  if (filtros.escola) url += `&escola=${encodeURIComponent(filtros.escola)}`;
-  if (filtros.turma) url += `&turma=${encodeURIComponent(filtros.turma)}`;
-  if (filtros.nome) url += `&nome=${encodeURIComponent(filtros.nome)}`;
-  if (filtros.status) url += `&status=${encodeURIComponent(filtros.status)}`;
-  if (filtros.situacao) url += `&situacao=${encodeURIComponent(filtros.situacao)}`;
-  
-  jsonp(url, function(dados) {
+  buscarDadosAlunosSb(pagina, filtros, alunosPorPagina).then(function(dados) {
     esconderLoading();
 
     // 🔒 Tratamento do erro de termo (mantém na tela de login)
@@ -258,28 +251,9 @@ function continuarCarregamentoAlunos(pagina, filtros, tentativa = 0) {
       if (filtroSituacao) filtroSituacao.style.display = 'none';
     }
 
-    const btnGerador = document.getElementById('btnGeradorDocumentos');
-    if (btnGerador && perfilUsuario === 'SUPERVISOR') {
-      btnGerador.style.display = 'block';
-    }
-
     const btnDadosEscola = document.getElementById('btnDadosEscola');
     if (btnDadosEscola) {
       btnDadosEscola.style.display = (perfilUsuario === 'SUPERVISOR' || perfilUsuario === 'SECRETARIA') ? 'inline-block' : 'none';
-    }
-
-    // Botões do Plano Tático
-    const botoesPlano = ['btnPlanoTatico', 'btnPlanoTaticoTrim'];
-    botoesPlano.forEach(id => {
-      const btn = document.getElementById(id);
-      if (btn) {
-        btn.style.display = algumPerfilUsuario(['PEDAGOGICO', 'SUPERVISOR']) ? 'block' : 'none';
-      }
-    });
-
-    const btnAcomp = document.getElementById('btnAcompanhamentoPT');
-    if (btnAcomp) {
-      btnAcomp.style.display = (perfilUsuario === 'SUPERVISOR') ? 'block' : 'none';
     }
 
     const btnAprovacao = document.getElementById('btnAprovacaoTermos');
@@ -317,7 +291,6 @@ function continuarCarregamentoAlunos(pagina, filtros, tentativa = 0) {
     if (!secaoTemBotoesVisiveis('menuColunaAlunos')) esconderColunaMenu('menuColunaAlunos');
     if (!secaoTemBotoesVisiveis('menuColunaDocs')) esconderColunaMenu('menuColunaDocs');
     if (!secaoTemBotoesVisiveis('menuColunaGestao')) esconderColunaMenu('menuColunaGestao');
-    if (!secaoTemBotoesVisiveis('menuColunaPlanoTatico')) esconderColunaMenu('menuColunaPlanoTatico');
     if (!secaoTemBotoesVisiveis('menuColunaAdmin')) esconderColunaMenu('menuColunaAdmin');
 
     esconderLoading();
@@ -593,7 +566,7 @@ let _modelosEscolaCache = [];
 
 function carregarModelosEscola() {
   mostrarLoading();
-  const url = `${API_URL}?tipo=listarModelosEscola&email=${emailUsuario}&_=${new Date().getTime()}`;
+  const url = `${API_URL}?tipo=listarModelosEscola&email=${emailUsuario}${escolaModelosParam()}&_=${new Date().getTime()}`;
   jsonp(url, function(modelos) {
     esconderLoading();
     const select = document.getElementById("selectModeloVisualizar");
@@ -675,6 +648,9 @@ async function fazerUploadModeloEscola() {
   if (!file) { mostrarToast('Selecione um arquivo.', 'warning'); return; }
   if (file.size > 20 * 1024 * 1024) { mostrarToast('Arquivo muito grande. Máximo 20 MB.', 'warning'); return; }
 
+  const escolaModelo = escolaModelosSelecionada();
+  if (usuarioEscolheEscola() && !escolaModelo) { mostrarToast('Selecione a escola do modelo.', 'warning'); return; }
+
   const btnEnviar = document.querySelector('#abaUploadModeloEscola .btn-salvar');
   showButtonLoading(btnEnviar);
 
@@ -689,6 +665,7 @@ async function fazerUploadModeloEscola() {
     postSemResposta({
       acao: 'uploadModeloEscola',
       email: emailUsuario,
+      escola: escolaModelo,
       nomeModelo: nomeModelo,
       fileName: file.name,
       mimeType: file.type,
@@ -735,15 +712,7 @@ async function fazerUploadModelo() {
       fileBase64: base64
     };
     
-    // Envia sem esperar resposta JSON (no-cors)
-    const response = await fetch(API_URL, {
-      method: "POST",
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(dados)
-    });
-    
-    mostrarToast("Modelo enviado com sucesso! Atualize a lista.", "success");
+    await new Promise((resolve, reject) => postSemResposta(dados, "Modelo enviado com sucesso!", resolve, reject));
     fileInput.value = "";
     select.value = "";
     mostrarAbaListarModelos();
@@ -989,11 +958,7 @@ function buscarInativos(pagina = 1) {
   
   filtrosInativosAtuais = { nome, turma };
   
-  let url = `${API_URL}?tipo=inativos&email=${emailUsuario}&pagina=${pagina}&limite=${alunosPorPaginaInativos}`;
-  if (nome) url += `&nome=${encodeURIComponent(nome)}`;
-  if (turma) url += `&turma=${encodeURIComponent(turma)}`;
-  
-  jsonp(url, function(dados) {
+  buscarDadosAlunosSb(pagina, { nome, turma, modo: 'inativos' }, alunosPorPaginaInativos).then(function(dados) {
     paginaAtualInativos = dados.paginaAtual;
     totalPaginasInativos = dados.totalPaginas;
     
@@ -1171,8 +1136,8 @@ async function salvarAlteracoesEmLote(row) {
         email: emailUsuario
       };
       
-      await new Promise((resolve) => {
-        postSemResposta(dadosBasicos, "", () => resolve());
+      await new Promise((resolve, reject) => {
+        postSemResposta(dadosBasicos, "", () => resolve(), reject);
       });
       
       dadosAlunoAtual.ALUNO = nome;
@@ -1192,8 +1157,8 @@ async function salvarAlteracoesEmLote(row) {
         email: emailUsuario
       };
       
-      await new Promise((resolve) => {
-        postSemResposta(dadosLote, "", () => resolve());
+      await new Promise((resolve, reject) => {
+        postSemResposta(dadosLote, "", () => resolve(), reject);
       });
       
       for (let chave in alteracoesPendentes) {
@@ -1359,49 +1324,32 @@ async function salvarEdicaoUsuario() {
 }
 
 async function excluirUsuarioAdmin(emailAlvo) {
-  if (!confirm(`Deseja realmente excluir o usuário ${emailAlvo}? Esta ação não pode ser desfeita.`)) return;
+  if (!confirm(`Tem certeza que deseja excluir o usuário ${emailAlvo}? Esta ação não pode ser desfeita.`)) return;
 
   mostrarLoading();
   try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        acao: "excluirUsuario",
-        emailLogado: emailUsuario,
-        email: emailAlvo
-      })
-    });
-    const result = await resp.json();
+    const r = await chamarAdminUsuarios({ acao: "excluirUsuario", email: emailAlvo });
     esconderLoading();
-    mostrarToast(result.msg, result.status === "ok" ? "success" : "error");
-    if (result.status === "ok") carregarUsuarios();
+    mostrarToast(r.msg || "Usuário excluído.", "success");
+    carregarUsuarios();
   } catch (e) {
     esconderLoading();
-    mostrarToast("Erro ao excluir usuário.", "error");
+    mostrarToast(e.message || "Erro ao excluir usuário.", "error");
   }
 }
 
 async function resetarSenhaUsuario(emailAlvo) {
-  if (!confirm(`Deseja redefinir a senha do usuário ${emailAlvo}? Uma nova senha será enviada por e-mail.`)) return;
-  
+  if (!confirm(`Deseja redefinir a senha do usuário ${emailAlvo}? Será gerada uma senha temporária.`)) return;
+
   mostrarLoading();
   try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        acao: "resetarSenhaAdmin",
-        emailLogado: emailUsuario,
-        email: emailAlvo
-      })
-    });
-    const result = await resp.json();
+    const r = await chamarAdminUsuarios({ acao: "resetarSenhaAdmin", email: emailAlvo });
     esconderLoading();
-    mostrarToast(result.msg, result.status === "ok" ? "success" : "error");
+    mostrarToast(r.msg || "Senha redefinida.", "success");
+    mostrarSenhaTemporaria(emailAlvo, r);
   } catch (e) {
     esconderLoading();
-    mostrarToast("Erro de conexão.", "error");
+    mostrarToast(e.message || "Erro ao redefinir a senha.", "error");
   }
 }
 
@@ -1560,10 +1508,21 @@ async function salvarAluno() {
     }
   }
 
+  // Supervisor/administrador escolhem a escola; secretaria usa a sua
+  let escolaNovoAluno = escolaUsuario;
+  if (usuarioEscolheEscola()) {
+    escolaNovoAluno = document.getElementById("selectEscolaNovoAluno")?.value || "";
+    if (!escolaNovoAluno) {
+      mostrarToast("Selecione a escola do aluno.", "warning");
+      return;
+    }
+  }
+
   showButtonLoading(btnSalvar);
 
   const dados = {
     acao: "cadastrarAluno",
+    escola: escolaNovoAluno,
     nome: nome,
     idAluno: idAluno,
     responsavel: responsavel,
@@ -1666,12 +1625,7 @@ function executarExportacaoPDF(opcoes = {}) {
 
   mostrarLoading();
 
-  let url = `${API_URL}?email=${emailUsuario}&limite=9999`;
-  if (escola) url += `&escola=${encodeURIComponent(escola)}`;
-  if (turma) url += `&turma=${encodeURIComponent(turma)}`;
-  if (status) url += `&status=${encodeURIComponent(status)}`;
-
-  jsonp(url, function(dados) {
+  buscarDadosAlunosSb(1, { escola, turma, status }, 9999).then(function(dados) {
     esconderLoading();
 
     if (!dados.alunos || dados.alunos.length === 0) {
@@ -1768,7 +1722,7 @@ function executarExportacaoPDF(opcoes = {}) {
 }
 
 // ------ LOGIN / LOGOUT ------
-function login() {
+async function login() {
   const email = document.getElementById("email").value.trim();
   const senha = document.getElementById("senha").value;
 
@@ -1778,33 +1732,23 @@ function login() {
   }
 
   mostrarLoading();
-  // 🔥 Cache-busting adicionado com &_=${Date.now()}
-  const url = `${API_URL}?tipo=auth&email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}&_=${Date.now()}`;
+  try {
+    const perfil = await loginSb(email, senha);
+    esconderLoading();
+    emailUsuario = perfil.email.toLowerCase();
+    nomeUsuario = perfil.nome || emailUsuario;
+    localStorage.setItem("emailUsuario", emailUsuario);
+    localStorage.setItem("nomeUsuario", nomeUsuario);
 
-  jsonp(url, function(resultado) {
-  esconderLoading();
-
-  if (resultado.erro === 'falha_rede') {
-    mostrarToast("Não foi possível conectar ao servidor. Verifique sua internet ou desative bloqueadores/VPN.", "error");
-    return;
-  }
-
-  if (resultado.autorizado) {
-      emailUsuario = email.toLowerCase();
-      nomeUsuario = resultado.nome || emailUsuario;
-      localStorage.setItem("emailUsuario", emailUsuario);
-      localStorage.setItem("nomeUsuario", nomeUsuario);
-
-      if (resultado.primeiroAcesso) {
-        abrirModalAlterarSenhaObrigatorio();
-        return;
-      }
-
-      carregarAlunos();
-     } else {
-      mostrarToast(resultado.msg || "Credenciais inválidas.", "error");
+    if (perfil.primeiro_acesso) {
+      abrirModalAlterarSenhaObrigatorio();
+      return;
     }
-  });
+    carregarAlunos();
+  } catch (e) {
+    esconderLoading();
+    mostrarToast(e.message || "Credenciais inválidas.", "error");
+  }
 }
 
 function removerStatusLogin() {
@@ -1838,6 +1782,9 @@ function logout() {
 
   limparCacheTurmas();
   pararPollingNotificacoes();
+  sb.auth.signOut();
+  perfilSbCache = null;
+  sessionStorage.clear();
   
   const img = document.getElementById('fotoPerfilImg');
   if (img) img.src = '';
@@ -1885,28 +1832,27 @@ function logout() {
   dadosGlobais = [];
 }
 
-function recuperarSenha() {
-  const email = prompt("Digite seu e-mail institucional para receber uma nova senha:");
+async function recuperarSenha() {
+  const email = prompt("Digite seu e-mail institucional para receber o link de nova senha:");
   if (!email || !email.trim()) return;
 
-  // Validação mínima
   if (!email.includes('@') || !email.includes('.')) {
     mostrarToast("Formato de e-mail inválido.", "warning");
     return;
   }
 
   mostrarLoading();
-  const url = `${API_URL}?tipo=recuperarSenha&email=${encodeURIComponent(email.trim())}`;
-
-  jsonp(url, function(res) {
-    esconderLoading();
-    // Mensagem genérica – não revela se o e-mail existe
-    mostrarToast(res.msg || "Se o e-mail estiver cadastrado, uma nova senha será enviada.", 
-                 res.status === "ok" ? "success" : "warning");
-  });
+  try {
+    await sb.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: window.location.origin + window.location.pathname
+    });
+  } catch (_) { /* resposta genérica de propósito */ }
+  esconderLoading();
+  // Mensagem genérica – não revela se o e-mail existe
+  mostrarToast("Se o e-mail estiver cadastrado, você receberá um link para criar a nova senha.", "success");
 }
 
-function alterarMinhaSenha() {
+async function alterarMinhaSenha() {
   const senhaAtual = document.getElementById("senhaAtual").value;
   const novaSenha = document.getElementById("novaSenha").value;
   const confirmar = document.getElementById("confirmarNovaSenha").value;
@@ -1928,30 +1874,27 @@ function alterarMinhaSenha() {
   showButtonLoading(btnSalvar);
 
   const isPrimeiroAcesso = document.getElementById("modalAlterarSenha").classList.contains("primeiro-acesso");
-  
-  // Construir a URL com o parâmetro adicional para primeiro acesso
-  let url = `${API_URL}?tipo=alterarSenha&email=${encodeURIComponent(emailUsuario)}&senhaAtual=${encodeURIComponent(senhaAtual)}&novaSenha=${encodeURIComponent(novaSenha)}`;
-  if (isPrimeiroAcesso) {
-    url += `&primeiroAcesso=true`;
-  }
 
-  jsonp(url, function(resultado) {
+  try {
+    const conf = await sb.auth.signInWithPassword({ email: emailUsuario, password: senhaAtual });
+    if (conf.error) throw new Error("Senha atual incorreta.");
+    const up = await sb.auth.updateUser({ password: novaSenha });
+    if (up.error) throw new Error(/different/i.test(up.error.message) ? "A nova senha deve ser diferente da atual." : up.error.message);
+    if (isPrimeiroAcesso) await sb.rpc('concluir_primeiro_acesso');
+
     hideButtonLoading(btnSalvar);
-
-    if (resultado.status === "ok") {
-      mostrarToast(resultado.msg, "success");
-      
-      if (isPrimeiroAcesso) {
-        document.getElementById("modalAlterarSenha").classList.remove("primeiro-acesso");
-        fecharModalAlterarSenha();
-        verificarStatusTermoEAcessar();
-      } else {
-        fecharModalAlterarSenha();
-      }
+    mostrarToast("Senha alterada com sucesso!", "success");
+    if (isPrimeiroAcesso) {
+      document.getElementById("modalAlterarSenha").classList.remove("primeiro-acesso");
+      fecharModalAlterarSenha();
+      verificarStatusTermoEAcessar();
     } else {
-      mostrarToast(resultado.msg || "Erro ao alterar senha.", "error");
+      fecharModalAlterarSenha();
     }
-  });
+  } catch (e) {
+    hideButtonLoading(btnSalvar);
+    mostrarToast(e.message || "Erro ao alterar senha.", "error");
+  }
 }
 
 // ------ OUTRAS ATUALIZAÇÕES RÁPIDAS ------
@@ -2067,8 +2010,8 @@ function executarPromocaoCSV() {
   const statusDiv = document.getElementById('statusPromocao');
   showButtonLoading(btn);
 
-  const loteSize = 50;
-  const atrasoEntreLotes = 2000;
+  const loteSize = 200;
+  const atrasoEntreLotes = 200;
   let totalEnviados = 0;
 
   (async () => {
@@ -2089,7 +2032,8 @@ function executarPromocaoCSV() {
               statusDiv.innerHTML = `Enviando lote ${Math.floor(i / loteSize) + 1} de ${Math.ceil(alunosPromocao.length / loteSize)}...`;
             }
             resolve();
-          }
+          },
+          () => { hideButtonLoading(btn); }
         );
       });
 
@@ -2107,7 +2051,8 @@ function executarPromocaoCSV() {
         null,
         () => {
           resolve();
-        }
+        },
+        () => { hideButtonLoading(btn); }
       );
     });
 
@@ -2212,8 +2157,8 @@ function executarAtualizarMatriculados() {
   const statusDiv = document.getElementById('statusAtualizar');
   showButtonLoading(btn);
 
-  const loteSize = 50;
-  const atrasoEntreLotes = 2000;
+  const loteSize = 200;
+  const atrasoEntreLotes = 200;
   let totalEnviados = 0;
 
   (async () => {
@@ -2234,7 +2179,8 @@ function executarAtualizarMatriculados() {
               statusDiv.innerHTML = `Enviando lote ${Math.floor(i / loteSize) + 1} de ${Math.ceil(alunosAtualizar.length / loteSize)}...`;
             }
             resolve();
-          }
+          },
+          () => { hideButtonLoading(btn); }
         );
       });
 

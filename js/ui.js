@@ -40,6 +40,8 @@ function renderLista(dados) {
     if (aluno.STATUS && aluno.STATUS.includes("✅")) statusClass = "status-completo";
     else if (aluno.STATUS && aluno.STATUS.includes("⚠️")) statusClass = "status-pendente";
     else if (aluno.STATUS && aluno.STATUS.includes("🔴")) statusClass = "status-vencido";
+    // No Supabase o STATUS vem só como Completo/Pendente; o vencido vem em ALERTA
+    if (aluno.STATUS !== "✅ Completo" && aluno.ALERTA === "🔴 Vencido") statusClass = "status-vencido";
 
     div.className = "fade " + statusClass;
 
@@ -71,6 +73,21 @@ function renderLista(dados) {
         prazoTexto = "Sem prazo";
         prazoClasse = "";
       }
+    }
+
+    // Card vermelho: tooltip com há quantos dias está vencido
+    if (statusClass === "status-vencido") {
+      div.classList.add("card-vencido");
+      let diasVencido = null;
+      if (aluno.PRAZO_FINAL) {
+        const h = new Date(); h.setHours(0,0,0,0);
+        const p = new Date(aluno.PRAZO_FINAL); p.setHours(0,0,0,0);
+        const d = Math.round((h - p) / (1000*60*60*24));
+        if (d > 0) diasVencido = d;
+      }
+      div.setAttribute("data-tooltip", diasVencido === null
+        ? "Prazo vencido"
+        : `Vencido há ${diasVencido} ${diasVencido === 1 ? "dia" : "dias"}`);
     }
 
     // Ícones de documentos
@@ -161,14 +178,26 @@ function renderLista(dados) {
       ? `<div style="font-size:10px;color:#64748b;text-align:center;margin-top:4px;max-width:44px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${aluno.TURMA}">${aluno.TURMA}</div>`
       : '';
 
+    // Nome da escola, bem pequeno, logo abaixo do nome do aluno
+    const escolaCardHtml = aluno.ESCOLA
+      ? `<div style="font-size:10px;line-height:1.2;color:#64748b;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${aluno.ESCOLA}"><i class="fas fa-school" style="font-size:9px;margin-right:3px;"></i>${aluno.ESCOLA}</div>`
+      : '';
+
     // Container vertical para botões de ação (gap reduzido para 1px)
     let botoesAcaoHtml = '';
     if (perfilUsuario !== 'PEDAGOGICO') {
-      botoesAcaoHtml = '<div class="botoes-acao-vertical" style="display:flex;flex-direction:column;gap:0;align-self:flex-start;flex-shrink:0;border-left:1px solid #94a3b8;padding-left:6px;margin-left:4px;"></div>';
+      botoesAcaoHtml = '<div class="botoes-acao-vertical" style="display:flex;flex-direction:row;align-items:center;gap:6px;flex-shrink:0;"></div>';
     }
 
     div.innerHTML = `
-<div style="font-weight:600;color:#0f172a;font-size:15px;line-height:1.3;min-height:40px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:8px;text-align:center;" title="${aluno.ALUNO || ''}">${aluno.ALUNO || 'Nome inválido'}</div>      <div style="display:flex; align-items:center; gap:12px;">
+<div style="display:flex;align-items:center;gap:8px;min-height:40px;margin-bottom:8px;">
+          <div style="flex:1;min-width:0;text-align:${botoesAcaoHtml ? 'left' : 'center'};">
+            <div style="font-weight:600;color:#0f172a;font-size:15px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" title="${aluno.ALUNO || ''}">${aluno.ALUNO || 'Nome inválido'}</div>
+            ${escolaCardHtml}
+          </div>
+          ${botoesAcaoHtml}
+        </div>
+      <div style="display:flex; align-items:center; gap:12px;">
         <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
           ${avatarHtml}
           ${turmaHtml}
@@ -176,12 +205,7 @@ function renderLista(dados) {
         <div style="flex:1;min-width:0;">
           ${aluno.SITUACAO && aluno.SITUACAO !== 'Ativo' ? `<div style="font-size:11px; color:#dc2626; margin-bottom:4px;"><i class="fas fa-thumbtack"></i> ${aluno.SITUACAO}</div>` : ''}
           ${docsIconsHtml}
-          <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;">
-            <span class="status-badge ${statusClass}" style="padding:2px 8px;border-radius:40px;font-size:11px;font-weight:500;">${aluno.STATUS}</span>
-            ${prazoTexto ? `<span class="prazo-info ${prazoClasse}" style="display:flex;align-items:center;gap:4px;font-size:12px;color:#64748b;"><i class="fas fa-hourglass-half"></i> ${prazoTexto}</span>` : ''}
-          </div>
         </div>
-        ${botoesAcaoHtml}
       </div>
     `;
     // Pré‑visualização da foto ao passar o mouse
@@ -275,36 +299,45 @@ function renderLista(dados) {
       abrirAluno(aluno._row);
     });
 
-    // Botão lápis (editar) no canto inferior direito
-    const btnLapis = document.createElement('button');
-    btnLapis.className = 'btn-icone';
-    btnLapis.setAttribute('data-tooltip', 'Abrir ficha do aluno');
-    btnLapis.innerHTML = '<i class="fa-regular fa-pen-to-square"></i>';
-    btnLapis.style.cssText = `
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      width: 28px;
-      height: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #64748b;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      z-index: 5;
-    `;
-    btnLapis.addEventListener('click', (e) => {
-      e.stopPropagation();
-      abrirAluno(aluno._row);
-    });
-    div.appendChild(btnLapis);
 
     // Preencher o container vertical de ações (WhatsApp, Histórico, PDF)
     if (perfilUsuario !== 'PEDAGOGICO') {
       const containerAcoes = div.querySelector('.botoes-acao-vertical');
       if (containerAcoes) {
+        // Dá aparência de botão clicável (fundo + borda + sombra + feedback),
+        // para diferenciar dos ícones informativos (documentos, raça/cor etc.)
+        const estilizarBotaoAcao = (btn, rgb, ativo = true) => {
+          const bg    = a => `rgba(${rgb}, ${a})`;
+          const base  = ativo ? 0.12 : 0.10;
+          const hover = 0.24;
+          // Tamanho quadrado fixo. O 'important' inline é necessário para vencer
+          // as regras globais de .btn-icone (min-height 44px, width 44px !important no mobile)
+          const TAM = '32px';
+          [['width', TAM], ['height', TAM], ['min-width', TAM], ['min-height', TAM],
+           ['max-width', TAM], ['max-height', TAM], ['flex', '0 0 auto'],
+           ['padding', '0'], ['margin', '0'], ['box-sizing', 'border-box'],
+           ['border-radius', '6px'], ['display', 'inline-flex']
+          ].forEach(([prop, val]) => btn.style.setProperty(prop, val, 'important'));
+          btn.style.background   = bg(base);
+          btn.style.border       = `1px solid ${bg(ativo ? 0.45 : 0.35)}`;
+          btn.style.boxShadow    = '0 1px 3px rgba(0,0,0,0.12)';
+          btn.style.transition   = 'transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease';
+          if (!ativo) return;
+          btn.addEventListener('mouseenter', () => {
+            btn.style.background = bg(hover);
+            btn.style.boxShadow  = '0 3px 8px rgba(0,0,0,0.18)';
+            btn.style.transform  = 'translateY(-1px)';
+          });
+          btn.addEventListener('mouseleave', () => {
+            btn.style.background = bg(base);
+            btn.style.boxShadow  = '0 1px 3px rgba(0,0,0,0.12)';
+            btn.style.transform  = 'none';
+          });
+          btn.addEventListener('pointerdown', () => { btn.style.transform = 'scale(0.92)'; });
+          btn.addEventListener('pointerup',   () => { btn.style.transform = 'none'; });
+          btn.addEventListener('pointercancel', () => { btn.style.transform = 'none'; });
+        };
+
         // Botão WhatsApp
         const infoWhatsApp = gerarLinkWhatsApp(aluno);
         if (infoWhatsApp.pendentes.length > 0) {
@@ -321,13 +354,11 @@ function renderLista(dados) {
           );
           btnWhatsApp.innerHTML = `<i class="fab fa-whatsapp" style="font-size:14px; color:${temTelefone ? '#25D366' : '#9ca3af'}; line-height:1;"></i>`;
           btnWhatsApp.style.cssText = `
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: transparent;
-            border: none;
             cursor: ${temTelefone ? 'pointer' : 'not-allowed'};
             text-decoration: none;
             padding: 0;
@@ -337,6 +368,7 @@ function renderLista(dados) {
             opacity: ${temTelefone ? '1' : '0.6'};
           `;
           btnWhatsApp.classList.add('btn-acao-card');
+          estilizarBotaoAcao(btnWhatsApp, temTelefone ? '37, 211, 102' : '156, 163, 175', temTelefone);
           btnWhatsApp.addEventListener('click', (e) => {
             e.preventDefault();
             if (e.ctrlKey || e.metaKey) {
@@ -375,20 +407,19 @@ function renderLista(dados) {
         btnHistorico.setAttribute('data-tooltip', 'Gerar Histórico');
         btnHistorico.innerHTML = '<i class="fas fa-file-export" style="font-size:14px; line-height:1;"></i>';
         btnHistorico.style.cssText = `
-          width: 28px;
-          height: 28px;
+          width: 32px;
+          height: 32px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: transparent;
-          border: none;
-          color: var(--text-muted);
+          color: #2563eb;
           cursor: pointer;
           padding: 0;
           margin: 0;
           line-height: 1;
           vertical-align: middle;
         `;
+        estilizarBotaoAcao(btnHistorico, '37, 99, 235');
         btnHistorico.addEventListener('click', (e) => {
           e.stopPropagation();
           if (aluno.ID && aluno.ESCOLA && aluno.TURMA) {
@@ -397,7 +428,6 @@ function renderLista(dados) {
             mostrarToast("Dados incompletos do aluno.", "warning");
           }
         });
-        btnHistorico.style.marginTop = '-14px';   // mesmo valor usado no PDF
         containerAcoes.appendChild(btnHistorico);
 
         // Botão Ficha PDF
@@ -407,24 +437,22 @@ function renderLista(dados) {
         btnFicha.setAttribute('data-tooltip', 'Gerar ficha em PDF');
         btnFicha.innerHTML = '<i class="fas fa-file-pdf" style="font-size:14px; color:#ef4444; line-height:1;"></i>';
         btnFicha.style.cssText = `
-          width: 28px;
-          height: 28px;
+          width: 32px;
+          height: 32px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: transparent;
-          border: none;
           cursor: pointer;
           padding: 0;
           margin: 0;
           line-height: 1;
           vertical-align: middle;
         `;
+        estilizarBotaoAcao(btnFicha, '239, 68, 68');
         btnFicha.addEventListener('click', (e) => {
           e.stopPropagation();
           gerarFichaPDF(aluno);
         });
-        btnFicha.style.marginTop = '-18px';   // ← aumente este valor se quiser subir mais (ex.: -6px)
         containerAcoes.appendChild(btnFicha);
       }
     }
@@ -1055,7 +1083,7 @@ function criarCardAto(ato, mostrarEscola) {
     <p style="margin: 4px 0;"><i class="fas fa-hourglass-half"></i> Validade: ${ato.validadeAnos} anos</p>
     ${ato.fundamentacao ? `<p style="margin: 4px 0; font-size: 12px;"><i class="fas fa-gavel"></i> Fund.: ${ato.fundamentacao}</p>` : ''}
     <div style="margin-top: 8px;">
-      ${ato.arquivoId ? `<a href="https://drive.google.com/file/d/${ato.arquivoId}/view" target="_blank" class="btn-pequeno"><i class="fas fa-file-pdf"></i> Ver Ato</a>` : ''}
+      ${(ato.arquivoUrl || ato.arquivoId) ? `<a href="${ato.arquivoUrl || ('https://drive.google.com/file/d/' + ato.arquivoId + '/view')}" target="_blank" class="btn-pequeno"><i class="fas fa-file-pdf"></i> Ver Ato</a>` : ''}
       <button class="btn-pequeno" onclick="event.stopPropagation(); editarAto('${ato.id}')"><i class="fas fa-edit"></i> Editar</button>
       <button class="btn-pequeno" onclick="event.stopPropagation(); excluirAto('${ato.id}')"><i class="fas fa-trash"></i> Excluir</button>
     </div>
@@ -1178,21 +1206,34 @@ function aplicarFundoPorEscola(escola) {
 }
 
 // ------ ALTERNAR VISUALIZAÇÃO CARDS/LISTA ------
+// Marca qual das duas opções (Cards / Lista) está ativa no seletor
+function atualizarSeletorVisualizacao(modo) {
+  const cards = document.getElementById('btnVisCards');
+  const lista = document.getElementById('btnVisLista');
+  if (cards) { cards.classList.toggle('ativo', modo === 'cards'); cards.setAttribute('aria-pressed', modo === 'cards'); }
+  if (lista) { lista.classList.toggle('ativo', modo === 'lista'); lista.setAttribute('aria-pressed', modo === 'lista'); }
+}
+
+// Clique numa das opções do seletor: só troca se for diferente do modo atual
+// (na aba Profissionais o modo é guardado em outra variável)
+function selecionarVisualizacao(modo) {
+  const atual = (typeof abaAtiva !== 'undefined' && abaAtiva === 'profissionais')
+    ? modoVisualizacaoProf
+    : modoVisualizacao;
+  if (modo !== atual) alternarVisualizacao();
+}
+
 function alternarVisualizacao() {
-  const btn = document.getElementById('toggleVisualizacao');
   const lista = document.getElementById('lista');
   
   if (modoVisualizacao === 'cards') {
     modoVisualizacao = 'lista';
-    btn.classList.add('ativo');
-    btn.innerHTML = '<i class="fas fa-list"></i>';
     lista.classList.add('modo-lista');
   } else {
     modoVisualizacao = 'cards';
-    btn.classList.remove('ativo');
-    btn.innerHTML = '<i class="fas fa-th-large"></i>';
     lista.classList.remove('modo-lista');
   }
+  atualizarSeletorVisualizacao(modoVisualizacao);
   
   const inicio = (paginaAtual - 1) * alunosPorPagina;
   const alunosPagina = dadosFiltradosGlobais.slice(inicio, inicio + alunosPorPagina);
@@ -1438,9 +1479,8 @@ function compartilharLegislacao(item) {
   const titulo = `${tipo} ${numero}/${ano}`;
   const texto = `${titulo} - ${assunto || 'Sem assunto'}`;
   
-  const viewUrl = item.arquivoId 
-    ? `https://drive.google.com/file/d/${item.arquivoId}/view` 
-    : '';
+  const viewUrl = item.arquivoUrl 
+    || (item.arquivoId ? `https://drive.google.com/file/d/${item.arquivoId}/view` : '');
   
   const shareText = `📜 ${texto}\n\n${viewUrl ? `🔗 Acesse o documento: ${viewUrl}` : 'Documento sem PDF anexado.'}`;
 
