@@ -4118,3 +4118,52 @@ select.select-moderno option {
     transform: translateY(0);
   }
 }
+
+/* ==========================================
+   RECARREGAR A PÁGINA: página principal desfocada atrás do spinner
+   ========================================== */
+body.recarregando #app { display: block !important; }
+body.recarregando #loading {
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ==========================================
+   CAIXAS DE DIÁLOGO DO SISTEMA
+   (substituem prompt / confirm / alert do navegador)
+   ========================================== */
+.modal-overlay.dialogo-sistema { z-index: 10020; }
+.dialogo-sistema .modal-card { max-width: 420px; }
+.dialogo-sistema .modal-header h2 i { color: var(--btn-primary-bg); margin-right: 6px; }
+.dialogo-msg {
+  margin: 4px 0 14px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.dialogo-destaque {
+  background: var(--input-focus-shadow);
+  border: 1px solid var(--input-border);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+.dialogo-sistema .input-icon input { padding-right: 56px; }
+.dialogo-sistema .input-icon input[readonly] {
+  background: var(--input-focus-shadow);
+  font-family: Consolas, 'Courier New', monospace;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.dialogo-erro {
+  color: #dc2626;
+  font-size: 13px;
+  margin: 2px 0 0 6px;
+}
+.dialogo-sistema .modal-actions { margin-top: 18px; }
+.dialogo-sistema .modal-actions .btn-salvar:only-child { flex: 1; }
