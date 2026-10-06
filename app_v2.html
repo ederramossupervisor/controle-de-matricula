@@ -4,7 +4,7 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script>const APP_VERSION = 'v3.1.0-sb19';</script>  
+<script>const APP_VERSION = 'v3.1.0-sb20';</script>  
 <script>
   // Se este arquivo foi aberto direto (atalho/favorito salvo aponta para
   // app_v2.html em vez da raiz do site), a rotina de limpeza de cache e
@@ -125,6 +125,14 @@
           window._pularSplash = true;
           document.getElementById('splash').style.display = 'none';
           document.getElementById('login').style.display = 'none';
+          // Mostra a página principal (desfocada) por trás do spinner enquanto
+          // os dados carregam. O #app aparece via CSS (body.recarregando) porque
+          // ele ainda não existe no DOM neste ponto da página.
+          document.body.classList.add('recarregando');
+          var perfilClasse = localStorage.getItem('perfilClasseBody');
+          if (perfilClasse === 'perfil-supervisor' || perfilClasse === 'perfil-secretaria') {
+            document.body.classList.add(perfilClasse);
+          }
           document.getElementById('loading').style.display = 'flex';
         }
       } catch (e) { /* sem problema: cai no comportamento normal (com splash) */ }
