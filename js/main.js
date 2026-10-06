@@ -79,6 +79,7 @@ function esconderSplash() {
   if (window._pularSplash) {
     // Página recarregada sem splash: só encerra o spinner que foi mostrado no lugar dela.
     window._pularSplash = false;
+    document.body.classList.remove('recarregando'); // some a página desfocada do recarregamento
     if (splash) splash.style.display = 'none';
     if (typeof esconderLoading === 'function') esconderLoading();
     return;
