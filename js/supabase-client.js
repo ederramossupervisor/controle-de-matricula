@@ -178,6 +178,7 @@ async function chamarAdminUsuarios(payload) {
     throw new Error(msg);
   }
   if (!data || data.status !== 'ok') throw new Error((data && data.msg) || 'Falha na operação.');
+  registrarLogAutomaticoSb(payload);
   return data;
 }
 
@@ -1797,6 +1798,7 @@ async function executarAcaoAlunoSb(dados, msgSucesso, callback, aoFalhar) {
   if (btn && typeof showButtonLoading === 'function') showButtonLoading(btn);
   try {
     await ACAO_ALUNO_SB[dados.acao](dados);
+    if (ACOES_LOG_ADMIN_SB.indexOf(dados.acao) < 0) registrarLogAutomaticoSb(dados);
     if (msgSucesso) mostrarToast(msgSucesso, 'success');
     if (callback) callback();
   } catch (e) {
@@ -1809,3 +1811,81 @@ async function executarAcaoAlunoSb(dados, msgSucesso, callback, aoFalhar) {
     window._clickedButton = null;
   }
 }
+
+// =====================================================================
+// PATCH — Histórico de Ações com mais eventos registrados
+// Cole este bloco no FIM de js/supabase-client.js e depois faça as 2 trocas descritas abaixo.
+// =====================================================================
+
+// Rótulos das ações que passam a ser registradas automaticamente no histórico.
+// (Novo aluno, dados de aluno e checklist em lote já eram registrados pelo registrarUltimaAcao.)
+const ROTULOS_LOG_SB = {
+  alterarSituacao: 'Situação do aluno alterada',
+  excluirAluno: 'Aluno excluído',
+  excluirAlunosLote: 'Alunos excluídos em lote',
+  enviarCSVParaFila: 'Importação de alunos por CSV',
+  finalizarPromocao: 'Promoção de alunos finalizada',
+  uploadFotoAluno: 'Foto de aluno enviada',
+  uploadTermoResponsabilidade: 'Termo de responsabilidade do aluno enviado',
+  uploadDeclaracaoEdEspecial: 'Declaração de ed. especial enviada',
+  cadastrarTurma: 'Turma cadastrada',
+  atualizarProfissional: 'Dados de profissional atualizados',
+  uploadDocumentoProfissional: 'Documento de profissional enviado',
+  excluirDocumentoProfissional: 'Documento de profissional excluído',
+  salvarAtoAutorizativo: 'Ato autorizativo salvo',
+  excluirAtoAutorizativo: 'Ato autorizativo excluído',
+  salvarLegislacao: 'Legislação cadastrada',
+  editarLegislacao: 'Legislação editada',
+  excluirLegislacao: 'Legislação excluída',
+  salvarDadosEscola: 'Dados da escola atualizados',
+  salvarOrganizacoesCurriculares: 'Organizações curriculares atualizadas',
+  cadastrarProcesso: 'Processo cadastrado',
+  uploadDocumento: 'Documento enviado',
+  uploadModelo: 'Modelo oficial enviado',
+  uploadModeloEscola: 'Modelo da escola enviado',
+  salvarMonitoramento: 'Visita de monitoramento salva',
+  salvarComunicado: 'Comunicado publicado',
+  excluirComunicado: 'Comunicado excluído',
+  cadastrarUsuario: 'Usuário cadastrado',
+  editarUsuario: 'Usuário editado',
+  excluirUsuario: 'Usuário excluído',
+  resetarSenhaAdmin: 'Senha de usuário redefinida',
+  aprovarTermo: 'Termo de compromisso analisado'
+};
+// as 5 últimas passam por chamarAdminUsuarios (registradas lá, uma vez só)
+const ACOES_LOG_ADMIN_SB = ['cadastrarUsuario', 'editarUsuario', 'excluirUsuario', 'resetarSenhaAdmin', 'aprovarTermo'];
+
+function detalheLogSb(d) {
+  // nada de nome de aluno no log: só identificadores
+  if (d.acao === 'enviarCSVParaFila') return (d.alunos ? d.alunos.length : 0) + ' alunos';
+  if (d.acao === 'excluirAlunosLote') return (d.alunos ? d.alunos.length : 0) + ' alunos';
+  if (d.acao === 'alterarSituacao') return 'Aluno nº ' + d.row + ' → ' + d.situacao;
+  if (d.acao === 'excluirAluno' || /^upload(Foto|Termo|Declaracao)/.test(d.acao)) return 'Aluno nº ' + d.row;
+  if (d.acao === 'salvarMonitoramento') return (d.finalizar ? 'Finalizada' : 'Rascunho') + ' · ' + (d.escola || '');
+  if (d.acao === 'aprovarTermo') return (d.decisao === 'aprovar' ? 'Aprovado' : 'Recusado') + ': ' + (d.emailAlvo || '');
+  if (ACOES_LOG_ADMIN_SB.indexOf(d.acao) >= 0) return d.email || '';
+  return d.escola || d.tipo || d.id || '';
+}
+
+function registrarLogAutomaticoSb(d) {
+  const rotulo = ROTULOS_LOG_SB[d.acao];
+  if (!rotulo) return;
+  carregarPerfilSb().then(function (p) {
+    let escola = d.escola || '';
+    if (!escola && p && !p.is_admin && !(p.perfis || []).includes('SUPERVISOR')) escola = p.escola || '';
+    return sb.from('log_acoes').insert({ acao: rotulo, detalhes: String(detalheLogSb(d) || '').slice(0, 300), escola: escola || null });
+  }).then(function (r) { if (r && r.error) console.warn('Log não gravado:', r.error.message); })
+    .catch(function (e) { console.warn('Log não gravado:', e); });
+}
+
+// ---------------------------------------------------------------------
+// TROCA 1 — dentro de executarAcaoAlunoSb, logo depois da linha:
+//     await ACAO_ALUNO_SB[dados.acao](dados);
+// acrescente:
+//     if (ACOES_LOG_ADMIN_SB.indexOf(dados.acao) < 0) registrarLogAutomaticoSb(dados);
+//
+// TROCA 2 — dentro de chamarAdminUsuarios, logo depois da linha:
+//     if (!data || data.status !== 'ok') throw new Error((data && data.msg) || 'Falha na operação.');
+// acrescente:
+//     registrarLogAutomaticoSb(payload);
+// =====================================================================
