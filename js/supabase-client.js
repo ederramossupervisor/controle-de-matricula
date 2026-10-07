@@ -53,41 +53,19 @@ async function loginSb(email, senha) {
 }
 
 async function solicitarNovaSenhaRecuperacao() {
-  const r = await abrirDialogoSistema({
-    titulo: 'Criar nova senha',
-    icone: 'fa-key',
-    mensagem: 'Digite a nova senha que você usará para entrar no sistema.',
-    campos: [
-      { nome: 'nova', tipo: 'password', icone: 'fa-key', placeholder: 'Nova senha (mín. 6 caracteres)', autocomplete: 'new-password' },
-      { nome: 'confirmar', tipo: 'password', icone: 'fa-check', placeholder: 'Confirmar nova senha', autocomplete: 'new-password' }
-    ],
+  const nova = await Dialogo.perguntar('Digite sua nova senha (mínimo 6 caracteres):', {
+    titulo: 'Nova senha',
     textoConfirmar: 'Salvar senha',
-    validar: function (v) {
-      if (!v.nova || v.nova.length < 6) return 'A senha precisa ter pelo menos 6 caracteres.';
-      if (v.nova !== v.confirmar) return 'As senhas não coincidem.';
-      return null;
-    }
+    tipoCampo: 'password',
+    validar: function (v) { return v.length < 6 ? 'A senha precisa ter pelo menos 6 caracteres.' : ''; }
   });
-
-  // cancelou
-  if (!r) return;
-
-  const { error } = await sb.auth.updateUser({ password: r.nova });
-  if (error) {
-    mostrarToast('Não foi possível definir a senha: ' + error.message, 'error');
-    return;
-  }
-
-  try {
-    await sb.rpc('concluir_primeiro_acesso');
-  } catch (_) {
-    // silencioso de propósito
-  }
-
+  if (nova === null) return;
+  const { error } = await sb.auth.updateUser({ password: nova });
+  if (error) { mostrarToast('Não foi possível definir a senha: ' + error.message, 'error'); return; }
+  try { await sb.rpc('concluir_primeiro_acesso'); } catch (_) {}
   window._recuperandoSenha = false;
   history.replaceState(null, '', window.location.pathname + window.location.search);
   mostrarToast('Senha definida com sucesso!', 'success');
-
   const perfil = await carregarPerfilSb(true);
   if (perfil) {
     emailUsuario = perfil.email;
@@ -178,22 +156,13 @@ async function chamarAdminUsuarios(payload) {
     throw new Error(msg);
   }
   if (!data || data.status !== 'ok') throw new Error((data && data.msg) || 'Falha na operação.');
-  registrarLogAutomaticoSb(payload);
   return data;
 }
 
 function mostrarSenhaTemporaria(email, r) {
   if (!r || !r.senhaTemporaria) return;
   setTimeout(function () {
-    abrirDialogoSistema({
-      titulo: 'Senha temporária',
-      icone: 'fa-key',
-      mensagem: 'O e-mail não foi enviado. Copie a senha temporária abaixo e repasse ao usuário:',
-      destaque: email,
-      campos: [{ nome: 'senha', tipo: 'text', icone: 'fa-lock', valor: r.senhaTemporaria, readonly: true, copiar: true }],
-      textoConfirmar: 'Copiar e fechar',
-      textoCancelar: null
-    });
+    Dialogo.perguntar('O e-mail não foi enviado. Copie a senha temporária de ' + email + ' e repasse ao usuário:', { titulo: 'Senha temporária', valor: r.senhaTemporaria, somenteLeitura: true, textoConfirmar: 'Copiar e fechar', textoCancelar: 'Fechar' });
   }, 300);
 }
 
@@ -777,7 +746,8 @@ async function listarLogAcoesSb(u) {
   const { data, error } = await sb.from('log_acoes').select('*').order('data_hora', { ascending: false }).limit(limite);
   if (error) throw error;
   return data.map(function (l) {
-return { dataHora: l.data_hora, usuario: l.usuario, usuarioNome: l.usuario_nome || '', usuarioEscola: l.usuario_escola || '', acao: l.acao, detalhes: l.detalhes || '', escola: l.escola || '' };  });
+    return { dataHora: l.data_hora, usuario: l.usuario, usuarioNome: l.usuario_nome || '', usuarioEscola: l.usuario_escola || '', acao: l.acao, detalhes: l.detalhes || '', escola: l.escola || '' };
+  });
 }
 
 // ------------------------------------------------------------
@@ -1797,7 +1767,6 @@ async function executarAcaoAlunoSb(dados, msgSucesso, callback, aoFalhar) {
   if (btn && typeof showButtonLoading === 'function') showButtonLoading(btn);
   try {
     await ACAO_ALUNO_SB[dados.acao](dados);
-    if (ACOES_LOG_ADMIN_SB.indexOf(dados.acao) < 0) registrarLogAutomaticoSb(dados);
     if (msgSucesso) mostrarToast(msgSucesso, 'success');
     if (callback) callback();
   } catch (e) {
@@ -1810,81 +1779,3 @@ async function executarAcaoAlunoSb(dados, msgSucesso, callback, aoFalhar) {
     window._clickedButton = null;
   }
 }
-
-// =====================================================================
-// PATCH — Histórico de Ações com mais eventos registrados
-// Cole este bloco no FIM de js/supabase-client.js e depois faça as 2 trocas descritas abaixo.
-// =====================================================================
-
-// Rótulos das ações que passam a ser registradas automaticamente no histórico.
-// (Novo aluno, dados de aluno e checklist em lote já eram registrados pelo registrarUltimaAcao.)
-const ROTULOS_LOG_SB = {
-  alterarSituacao: 'Situação do aluno alterada',
-  excluirAluno: 'Aluno excluído',
-  excluirAlunosLote: 'Alunos excluídos em lote',
-  enviarCSVParaFila: 'Importação de alunos por CSV',
-  finalizarPromocao: 'Promoção de alunos finalizada',
-  uploadFotoAluno: 'Foto de aluno enviada',
-  uploadTermoResponsabilidade: 'Termo de responsabilidade do aluno enviado',
-  uploadDeclaracaoEdEspecial: 'Declaração de ed. especial enviada',
-  cadastrarTurma: 'Turma cadastrada',
-  atualizarProfissional: 'Dados de profissional atualizados',
-  uploadDocumentoProfissional: 'Documento de profissional enviado',
-  excluirDocumentoProfissional: 'Documento de profissional excluído',
-  salvarAtoAutorizativo: 'Ato autorizativo salvo',
-  excluirAtoAutorizativo: 'Ato autorizativo excluído',
-  salvarLegislacao: 'Legislação cadastrada',
-  editarLegislacao: 'Legislação editada',
-  excluirLegislacao: 'Legislação excluída',
-  salvarDadosEscola: 'Dados da escola atualizados',
-  salvarOrganizacoesCurriculares: 'Organizações curriculares atualizadas',
-  cadastrarProcesso: 'Processo cadastrado',
-  uploadDocumento: 'Documento enviado',
-  uploadModelo: 'Modelo oficial enviado',
-  uploadModeloEscola: 'Modelo da escola enviado',
-  salvarMonitoramento: 'Visita de monitoramento salva',
-  salvarComunicado: 'Comunicado publicado',
-  excluirComunicado: 'Comunicado excluído',
-  cadastrarUsuario: 'Usuário cadastrado',
-  editarUsuario: 'Usuário editado',
-  excluirUsuario: 'Usuário excluído',
-  resetarSenhaAdmin: 'Senha de usuário redefinida',
-  aprovarTermo: 'Termo de compromisso analisado'
-};
-// as 5 últimas passam por chamarAdminUsuarios (registradas lá, uma vez só)
-const ACOES_LOG_ADMIN_SB = ['cadastrarUsuario', 'editarUsuario', 'excluirUsuario', 'resetarSenhaAdmin', 'aprovarTermo'];
-
-function detalheLogSb(d) {
-  // nada de nome de aluno no log: só identificadores
-  if (d.acao === 'enviarCSVParaFila') return (d.alunos ? d.alunos.length : 0) + ' alunos';
-  if (d.acao === 'excluirAlunosLote') return (d.alunos ? d.alunos.length : 0) + ' alunos';
-  if (d.acao === 'alterarSituacao') return 'Aluno nº ' + d.row + ' → ' + d.situacao;
-  if (d.acao === 'excluirAluno' || /^upload(Foto|Termo|Declaracao)/.test(d.acao)) return 'Aluno nº ' + d.row;
-  if (d.acao === 'salvarMonitoramento') return (d.finalizar ? 'Finalizada' : 'Rascunho') + ' · ' + (d.escola || '');
-  if (d.acao === 'aprovarTermo') return (d.decisao === 'aprovar' ? 'Aprovado' : 'Recusado') + ': ' + (d.emailAlvo || '');
-  if (ACOES_LOG_ADMIN_SB.indexOf(d.acao) >= 0) return d.email || '';
-  return d.escola || d.tipo || d.id || '';
-}
-
-function registrarLogAutomaticoSb(d) {
-  const rotulo = ROTULOS_LOG_SB[d.acao];
-  if (!rotulo) return;
-  carregarPerfilSb().then(function (p) {
-    let escola = d.escola || '';
-    if (!escola && p && !p.is_admin && !(p.perfis || []).includes('SUPERVISOR')) escola = p.escola || '';
-    return sb.from('log_acoes').insert({ acao: rotulo, detalhes: String(detalheLogSb(d) || '').slice(0, 300), escola: escola || null });
-  }).then(function (r) { if (r && r.error) console.warn('Log não gravado:', r.error.message); })
-    .catch(function (e) { console.warn('Log não gravado:', e); });
-}
-
-// ---------------------------------------------------------------------
-// TROCA 1 — dentro de executarAcaoAlunoSb, logo depois da linha:
-//     await ACAO_ALUNO_SB[dados.acao](dados);
-// acrescente:
-//     if (ACOES_LOG_ADMIN_SB.indexOf(dados.acao) < 0) registrarLogAutomaticoSb(dados);
-//
-// TROCA 2 — dentro de chamarAdminUsuarios, logo depois da linha:
-//     if (!data || data.status !== 'ok') throw new Error((data && data.msg) || 'Falha na operação.');
-// acrescente:
-//     registrarLogAutomaticoSb(payload);
-// =====================================================================
