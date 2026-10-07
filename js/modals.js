@@ -709,8 +709,8 @@ function carregarTiposDocumento() {
 
     // Evento para capturar quando selecionar "+ Novo tipo..."
     select.onchange = async function() {
-  if (this.value === '__novo__') {
-    const novoTipo = await Dialogo.perguntar('Digite o nome do novo tipo de documento:', { titulo: 'Novo tipo', textoConfirmar: 'Cadastrar' });
+      if (this.value === '__novo__') {
+        const novoTipo = await Dialogo.perguntar('Digite o nome do novo tipo de documento:', { titulo: 'Novo tipo', textoConfirmar: 'Cadastrar' });
         if (novoTipo && novoTipo.trim()) {
           const escolaNovoTipo = usuarioEscolheEscola() ? (document.getElementById('uploadEscola')?.value || '') : '';
           if (usuarioEscolheEscola() && !escolaNovoTipo) {
@@ -1870,6 +1870,7 @@ async function excluirLegislacaoItem(id) {
   };
 
   postSemResposta(dados, 'Documento excluído!', () => {
+    registrarUltimaAcao('Documento de legislação excluído', `Documento ID: ${id}`);
     // Recarrega a consulta após a exclusão
     if (document.getElementById('abaConsultaLegislacao').style.display !== 'none') {
       buscarLegislacao();
@@ -2294,6 +2295,7 @@ async function excluirComunicadoItem(id) {
   if (!await Dialogo.confirmar('Deseja excluir este comunicado?', { titulo: 'Excluir comunicado', textoConfirmar: 'Excluir', perigo: true })) return;
 
   postSemResposta({ acao: 'excluirComunicado', email: emailUsuario, id: id }, 'Excluído!', () => {
+    registrarUltimaAcao('Comunicado excluído', `Comunicado ID: ${id}`);
     carregarComunicados();
   });
 }
@@ -2909,7 +2911,8 @@ function visualizarDeclEdEsp() {
 }
 
 async function removerDeclEdEsp(row, escola) {
-  if (!await Dialogo.confirmar("Remover a declaração de educação especial?", { titulo: 'Remover declaração', textoConfirmar: 'Remover', perigo: true })) return;  const dados = {
+  if (!await Dialogo.confirmar("Remover a declaração de educação especial?", { titulo: 'Remover declaração', textoConfirmar: 'Remover', perigo: true })) return;
+  const dados = {
     acao: "uploadDeclaracaoEdEspecial",
     email: emailUsuario,
     row: row,
