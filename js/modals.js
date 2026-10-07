@@ -2253,7 +2253,7 @@ function carregarComunicados() {
         atualizarCard();
       };
 
-      const botaoExcluir = (item.criador === emailUsuario) ? 
+      const botaoExcluir = podeExcluirComunicado(item) ? 
         `<button class="btn-icone" onclick="event.stopPropagation(); excluirComunicadoItem('${item.id}')" 
                 style="color:#ef4444; font-size:12px; padding:2px 4px;" title="Excluir">✕</button>` 
         : '';
@@ -2277,6 +2277,18 @@ function carregarComunicados() {
       container.appendChild(card);
     });
   });
+}
+
+// Quem pode excluir: o criador (comparando e-mail sem diferenciar maiúsculas/minúsculas
+// ou o ID do usuário, caso a tabela guarde o ID em vez do e-mail) e o administrador.
+function podeExcluirComunicado(item) {
+  const email = String(emailUsuario || '').trim().toLowerCase();
+  if (email === 'eder.ramos@educador.edu.es.gov.br') return true;
+  const criador = String(item.criador || '').trim().toLowerCase();
+  if (!criador) return false;
+  if (criador === email) return true;
+  const meuId = (typeof perfilSbCache !== 'undefined' && perfilSbCache && perfilSbCache.id) ? String(perfilSbCache.id).toLowerCase() : '';
+  return !!meuId && criador === meuId;
 }
 
 // Função para recolher/expandir o mural (botão “Recolher”)
