@@ -777,8 +777,7 @@ async function listarLogAcoesSb(u) {
   const { data, error } = await sb.from('log_acoes').select('*').order('data_hora', { ascending: false }).limit(limite);
   if (error) throw error;
   return data.map(function (l) {
-    return { dataHora: l.data_hora, usuario: l.usuario, acao: l.acao, detalhes: l.detalhes || '', escola: l.escola || '' };
-  });
+return { dataHora: l.data_hora, usuario: l.usuario, usuarioNome: l.usuario_nome || '', usuarioEscola: l.usuario_escola || '', acao: l.acao, detalhes: l.detalhes || '', escola: l.escola || '' };  });
 }
 
 // ------------------------------------------------------------
