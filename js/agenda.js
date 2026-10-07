@@ -526,6 +526,7 @@ async function excluirEvento(id) {
   };
   
   postSemResposta(dados, 'Evento excluído!', () => {
+    registrarUltimaAcao('Evento da agenda excluído', `Evento ID: ${id}`);
     carregarAgenda(); // recarrega a lista e o calendário
   });
 }
