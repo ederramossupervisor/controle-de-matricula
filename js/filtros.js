@@ -122,8 +122,8 @@ function carregarTiposProcesso() {
       if (valorAtual && tipos.includes(valorAtual)) selectCad.value = valorAtual;
 
       selectCad.onchange = async function() {
-      if (this.value === '__novo__') {
-        const novoTipo = await Dialogo.perguntar('Digite o nome do novo tipo de processo/documento:', { titulo: 'Novo tipo', textoConfirmar: 'Cadastrar' });
+        if (this.value === '__novo__') {
+          const novoTipo = await Dialogo.perguntar('Digite o nome do novo tipo de processo/documento:', { titulo: 'Novo tipo', textoConfirmar: 'Cadastrar' });
           if (novoTipo && novoTipo.trim()) {
             const escolaAlvo = document.getElementById('cadastroProcessoEscola')?.value || '';
             if (perfilUsuario !== 'SECRETARIA' && !escolaAlvo) {
