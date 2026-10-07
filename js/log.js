@@ -36,10 +36,18 @@ function filtrarLogs() {
     logsFiltrados = logsGlobais.filter(log =>
       (log.acao || '').toLowerCase().includes(termo) ||
       (log.usuario || '').toLowerCase().includes(termo) ||
+      (log.usuarioNome || '').toLowerCase().includes(termo) ||
+      (log.usuarioEscola || '').toLowerCase().includes(termo) ||
       (log.detalhes || '').toLowerCase().includes(termo)
     );
   }
   renderizarLogAcoes(logsFiltrados);
+}
+
+function escapar(txt) {
+  return String(txt == null ? '' : txt).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
 }
 
 function renderizarLogAcoes(logs) {
@@ -56,6 +64,7 @@ function renderizarLogAcoes(logs) {
       <tr>
         <th>Data/Hora</th>
         <th>Usuário</th>
+        <th>Escola</th>
         <th>Ação</th>
         <th>Detalhes</th>
       </tr>
@@ -64,9 +73,13 @@ function renderizarLogAcoes(logs) {
 
   logs.forEach(log => {
     const data = log.dataHora ? new Date(log.dataHora).toLocaleString('pt-BR') : '—';
+    const nomeUsuario = log.usuarioNome
+      ? `${escapar(log.usuarioNome)}<br><small style="color: var(--text-muted);">${escapar(log.usuario)}</small>`
+      : (escapar(log.usuario) || '—');
     html += `<tr>
       <td class="data-hora" data-label="Data/Hora">${data}</td>
-      <td data-label="Usuário">${log.usuario || '—'}</td>
+      <td data-label="Usuário">${nomeUsuario}</td>
+      <td data-label="Escola">${escapar(log.usuarioEscola) || '—'}</td>
       <td data-label="Ação">${log.acao || '—'}</td>
       <td class="detalhes" data-label="Detalhes" title="${log.detalhes || ''}">${log.detalhes || '—'}</td>
     </tr>`;
