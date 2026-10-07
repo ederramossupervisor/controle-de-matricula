@@ -110,8 +110,6 @@ function continuarCarregamentoAlunos(pagina, filtros, tentativa = 0) {
     }
     document.body.classList.remove('perfil-supervisor', 'perfil-secretaria');
     document.body.classList.add(perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria');
-    // Guarda a classe para que, ao recarregar a página, a página principal desfocada já apareça com o layout certo
-    try { localStorage.setItem('perfilClasseBody', perfilUsuario === 'SUPERVISOR' ? 'perfil-supervisor' : 'perfil-secretaria'); } catch (_) {}
     escolaUsuario = dados.escola;
     const nomeEscolaHeader = document.getElementById('nomeEscolaHeader');
     if (nomeEscolaHeader) {
@@ -560,7 +558,9 @@ async function excluirAto(id) {
     id: id
   };
   
-  postSemResposta(dados, "Ato excluído com sucesso!");
+  postSemResposta(dados, "Ato excluído com sucesso!", () => {
+    registrarUltimaAcao('Ato autorizativo excluído', `Ato ID: ${id}`);
+  });
   carregarAtos();
 }
 
@@ -982,6 +982,7 @@ async function reativarAlunoInativo(id, nome, row, escola) {
   };
   
   postSemResposta(dados, "Aluno reativado com sucesso!", () => {
+    registrarUltimaAcao('Aluno reativado', `Aluno: ${nome}`, escola);
     buscarInativos(paginaAtualInativos);
     if (escola === escolaUsuario || perfilUsuario === "SUPERVISOR") {
       carregarAlunos();
@@ -1056,7 +1057,7 @@ async function salvarDadosAluno() {
   };
   
   postSemResposta(dados, "Dados atualizados com sucesso!", () => {
-    registrarUltimaAcao('Dados de aluno atualizados');
+    registrarUltimaAcao('Dados de aluno atualizados', `Aluno: ${nome}`, dadosAlunoAtual && dadosAlunoAtual.ESCOLA);
 
     dadosAlunoAtual.ALUNO = nome;
     dadosAlunoAtual.ID = idAluno;
@@ -1170,6 +1171,9 @@ async function salvarAlteracoesEmLote(row) {
     }
     
     mostrarToast("Alterações salvas com sucesso!", "success");
+    registrarUltimaAcao('Aluno atualizado (detalhes)',
+      `Aluno: ${nome}` + (dadosBasicosAlterados ? ' · dados cadastrais' : '') + (alteracoesDocs.length ? ` · ${alteracoesDocs.length} documento(s)` : ''),
+      dadosAlunoAtual && dadosAlunoAtual.ESCOLA);
     fecharModalDetalhes();
     carregarAlunos();
     
@@ -1227,7 +1231,13 @@ async function salvarChecklistEmLote() {
   };
 
   postSemResposta(dados, "Documentação atualizada em lote com sucesso!", () => {
-    registrarUltimaAcao('Checklist em lote atualizado');   // 🔥
+    {
+      const qtdAlunos = new Set(alteracoes.map(a => a.escola + '|' + a.row)).size;
+      const escolasLote = [...new Set(alteracoes.map(a => a.escola))];
+      registrarUltimaAcao('Checklist em lote atualizado',
+        `${alteracoes.length} alteração(ões) em ${qtdAlunos} aluno(s)` + (escolasLote.length === 1 ? '' : ` · ${escolasLote.length} escolas`),
+        escolasLote.length === 1 ? escolasLote[0] : '');
+    }
     hideButtonLoading(btn);
     fecharModalChecklistLote();
     carregarAlunos();
@@ -1277,6 +1287,7 @@ async function salvarUsuario() {
   };
 
   postSemResposta(dados, "Usuário cadastrado com sucesso!", async () => {
+    registrarUltimaAcao('Usuário cadastrado', `${nome} (${email}) · Perfis: ${perfis.join(', ')}`, escola);
     hideButtonLoading(btnSalvar);
     fecharModalCadastroUsuario();
     if (document.getElementById("modalListaUsuarios").style.display === "flex") {
@@ -1333,6 +1344,7 @@ async function excluirUsuarioAdmin(emailAlvo) {
     const r = await chamarAdminUsuarios({ acao: "excluirUsuario", email: emailAlvo });
     esconderLoading();
     mostrarToast(r.msg || "Usuário excluído.", "success");
+    registrarUltimaAcao('Usuário excluído', `Usuário: ${emailAlvo}`);
     carregarUsuarios();
   } catch (e) {
     esconderLoading();
@@ -1348,6 +1360,7 @@ async function resetarSenhaUsuario(emailAlvo) {
     const r = await chamarAdminUsuarios({ acao: "resetarSenhaAdmin", email: emailAlvo });
     esconderLoading();
     mostrarToast(r.msg || "Senha redefinida.", "success");
+    registrarUltimaAcao('Senha de usuário redefinida', `Usuário: ${emailAlvo}`);
     mostrarSenhaTemporaria(emailAlvo, r);
   } catch (e) {
     esconderLoading();
@@ -1366,7 +1379,9 @@ async function importarDaPlanilha() {
     email: emailUsuario
   };
   
-  postSemResposta(dados, "Importação concluída! Atualize a lista.");
+  postSemResposta(dados, "Importação concluída! Atualize a lista.", () => {
+    registrarUltimaAcao('Importação de alunos da planilha', "Aba IMPORT_TEMP");
+  });
   carregarAlunos();
 }
 
@@ -1545,7 +1560,7 @@ async function salvarAluno() {
   };
 
   postSemResposta(dados, "Aluno cadastrado com sucesso!", () => {
-    registrarUltimaAcao('Novo aluno cadastrado');
+    registrarUltimaAcao('Novo aluno cadastrado', `Aluno: ${nome}` + (turma ? ` · Turma: ${turma}` : ''), escolaNovoAluno);
 
     if (nomeInput) nomeInput.value = "";
     if (responsavelInput) responsavelInput.value = "";
@@ -1583,6 +1598,7 @@ async function alterarSituacaoAluno(novaSituacao) {
   const confirmacao = await Dialogo.confirmar(`Deseja marcar este aluno como "${novaSituacao}"?`, { titulo: 'Alterar situação', textoConfirmar: 'Confirmar' });
   if (!confirmacao) return;
   
+  const nomeAlunoLog = dadosAlunoAtual.ALUNO || '';
   const dados = {
     acao: "alterarSituacao",
     row: dadosAlunoAtual._row,
@@ -1591,7 +1607,9 @@ async function alterarSituacaoAluno(novaSituacao) {
     email: emailUsuario
   };
   
-  postSemResposta(dados, `Aluno marcado como ${novaSituacao}.`);
+  postSemResposta(dados, `Aluno marcado como ${novaSituacao}.`, () => {
+    registrarUltimaAcao('Situação do aluno alterada', `Aluno: ${nomeAlunoLog} → ${novaSituacao}`, dados.escola);
+  });
   fecharModalDetalhes();
   carregarAlunos();
 }
@@ -1614,6 +1632,7 @@ async function excluirAlunoPermanentemente() {
   };
   
   postSemResposta(dados, "Aluno excluído com sucesso!", () => {
+    registrarUltimaAcao('Aluno excluído permanentemente', `Aluno: ${nomeAluno}`, dados.escola);
     fecharModalDetalhes();
     carregarAlunos();
   });
@@ -1835,12 +1854,13 @@ async function logout() {
 }
 
 async function recuperarSenha() {
-  const email = await Dialogo.perguntar("Digite seu e-mail institucional para receber o link de nova senha:", {
-    titulo: 'Recuperar senha',
-    textoConfirmar: 'Enviar link',
-    tipoCampo: 'email'
-  });
-  if (email === null) return;
+  const email = await Dialogo.perguntar("Digite seu e-mail institucional para receber o link de nova senha:", { titulo: 'Recuperar senha', textoConfirmar: 'Enviar link', tipoCampo: 'email' });
+  if (!email || !email.trim()) return;
+
+  if (!email.includes('@') || !email.includes('.')) {
+    mostrarToast("Formato de e-mail inválido.", "warning");
+    return;
+  }
 
   mostrarLoading();
   try {
@@ -2209,7 +2229,7 @@ function carregarTurmasExportacao(escolaFiltro) {
     });
   });
 }
-function registrarUltimaAcao(descricao) {
+function registrarUltimaAcao(descricao, detalhes, escola) {
   ultimaAcao = descricao;
 }
 function lerArquivoBase64(file) {
