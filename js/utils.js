@@ -492,6 +492,18 @@ function formatarDataISO(dataStr) {
   return limpo;
 }
 
+// Abre o WhatsApp: no desktop vai direto ao WhatsApp Web (reaproveitando a
+// mesma aba aberta pelo app); no celular usa wa.me, que abre o app.
+function abrirWhatsApp(info) {
+  if (!info || !info.url) return;
+  const ehMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (ehMobile) {
+    window.open(info.url, '_blank');
+  } else {
+    window.open(info.urlWeb || info.url, 'whatsapp_web');
+  }
+}
+
 function gerarLinkWhatsApp(aluno) {
   const docsPendentes = [];
   CONFIG_DOCS_CARD.forEach(doc => {
@@ -507,6 +519,7 @@ function gerarLinkWhatsApp(aluno) {
 
   const telefone = aluno.TELEFONE ? aluno.TELEFONE.replace(/\D/g, '') : '';
   let url = null;
+  let urlWeb = null;
   const listaDocs = docsPendentes.join(', ');
   const mensagem = `Olá! A escola ${aluno.ESCOLA} informa que o(a) aluno(a) ${aluno.ALUNO} está com os seguintes documentos pendentes: ${listaDocs}. Por favor, regularize o quanto antes. Obrigado!`;
 
@@ -514,10 +527,12 @@ function gerarLinkWhatsApp(aluno) {
     let numero = telefone;
     if (numero.startsWith('0')) numero = numero.substring(1);
     if (!numero.startsWith('55')) numero = '55' + numero;
-    url = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+    const texto = encodeURIComponent(mensagem);
+    url = `https://wa.me/${numero}?text=${texto}`;
+    urlWeb = `https://web.whatsapp.com/send?phone=${numero}&text=${texto}`;
   }
 
-  return { url, pendentes: docsPendentes, mensagem };
+  return { url, urlWeb, pendentes: docsPendentes, mensagem };
 }
 // =========================
 // COMPARTILHAR LEGISLAÇÃO
