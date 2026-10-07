@@ -144,6 +144,8 @@
             if (msg) { erro.textContent = msg; input.focus(); return; }
           }
           fechar(v);
+        } else if (ehAviso) {
+          fechar(true);
         } else {
           fechar(true);
         }
@@ -177,7 +179,7 @@
 
       // foco inicial: campo de texto; em ações perigosas, o botão Cancelar (evita confirmar sem querer)
       setTimeout(function () {
-        if (input) input.select();
+        if (input) { input.focus(); if (!cfg.somenteLeitura) input.select(); else input.select(); }
         else if (perigo && btnCancelar) btnCancelar.focus();
         else btnOk.focus();
       }, 30);
