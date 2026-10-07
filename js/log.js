@@ -80,8 +80,8 @@ function renderizarLogAcoes(logs) {
       <td class="data-hora" data-label="Data/Hora">${data}</td>
       <td data-label="Usuário">${nomeUsuario}</td>
       <td data-label="Escola">${escapar(log.usuarioEscola) || '—'}</td>
-      <td data-label="Ação">${log.acao || '—'}</td>
-      <td class="detalhes" data-label="Detalhes" title="${log.detalhes || ''}">${log.detalhes || '—'}</td>
+      <td data-label="Ação">${escapar(log.acao) || '—'}</td>
+      <td class="detalhes" data-label="Detalhes" title="${escapar(log.detalhes)}">${escapar(log.detalhes) || '—'}</td>
     </tr>`;
   });
 
@@ -89,21 +89,22 @@ function renderizarLogAcoes(logs) {
   container.innerHTML = html;
 }
 
-// Log automático via registrarUltimaAcao (opcional)
-function registrarLogNoServidor(acao, detalhes) {
+// Log automático via registrarUltimaAcao
+function registrarLogNoServidor(acao, detalhes, escola) {
   if (!emailUsuario) return;
   postSemResposta({
     acao: 'registrarLogAcao',
     email: emailUsuario,
     acaoLog: acao,
-    detalhes: detalhes || ''
+    detalhes: detalhes || '',
+    escola: escola || ''
   }, null);
 }
 
 if (typeof registrarUltimaAcao === 'function') {
   const _original = registrarUltimaAcao;
-  registrarUltimaAcao = function(descricao) {
+  registrarUltimaAcao = function(descricao, detalhes, escola) {
     _original(descricao);
-    registrarLogNoServidor(descricao);
+    registrarLogNoServidor(descricao, detalhes, escola);
   };
 }
