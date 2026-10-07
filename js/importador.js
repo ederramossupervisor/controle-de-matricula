@@ -79,7 +79,7 @@ const ImportProgress = {
       btn.innerText = 'Desfazer importação';
       btn.style.display = 'none';
       btn.onclick = async function () {
-  if (await Dialogo.confirmar('Isso excluirá todos os alunos já importados nesta leva. Continuar?', { titulo: 'Desfazer importação', textoConfirmar: 'Desfazer', perigo: true })) {
+        if (await Dialogo.confirmar('Isso excluirá todos os alunos já importados nesta leva. Continuar?', { titulo: 'Desfazer importação', textoConfirmar: 'Desfazer', perigo: true })) {
           desfazerImportacao();
         }
       };
@@ -149,6 +149,9 @@ const ImportProgress = {
     const r = window._resumoImport;
     const detalhe = r ? ` (${r.importados} novos, ${r.duplicatas} já existiam, ${r.falhas} ignorados)` : '';
     mostrarToast(`${estado.titulo} concluída! ${estado.total} alunos processados.${detalhe}`, 'success');
+    if (typeof registrarUltimaAcao === 'function') {
+      registrarUltimaAcao(`${estado.titulo} concluída`, `${estado.total} alunos processados${detalhe}`);
+    }
     if (typeof carregarAlunos === 'function') carregarAlunos();
     if (typeof fecharModalImportacao === 'function') fecharModalImportacao();
     if (typeof fecharModalPromocao === 'function') fecharModalPromocao();
@@ -204,7 +207,9 @@ function desfazerImportacao() {
     email: emailUsuario,
     alunos: ImportProgress.alunosEnviadosIds
   };
+  const qtdDesfeitos = ImportProgress.alunosEnviadosIds.length;
   postSemResposta(dados, 'Alunos removidos com sucesso!', () => {
+    if (typeof registrarUltimaAcao === 'function') registrarUltimaAcao('Importação desfeita', `${qtdDesfeitos} alunos removidos`);
     ImportProgress.alunosEnviadosIds = [];
     ImportProgress.esconder();
     const btn = document.getElementById('btnDesfazerImport');
