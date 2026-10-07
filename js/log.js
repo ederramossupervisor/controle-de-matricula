@@ -89,7 +89,7 @@ function renderizarLogAcoes(logs) {
   container.innerHTML = html;
 }
 
-// Log automático via registrarUltimaAcao
+// Log automático via registrarUltimaAcao (opcional)
 function registrarLogNoServidor(acao, detalhes, escola) {
   if (!emailUsuario) return;
   postSemResposta({
