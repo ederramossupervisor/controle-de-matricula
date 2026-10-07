@@ -2185,7 +2185,8 @@ function carregarComunicados() {
     btnNovo.style.display = podePublicar ? 'inline-block' : 'none';
   }
 
-  const url = `${API_URL}?tipo=comunicados&email=${emailUsuario}&escola=${encodeURIComponent(escolaUsuario)}`;
+  // Administrador/supervisor não têm escola própria (null): envia vazio para listar todas.
+  const url = `${API_URL}?tipo=comunicados&email=${emailUsuario}&escola=${encodeURIComponent(escolaUsuario || '')}`;
   jsonp(url, function(dados) {
     if (!container) return;
     container.innerHTML = '';
