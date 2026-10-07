@@ -390,7 +390,7 @@ function renderLista(dados) {
               }
             } else {
               if (temTelefone) {
-                window.open(infoWhatsApp.url, '_blank');
+                abrirWhatsApp(infoWhatsApp);
               } else {
                 mostrarToast('Telefone do responsável não cadastrado.', 'warning');
               }
