@@ -28,20 +28,104 @@ function carregarLogAcoes() {
   });
 }
 
+function filtrarListaLogs(lista, termo) {
+  termo = (termo || '').trim().toLowerCase();
+  if (!termo) return [...lista];
+  return lista.filter(log =>
+    (log.acao || '').toLowerCase().includes(termo) ||
+    (log.usuario || '').toLowerCase().includes(termo) ||
+    (log.usuarioNome || '').toLowerCase().includes(termo) ||
+    (log.usuarioEscola || '').toLowerCase().includes(termo) ||
+    (log.escola || '').toLowerCase().includes(termo) ||
+    (log.detalhes || '').toLowerCase().includes(termo)
+  );
+}
+
 function filtrarLogs() {
-  const termo = document.getElementById('buscaHistorico').value.trim().toLowerCase();
-  if (!termo) {
-    logsFiltrados = [...logsGlobais];
-  } else {
-    logsFiltrados = logsGlobais.filter(log =>
-      (log.acao || '').toLowerCase().includes(termo) ||
-      (log.usuario || '').toLowerCase().includes(termo) ||
-      (log.usuarioNome || '').toLowerCase().includes(termo) ||
-      (log.usuarioEscola || '').toLowerCase().includes(termo) ||
-      (log.detalhes || '').toLowerCase().includes(termo)
-    );
-  }
+  const termo = document.getElementById('buscaHistorico').value;
+  logsFiltrados = filtrarListaLogs(logsGlobais, termo);
   renderizarLogAcoes(logsFiltrados);
+}
+
+// Exporta o histórico em PDF (mesmo padrão dos outros relatórios do sistema: abre
+// a janela de impressão e a pessoa escolhe "Salvar como PDF"). Busca até 1000
+// registros (os mais recentes) e respeita o texto digitado no filtro da tela.
+function exportarLogsPDF() {
+  if (!emailUsuario) return;
+  const termo = document.getElementById('buscaHistorico').value.trim();
+
+  // Abre a janela já no clique, para o navegador não bloquear como pop-up
+  const janela = window.open('', '_blank');
+  if (!janela) {
+    mostrarToast('Permita pop-ups neste site para exportar o PDF.', 'warning');
+    return;
+  }
+  janela.document.write('<p style="font-family:Arial;padding:24px;">Gerando PDF...</p>');
+
+  mostrarLoading();
+  const url = API_URL + '?tipo=logAcoes&email=' + encodeURIComponent(emailUsuario) + '&limite=1000';
+
+  jsonp(url, function(resposta) {
+    esconderLoading();
+    if (resposta && resposta.erro) {
+      janela.close();
+      mostrarToast(resposta.erro, 'error');
+      return;
+    }
+    const todos = Array.isArray(resposta) ? resposta : (resposta.logs || []);
+    const logs = filtrarListaLogs(todos, termo);
+    if (!logs.length) {
+      janela.close();
+      mostrarToast('Nenhuma ação para exportar.', 'warning');
+      return;
+    }
+
+    const agora = new Date().toLocaleString('pt-BR');
+    const linhas = logs.map(function(l) {
+      const data = l.dataHora ? new Date(l.dataHora).toLocaleString('pt-BR') : '—';
+      const usuario = l.usuarioNome
+        ? escapar(l.usuarioNome) + '<br><small>' + escapar(l.usuario) + '</small>'
+        : (escapar(l.usuario) || '—');
+      return '<tr>' +
+        '<td class="nowrap">' + data + '</td>' +
+        '<td>' + usuario + '</td>' +
+        '<td>' + (escapar(l.usuarioEscola) || '—') + '</td>' +
+        '<td>' + (escapar(l.acao) || '—') + '</td>' +
+        '<td>' + (escapar(l.detalhes) || '—') + '</td>' +
+        '</tr>';
+    }).join('');
+
+    const html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
+      '<title>Histórico de Ações</title><style>' +
+      '@page { size: A4 landscape; margin: 12mm; }' +
+      'body { font-family: Arial, sans-serif; color: #1e293b; margin: 0; }' +
+      'h1 { font-size: 18px; color: #1e3a8a; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; margin: 0 0 8px; }' +
+      '.meta { font-size: 11px; color: #475569; margin: 0 0 12px; }' +
+      'table { width: 100%; border-collapse: collapse; }' +
+      'thead { display: table-header-group; }' +
+      'th { background: #1e3a8a; color: #fff; padding: 6px 8px; font-size: 11px; text-align: left; }' +
+      'td { padding: 5px 8px; border: 1px solid #cbd5e1; font-size: 10px; vertical-align: top; word-break: break-word; }' +
+      'tr { page-break-inside: avoid; }' +
+      'tbody tr:nth-child(even) { background: #f8fafc; }' +
+      'small { color: #64748b; }' +
+      '.nowrap { white-space: nowrap; }' +
+      '@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }' +
+      '</style></head><body>' +
+      '<h1>Histórico de Ações</h1>' +
+      '<p class="meta">Gerado em ' + agora + ' por ' + escapar(emailUsuario) +
+        ' | ' + logs.length + ' ação(ões)' +
+        (termo ? ' | Filtro: &ldquo;' + escapar(termo) + '&rdquo;' : '') +
+        ' | Registros mais recentes (até 1.000)</p>' +
+      '<table><thead><tr><th>Data/Hora</th><th>Usuário</th><th>Escola</th><th>Ação</th><th>Detalhes</th></tr></thead>' +
+      '<tbody>' + linhas + '</tbody></table></body></html>';
+
+    janela.document.open();
+    janela.document.write(html);
+    janela.document.close();
+    janela.focus();
+    janela.onload = function() { janela.print(); };
+    mostrarToast(logs.length + ' ações no PDF.', 'success');
+  });
 }
 
 function escapar(txt) {
