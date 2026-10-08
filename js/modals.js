@@ -1870,7 +1870,7 @@ async function excluirLegislacaoItem(id) {
   };
 
   postSemResposta(dados, 'Documento excluído!', () => {
-    registrarUltimaAcao('Documento de legislação excluído', `Documento ID: ${id}`);
+    // o histórico da exclusão (com o nome do documento) é gravado pelo banco
     // Recarrega a consulta após a exclusão
     if (document.getElementById('abaConsultaLegislacao').style.display !== 'none') {
       buscarLegislacao();

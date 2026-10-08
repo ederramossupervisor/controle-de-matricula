@@ -559,7 +559,7 @@ async function excluirAto(id) {
   };
   
   postSemResposta(dados, "Ato excluído com sucesso!", () => {
-    registrarUltimaAcao('Ato autorizativo excluído', `Ato ID: ${id}`);
+    // o histórico da exclusão (com o nome do ato) é gravado pelo banco
   });
   carregarAtos();
 }
@@ -1172,7 +1172,7 @@ async function salvarAlteracoesEmLote(row) {
     
     mostrarToast("Alterações salvas com sucesso!", "success");
     registrarUltimaAcao('Aluno atualizado (detalhes)',
-      `Aluno: ${nome}` + (dadosBasicosAlterados ? ' · dados cadastrais' : '') + (alteracoesDocs.length ? ` · ${alteracoesDocs.length} documento(s)` : ''),
+      `Aluno: ${nome}` + (dadosBasicosAlterados ? ' · dados cadastrais' : '') + (alteracoesDocs.length ? ` · Documentos: ${descreverDocsAlterados(alteracoesDocs)}` : ''),
       dadosAlunoAtual && dadosAlunoAtual.ESCOLA);
     fecharModalDetalhes();
     carregarAlunos();
@@ -1235,7 +1235,7 @@ async function salvarChecklistEmLote() {
       const qtdAlunos = new Set(alteracoes.map(a => a.escola + '|' + a.row)).size;
       const escolasLote = [...new Set(alteracoes.map(a => a.escola))];
       registrarUltimaAcao('Checklist em lote atualizado',
-        `${alteracoes.length} alteração(ões) em ${qtdAlunos} aluno(s)` + (escolasLote.length === 1 ? '' : ` · ${escolasLote.length} escolas`),
+        `${alteracoes.length} alteração(ões) em ${qtdAlunos} aluno(s)` + (escolasLote.length === 1 ? '' : ` · ${escolasLote.length} escolas`) + ` · Documentos: ${descreverDocsAlterados(alteracoes, true)}`,
         escolasLote.length === 1 ? escolasLote[0] : '');
     }
     hideButtonLoading(btn);

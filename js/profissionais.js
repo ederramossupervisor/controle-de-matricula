@@ -987,7 +987,7 @@ async function excluirDocumentoProfissional(fileId, idProfissional, escola) {
   };
 
   postSemResposta(dados, 'Documento excluído!', () => {
-    registrarUltimaAcao('Documento de profissional excluído', `Profissional ID: ${idProfissional}`, escola);
+    // o histórico da exclusão (com o nome do documento e do profissional) é gravado pelo banco
     carregarDocumentosProfissional(idProfissional, escola);
   });
 }

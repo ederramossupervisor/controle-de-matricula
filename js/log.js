@@ -1,4 +1,41 @@
 // js/log.js
+
+// Nomes dos documentos do checklist do aluno (índice da coluna → nome exibido no histórico)
+const ROTULOS_DOCS_ALUNO = {
+  8: 'Certidão de Nascimento', 9: 'CPF', 10: 'RG', 11: 'Carteira de Vacinação', 12: 'Cartão do SUS',
+  13: 'Comprovante de Residência', 14: 'Documentos do Responsável', 15: 'Histórico Escolar',
+  16: 'Declaração de Transferência', 17: 'Educação Especial'
+};
+
+// Texto para a coluna "Detalhes" dizendo QUAIS documentos foram alterados.
+// agrupar=false: "CPF (entregue), RG (pendente)"  ·  agrupar=true (lote): "CPF: 3 entregue(s) / 1 pendente(s)"
+function descreverDocsAlterados(alteracoes, agrupar) {
+  if (!Array.isArray(alteracoes) || alteracoes.length === 0) return '';
+  const nomeDoc = function (a) { return ROTULOS_DOCS_ALUNO[Number(a.coluna)] || 'Documento'; };
+  const ehFlag = function (a) { return Number(a.coluna) === 17; };   // Educação Especial é marcação, não entrega
+
+  if (!agrupar) {
+    return alteracoes.map(function (a) {
+      const estado = ehFlag(a) ? (a.valor ? 'marcado' : 'desmarcado') : (a.valor ? 'entregue' : 'pendente');
+      return nomeDoc(a) + ' (' + estado + ')';
+    }).join(', ');
+  }
+
+  const grupos = {};
+  alteracoes.forEach(function (a) {
+    const nome = nomeDoc(a);
+    const g = grupos[nome] = grupos[nome] || { sim: 0, nao: 0, flag: ehFlag(a) };
+    if (a.valor) g.sim++; else g.nao++;
+  });
+  return Object.keys(grupos).map(function (nome) {
+    const g = grupos[nome];
+    const partes = [];
+    if (g.sim) partes.push(g.sim + (g.flag ? ' marcado(s)' : ' entregue(s)'));
+    if (g.nao) partes.push(g.nao + (g.flag ? ' desmarcado(s)' : ' pendente(s)'));
+    return nome + ': ' + partes.join(' / ');
+  }).join('; ');
+}
+
 let logsGlobais = [];
 let logsFiltrados = [];
 
