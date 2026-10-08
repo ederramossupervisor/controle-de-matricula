@@ -4,7 +4,7 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script>const APP_VERSION = 'v3.1.0-sb27';</script>  
+<script>const APP_VERSION = 'v3.1.0-sb28';</script>  
 <script>
   // Se este arquivo foi aberto direto (atalho/favorito salvo aponta para
   // app_v2.html em vez da raiz do site), a rotina de limpeza de cache e
@@ -1584,7 +1584,7 @@
     </div>
 
         
-    <!-- 🔔 MODAL DE NOTIFICAÇÕES (somente avisos) -->
+    <!-- 🔔 MODAL DE NOTIFICAÇÕES -->
     <div id="modalNotificacoes" class="modal-overlay" style="display:none;">
       <div class="modal-card modal-card--grande">
         <div class="modal-header">
@@ -1592,6 +1592,13 @@
           <button class="close-btn" onclick="fecharNotificacoes()"><i class="fas fa-times"></i></button>
         </div>
         <div class="modal-body">
+          <div class="notif-toolbar">
+            <div class="abas-seletor">
+              <button id="abaNotifNaoLidas" class="aba-item ativo" onclick="mudarAbaNotificacoes('naoLidas')">Não lidas</button>
+              <button id="abaNotifTodas" class="aba-item" onclick="mudarAbaNotificacoes('todas')">Todas</button>
+            </div>
+            <button id="btnMarcarTodasLidas" class="btn-pequeno" onclick="marcarTodasLidas()" style="display:none;"><i class="fas fa-check-double"></i> Marcar todas como lidas</button>
+          </div>
           <div id="listaNotificacoes" style="max-height: 400px; overflow-y: auto;"></div>
         </div>
       </div>

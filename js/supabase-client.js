@@ -1033,15 +1033,6 @@ function escHtmlSb(t) {
   });
 }
 
-async function listarNotificacoesSb() {
-  const { data, error } = await sb.from('notificacoes').select('*').order('data', { ascending: false }).limit(100);
-  if (error) throw error;
-  return data.map(function (n) {
-    return { id: n.id, fromEmail: n.remetente || '', tipoDestino: n.tipo_destino, destino: n.destino,
-      data: n.data, mensagem: n.mensagem, lida: n.lida === true };
-  });
-}
-
 // Chamadas ao Apps Script que exigem login: o token da sessão vai junto e é conferido lá
 function chamarApsComToken(u) {
   return new Promise(async function (resolve, reject) {
@@ -1081,7 +1072,6 @@ const ROTAS_JSONP_SB = {
   listarDadosEscolas: function () { return listarDadosEscolasSb(); },
   listarOrganizacoesCurriculares: function (u) { return listarOrgsSb(u.searchParams.get('escola') || ''); },
   atos: function (u) { return listarAtosSb(u); },
-  notificacoesAgenda: function () { return listarNotificacoesSb(); },
   fotoPerfil: function () { return fotoPerfilSb(); },
   historicoMonitoramento: function (u) { return historicoMonitoramentoSb(u); },
   detalhesMonitoramento: function (u) { return detalhesMonitoramentoSb(u); },
@@ -1420,15 +1410,7 @@ Object.assign(ACAO_ALUNO_SB, {
       tipo: d.tipo, escola: d.escola || null, data_hora: quando, descricao: d.descricao || null
     });
     if (error) throw error;
-    if (d.tipo === 'Visita_Circuito' && d.escola) {
-      // aviso para a escola (o texto digitado é escapado: aparece como HTML na tela de notificações)
-      const detalhe = d.descricao ? ' Detalhes: ' + escHtmlSb(d.descricao) : '';
-      const aviso = await sb.from('notificacoes').insert({
-        tipo_destino: 'ESCOLA', destino: d.escola,
-        mensagem: 'Visita do Circuito de Gestão agendada para ' + new Date(quando).toLocaleString('pt-BR') + '.' + detalhe
-      });
-      if (aviso.error) console.warn('Visita agendada, mas o aviso à escola não foi criado:', aviso.error);
-    }
+    // o aviso à escola (visita agendada) é criado pelo próprio banco, por gatilho na tabela agenda
   },
   async reagendarEvento(d) {
     await exigirLinhasAfetadas(sb.from('agenda').update({ data_hora: dataHoraIso(d.novaDataHora) }).eq('id', d.id).select('id'));
@@ -1730,12 +1712,6 @@ Object.assign(ACAO_ALUNO_SB, {
         if (ins.error) { await sb.storage.from('monitoramento').remove([caminho]); throw ins.error; }
       }
     }
-  }
-});
-
-Object.assign(ACAO_ALUNO_SB, {
-  async marcarMensagemLida(d) {
-    await exigirLinhasAfetadas(sb.from('notificacoes').update({ lida: true }).eq('id', d.id).select('id'));
   }
 });
 
