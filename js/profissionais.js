@@ -1250,6 +1250,160 @@ function gerarFichaProfissionalPDF(prof) {
 }
 
 // =========================
+// RELATÓRIO DE PROFISSIONAIS EM PDF (professores e demais, formação e experiência)
+// =========================
+function exportarRelatorioProfissionaisPDF() {
+  const esc = s => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+  const base = (profissionaisFiltrados && profissionaisFiltrados.length) ? profissionaisFiltrados : profissionaisGlobais;
+  const filtroSituacao = (document.getElementById('filtroProfSituacao') || {}).value || '';
+
+  // Ignora desligados/inativos, a menos que o filtro de situação tenha sido escolhido
+  let lista = (base || []).slice();
+  if (!filtroSituacao) {
+    lista = lista.filter(p => {
+      const s = (p.SITUACAO_LOTACAO || '').toUpperCase();
+      return s !== 'DESLIGADO' && s !== 'INATIVO';
+    });
+  }
+
+  if (lista.length === 0) {
+    mostrarToast('Nenhum profissional na lista atual para exportar.', 'warning');
+    return;
+  }
+
+  lista.sort((a, b) =>
+    (a._ESCOLA || '').localeCompare(b._ESCOLA || '', 'pt-BR') ||
+    (a.NOME || '').localeCompare(b.NOME || '', 'pt-BR'));
+
+  const ehProfessor = p => (p.CARGO || '').toUpperCase().includes('PROFESSOR');
+
+  const celula = linhas => {
+    const itens = linhas.filter(Boolean);
+    return itens.length ? itens.map(esc).join('<br>') : '—';
+  };
+
+  function habilitacao(p) {
+    const l = [];
+    if (p.ESCOLARIDADE) l.push(`Escolaridade: ${p.ESCOLARIDADE}`);
+    if (p.CURSO_SUPERIOR) l.push(`Curso superior: ${p.CURSO_SUPERIOR}`);
+    if (p.LICENCIATURA) l.push(`Licenciatura: ${p.LICENCIATURA}`);
+    return celula(l);
+  }
+
+  function posGraduacao(p) {
+    const itens = [];
+    for (let i = 1; i <= 6; i++) {
+      const tipo = p[`TIPO_POS_${i}`], area = p[`AREA_POS_${i}`], nome = p[`NOME_POS_${i}`], ano = p[`ANO_CONCLUSAO_POS_${i}`];
+      if (!(tipo || area || nome || ano)) continue;
+      const desc = [tipo, nome || area].filter(Boolean).join(' – ');
+      itens.push(desc + (ano ? ` (${ano})` : ''));
+    }
+    if (itens.length === 0 && p.POS_GRADUACAO) itens.push(p.POS_GRADUACAO);
+    return celula(itens);
+  }
+
+  function tabela(titulo, grupo) {
+    if (grupo.length === 0) return '';
+    return `
+      <h3>${titulo} <small>(${grupo.length})</small></h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:4%">#</th>
+            <th style="width:20%">Nome</th>
+            <th style="width:12%">Função</th>
+            <th style="width:14%">Disciplina(s)</th>
+            <th style="width:20%">Habilitação</th>
+            <th style="width:18%">Pós-graduação</th>
+            <th style="width:12%">Tempo de experiência</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${grupo.map((p, i) => `
+            <tr>
+              <td>${i + 1}</td>
+              <td><strong>${esc(p.NOME || '—')}</strong></td>
+              <td>${esc(p.CARGO || '—')}</td>
+              <td>${esc(p.DISCIPLINAS || '—')}</td>
+              <td>${habilitacao(p)}</td>
+              <td>${posGraduacao(p)}</td>
+              <td class="preencher">&nbsp;</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // Agrupa por escola
+  const porEscola = {};
+  lista.forEach(p => {
+    const e = p._ESCOLA || 'Sem escola';
+    (porEscola[e] = porEscola[e] || []).push(p);
+  });
+
+  const escolas = Object.keys(porEscola);
+  const tituloEscola = escolas.length === 1 ? escolas[0] : 'Todas as escolas';
+
+  let corpo = '';
+  escolas.forEach((escola, idx) => {
+    const todos = porEscola[escola];
+    const professores = todos.filter(ehProfessor);
+    const outros = todos.filter(p => !ehProfessor(p));
+    corpo += `
+      <div class="bloco-escola" ${idx > 0 ? 'style="page-break-before: always;"' : ''}>
+        ${escolas.length > 1 ? `<h2>${esc(escola)}</h2>` : ''}
+        ${tabela('Professores', professores)}
+        ${tabela('Demais profissionais', outros)}
+      </div>`;
+  });
+
+  const totalProf = lista.filter(ehProfessor).length;
+  const totalOutros = lista.length - totalProf;
+
+  const html = `<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Relação de Profissionais - ${esc(tituloEscola)}</title>
+    <style>
+      body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; color: #1e293b; font-size: 11px; }
+      h1 { color: #1e3a8a; font-size: 18px; margin: 0 0 4px; }
+      h2 { color: #0f172a; font-size: 15px; margin: 0 0 8px; padding-bottom: 4px; border-bottom: 2px solid #2563eb; }
+      h3 { color: #1e3a8a; font-size: 13px; margin: 12px 0 6px; border-left: 4px solid #2563eb; padding-left: 8px; }
+      h3 small { color: #64748b; font-weight: 400; font-size: 11px; }
+      .sub { color: #475569; margin-bottom: 10px; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+      th { background: #eff6ff; color: #1e3a8a; text-align: left; padding: 6px 8px; border: 1px solid #cbd5e1; }
+      td { padding: 6px 8px; border: 1px solid #cbd5e1; vertical-align: top; line-height: 1.35; }
+      tr { page-break-inside: avoid; }
+      thead { display: table-header-group; }
+      td.preencher { height: 34px; }
+      .footer { margin-top: 10px; color: #94a3b8; font-size: 10px; text-align: center; }
+      @page { size: A4 landscape; margin: 12mm; }
+      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style>
+  </head>
+  <body>
+    <h1>Relação de Profissionais – Formação e Experiência</h1>
+    <div class="sub">${esc(tituloEscola)} &nbsp;|&nbsp; ${totalProf} professor${totalProf !== 1 ? 'es' : ''} &nbsp;|&nbsp; ${totalOutros} demais profissiona${totalOutros !== 1 ? 'is' : 'l'} &nbsp;|&nbsp; Emissão: ${new Date().toLocaleDateString('pt-BR')}</div>
+    ${corpo}
+    <div class="footer">Documento gerado pelo Sistema de Controle de Matrículas – SRE Afonso Cláudio</div>
+    <script>window.onload = function() { window.print(); };<\/script>
+  </body>
+  </html>`;
+
+  const w = window.open('', '_blank', 'width=1100,height=750');
+  if (!w) {
+    mostrarToast('O navegador bloqueou a janela. Permita pop-ups para exportar.', 'warning');
+    return;
+  }
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+}
+
+// =========================
 // DASHBOARD DE PROFISSIONAIS
 // =========================
 
