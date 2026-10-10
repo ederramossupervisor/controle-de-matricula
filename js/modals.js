@@ -570,7 +570,7 @@ function editarAto(id) {
 function abrirModalModelos() {
   document.getElementById("modalModelos").style.display = "flex";
   
-  const isAdmin = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+  const isAdmin = (ehAdministrador());
   const abaUploadBtn = document.getElementById("abaUploadModeloBtn");
   
   if (isAdmin) {

@@ -356,8 +356,19 @@ function algumPerfilUsuario(perfis) {
 }
 
 // ------ ESCOLAS PERMITIDAS ------
+// ------ ADMINISTRADOR / "VER COMO ESCOLA" ------
+// ehAdministrador(): true só para o administrador real e FORA do modo "ver como escola".
+// Dentro desse modo o sistema se comporta exatamente como para a secretaria da escola escolhida.
+const EMAIL_ADMINISTRADOR = 'eder.ramos@educador.edu.es.gov.br';
+function verComoEscolaAtiva() {
+  try { return sessionStorage.getItem('verComoEscola') || ''; } catch (_) { return ''; }
+}
+function ehAdministrador() {
+  return emailUsuario === EMAIL_ADMINISTRADOR && !verComoEscolaAtiva();
+}
+
 function getEscolasPermitidas() {
-  if (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') {
+  if (ehAdministrador()) {
     return LISTA_ESCOLAS.slice();
   }
   if (perfilUsuario === 'SUPERVISOR') {
@@ -373,7 +384,7 @@ function getEscolasPermitidas() {
 // Supervisor e administrador não têm "uma" escola: escolhem entre as permitidas.
 // Secretaria/pedagógico trabalham sempre na escola do próprio usuário.
 function usuarioEscolheEscola() {
-  return perfilUsuario === 'SUPERVISOR' || emailUsuario === 'eder.ramos@educador.edu.es.gov.br';
+  return perfilUsuario === 'SUPERVISOR' || ehAdministrador();
 }
 
 // Preenche um <select> com as escolas que o usuário pode acessar.

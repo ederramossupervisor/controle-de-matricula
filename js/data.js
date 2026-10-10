@@ -102,7 +102,7 @@ function continuarCarregamentoAlunos(pagina, filtros, tentativa = 0) {
     perfilUsuario = ordemPrioridade.find(p => perfisUsuario.includes(p)) || perfisUsuario[0] || '';
     const perfilSpan = document.getElementById('perfilUsuarioTexto');
     if (perfilSpan) {
-        const nomesPerfil = { SUPERVISOR: (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'Administrador' : 'Supervisor', SECRETARIA: 'Secretaria', PEDAGOGICO: 'Pedagógico', DIRETOR: 'Diretor' };
+        const nomesPerfil = { SUPERVISOR: (ehAdministrador()) ? 'Administrador' : 'Supervisor', SECRETARIA: 'Secretaria', PEDAGOGICO: 'Pedagógico', DIRETOR: 'Diretor' };
         const nomesExibidos = perfisUsuario.length > 0
           ? perfisUsuario.map(p => nomesPerfil[p] || p)
           : [perfilUsuario];
@@ -225,7 +225,7 @@ function continuarCarregamentoAlunos(pagina, filtros, tentativa = 0) {
       resumoPorEscolaGlobal = dados.resumoPorEscola;
     }
     
-    const mapaParaRender = (perfilUsuario === 'SUPERVISOR' && emailUsuario === 'eder.ramos@educador.edu.es.gov.br') 
+    const mapaParaRender = (perfilUsuario === 'SUPERVISOR' && ehAdministrador()) 
       ? null 
       : resumoPorEscolaGlobal;
     renderPorEscola(mapaParaRender, dados.metricas);
@@ -258,7 +258,7 @@ function continuarCarregamentoAlunos(pagina, filtros, tentativa = 0) {
 
     const btnAprovacao = document.getElementById('btnAprovacaoTermos');
     if (btnAprovacao) {
-      btnAprovacao.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'block' : 'none';
+      btnAprovacao.style.display = (ehAdministrador()) ? 'block' : 'none';
     }
 
     const btnMonitoramento = document.getElementById('btnMonitoramento');
@@ -2419,7 +2419,7 @@ function gerarHistoricoAluno(idAluno) {
 }
 
 function atualizarBadgeTermosPendentes() {
-  if (emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') return;
+  if (!ehAdministrador()) return;
   
   const url = `${API_URL}?tipo=contarTermosPendentes&email=${encodeURIComponent(emailUsuario)}`;
   jsonp(url, function(res) {

@@ -325,7 +325,7 @@ function abrirModalAcompanhamentoPT() {
   // Exibe o botão de exportação completa apenas para o Admin
   const btnExportarCompleta = document.getElementById('btnExportarPlanilhaCompleta');
   if (btnExportarCompleta) {
-    btnExportarCompleta.style.display = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br') ? 'inline-block' : 'none';
+    btnExportarCompleta.style.display = (ehAdministrador()) ? 'inline-block' : 'none';
   }
 
   carregarIndicadoresGerais();
@@ -680,7 +680,7 @@ function exportarPlanoTaticoPDF() {
     printWindow.print();
   };
 }function exportarPlanilhaCompletaPDF() {
-  if (emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
+  if (!ehAdministrador()) {
     mostrarToast('Apenas Administrador.', 'warning');
     return;
   }

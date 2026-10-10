@@ -635,7 +635,7 @@ function renderPainel(resumo) {
 // ------ CARDS POR ESCOLA ------
 function renderPorEscola(mapa, metricas) {
   const painel = document.getElementById("painel");
-  const isAdmin = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+  const isAdmin = (ehAdministrador());
   
   const card = document.createElement('div');
   card.className = 'metrica-card metrica-escola';

@@ -34,8 +34,19 @@ async function carregarPerfilSb(forcar = false) {
   if (!session) return null;
   const { data, error } = await sb.from('usuarios').select('*').eq('id', session.user.id).maybeSingle();
   if (error || !data) return null;
-  perfilSbCache = data;
-  return data;
+  perfilSbCache = aplicarVerComoSb(data);
+  return perfilSbCache;
+}
+
+// "Ver como escola" (somente leitura): só o administrador real pode usar.
+// Devolve uma CÓPIA do perfil com cara de secretaria da escola escolhida; o token
+// continua sendo o do administrador (por isso as consultas abaixo filtram por escola).
+function aplicarVerComoSb(p) {
+  const esc = (typeof verComoEscolaAtiva === 'function') ? verComoEscolaAtiva() : '';
+  if (!esc || !p || !p.is_admin) return p;
+  return Object.assign({}, p, {
+    perfis: ['SECRETARIA'], escola: esc, escolas_supervisionadas: [], is_admin: false, _verComo: true
+  });
 }
 
 async function loginSb(email, senha) {
@@ -240,7 +251,7 @@ async function buscarDadosAlunosSb(pagina = 1, filtros = {}, limite = 20) {
     if (!perfil) return { erro: 'sessao_expirada' };
 
     // Termo de compromisso (provisório): só consulta o Apps Script uma vez por sessão.
-    if (!perfil.is_admin && sessionStorage.getItem('termo_ok_' + perfil.email) !== '1') {
+    if (!perfil.is_admin && !perfil._verComo && sessionStorage.getItem('termo_ok_' + perfil.email) !== '1') {
       let t = null;
       try { t = await statusTermoSb(); } catch (_) {}
       if (!t) return { erro: 'falha_termo' };
@@ -258,8 +269,9 @@ async function buscarDadosAlunosSb(pagina = 1, filtros = {}, limite = 20) {
     let situacao = filtros.situacao || null;
     if (soEscola && !inativos) situacao = 'Ativo';
 
+    const escolaFixa = perfil._verComo ? perfil.escola : null;   // "ver como escola"
     const aplicar = function (q) {
-      if (filtros.escola) q = q.eq('escola', filtros.escola);
+      if (filtros.escola || escolaFixa) q = q.eq('escola', filtros.escola || escolaFixa);
       if (filtros.turma) q = q.eq('turma', filtros.turma);
       if (termo) q = q.like('busca', '%' + termo.replace(/[%_\\]/g, '\\$&') + '%');
       if (inativos) q = q.neq('situacao', 'Ativo');
@@ -293,7 +305,7 @@ async function buscarDadosAlunosSb(pagina = 1, filtros = {}, limite = 20) {
       metricas = { total, completos: 0, pendentes: 0, vencidos: 0 };
     } else {
       const { data: r, error } = await sb.rpc('alunos_resumo', {
-        p_escola: filtros.escola || null, p_turma: filtros.turma || null, p_busca: termo,
+        p_escola: filtros.escola || escolaFixa || null, p_turma: filtros.turma || null, p_busca: termo,
         p_status: statusF, p_situacao: situacao
       });
       if (error) throw error;
@@ -516,8 +528,10 @@ async function listarComunicadosSb(escola) {
 }
 
 async function listarAgendaSb() {
-  const { data, error } = await sb.from('agenda').select('*').order('data_hora');
+  const { data: todos, error } = await sb.from('agenda').select('*').order('data_hora');
   if (error) throw error;
+  const escVerComo = verComoEscolaAtiva();
+  const data = escVerComo ? todos.filter(function (e) { return e.escola === escVerComo; }) : todos;
   return data.map(function (e) {
     return { id: e.id, criador: e.criador, tipo: e.tipo, escola: e.escola || '', dataHora: e.data_hora,
       descricao: e.descricao || '', lembrete: e.lembrete_enviado === true };
@@ -541,8 +555,10 @@ async function obterDadosEscolaSb(escola) {
 }
 
 async function listarDadosEscolasSb() {
-  const { data, error } = await sb.from('escolas').select('*').order('nome');
+  const { data: todas, error } = await sb.from('escolas').select('*').order('nome');
   if (error) throw error;
+  const escVerComo = verComoEscolaAtiva();
+  const data = escVerComo ? todas.filter(function (e) { return e.nome === escVerComo; }) : todas;
   return data.map(dadosEscolaParaTela);
 }
 
@@ -707,8 +723,9 @@ async function buscaGlobalSb(termoBruto) {
 
   // alunos (nome, CPF, telefone ou código)
   const consultas = [];
-  if (t) consultas.push(sb.from('alunos_v').select('*').like('busca', '%' + t.replace(/[%_\\]/g, '\\$&') + '%').order('nome').limit(12));
-  consultas.push(sb.from('alunos_v').select('*').ilike('codigo', '%' + minusculo.replace(/[%_\\]/g, '\\$&') + '%').order('nome').limit(12));
+  const soDaEscola = function (q) { return p._verComo ? q.eq('escola', p.escola) : q; };   // "ver como escola"
+  if (t) consultas.push(soDaEscola(sb.from('alunos_v').select('*').like('busca', '%' + t.replace(/[%_\\]/g, '\\$&') + '%')).order('nome').limit(12));
+  consultas.push(soDaEscola(sb.from('alunos_v').select('*').ilike('codigo', '%' + minusculo.replace(/[%_\\]/g, '\\$&') + '%')).order('nome').limit(12));
   const vistos = new Set();
   for (const r of await Promise.all(consultas)) {
     if (r.error) throw r.error;
@@ -743,7 +760,9 @@ async function buscaGlobalSb(termoBruto) {
 
 async function listarLogAcoesSb(u) {
   const limite = parseInt(u.searchParams.get('limite'), 10) || 100;
-  const { data, error } = await sb.from('log_acoes').select('*').order('data_hora', { ascending: false }).limit(limite);
+  let qLog = sb.from('log_acoes').select('*').order('data_hora', { ascending: false }).limit(limite);
+  if (verComoEscolaAtiva()) qLog = qLog.eq('escola', verComoEscolaAtiva());
+  const { data, error } = await qLog;
   if (error) throw error;
   return data.map(function (l) {
     return { dataHora: l.data_hora, usuario: l.usuario, usuarioNome: l.usuario_nome || '', usuarioEscola: l.usuario_escola || '', acao: l.acao, detalhes: l.detalhes || '', escola: l.escola || '' };
@@ -1104,9 +1123,19 @@ const ROTAS_JSONP_SB = {
   legislacao: function (u) { return listarLegislacaoSb(u); },
   legislacaoPorId: function (u) { return listarLegislacaoSb(u); }
 };
+// rotas de leitura que recebem a escola por parâmetro (no "ver como escola" ela é sempre a escolhida)
+const ROTAS_COM_ESCOLA_VER_COMO = ['turmas', 'comunicados', 'obterDadosEscola', 'listarOrganizacoesCurriculares', 'atos',
+  'historicoMonitoramento', 'detalhesMonitoramento', 'processos', 'documentos', 'listarTiposProcesso', 'listarTiposDocumento',
+  'listarModelosEscola', 'dashboard', 'desempenho', 'listarProfissionais', 'listarDocumentosProfissional', 'dashboardProfissionais'];
 window.jsonp = function (url, callback, onError) {
   try {
     const u = new URL(url);
+    const escolaVerComo = verComoEscolaAtiva();
+    if (escolaVerComo && ROTAS_COM_ESCOLA_VER_COMO.indexOf(u.searchParams.get('tipo')) >= 0) {
+      u.searchParams.set('escola', escolaVerComo);
+      u.searchParams.set('filtroEscola', escolaVerComo);
+      url = u.toString();
+    }
     const rota = ROTAS_JSONP_SB[u.searchParams.get('tipo')];
     if (rota) {
       rota(u).then(callback).catch(function (e) {

@@ -203,7 +203,7 @@ async function enviarConsentimentoETermo() {
 
 // ---------- Administrador ----------
 function abrirModalAprovacaoTermos() {
-  if (emailUsuario !== 'eder.ramos@educador.edu.es.gov.br') {
+  if (!ehAdministrador()) {
     mostrarToast('Apenas Administrador.', 'error');
     return;
   }

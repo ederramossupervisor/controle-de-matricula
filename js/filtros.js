@@ -315,7 +315,7 @@ function ajustarInterfacePorPerfil() {
   // nenhum botão que teria isoladamente em cada perfil.
   const hasSecretaria = temPerfilUsuario("SECRETARIA");
   const hasSupervisor = temPerfilUsuario("SUPERVISOR");
-  const isAdministrador = (emailUsuario === 'eder.ramos@educador.edu.es.gov.br');
+  const isAdministrador = (ehAdministrador());
 
   const btnInativos = document.getElementById("btnInativos");
   if (btnInativos) btnInativos.style.display = (hasSecretaria || hasSupervisor) ? "inline-block" : "none";

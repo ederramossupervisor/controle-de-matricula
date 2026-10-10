@@ -36,7 +36,8 @@
     'importar-profissionais.js',
     'importador.js',
     'profissionais.js',
-    'tour.js'
+    'tour.js',
+    'ver-como.js'
   ];
 
   function carregarScript(nome) {
