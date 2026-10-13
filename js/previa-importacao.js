@@ -125,13 +125,14 @@
     var obs = it.erros.map(function (t) { return '<div style="color:#dc2626;">⛔ ' + esc(t) + '</div>'; })
       .concat(it.jaCadastrado ? ['<div style="opacity:.75;">Já existe nesta escola: será ignorado</div>'] : [])
       .concat(it.avisos.map(function (t) { return '<div style="color:#b45309;">⚠ ' + esc(t) + '</div>'; })).join('');
-    return '<tr style="border-bottom:1px solid rgba(148,163,184,.35);vertical-align:top;">' +
-      '<td style="white-space:nowrap;"><span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;background:' + cor + ';">' + ROTULO[s][0] + '</span></td>' +
-      '<td>' + esc(a.nome || '-') + '</td><td>' + esc(a.escola || '-') + '</td><td>' + esc(a.turma || '-') + '</td>' +
-      '<td>' + esc(a.responsavel || '-') + '</td><td>' + esc(a.telefone || '-') + '</td>' +
-      '<td>' + (a.cpfAluno ? '✓' : '-') + '</td><td>' + (a.sus ? '✓' : '-') + '</td><td>' + (a.rg ? '✓' : '-') + '</td><td>' + (a.residencia ? '✓' : '-') + '</td>' +
-      '<td>' + (a.edEspecial ? 'Sim' : 'Não') + '</td>' +
-      '<td style="font-size:12px;min-width:200px;">' + (obs || '<span style="opacity:.5;">—</span>') + '</td></tr>';
+    return '<tr>' +
+      '<td class="col-situacao"><span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;background:' + cor + ';">' + ROTULO[s][0] + '</span></td>' +
+      '<td data-label="Nome">' + esc(a.nome || '-') + '</td><td data-label="Escola">' + esc(a.escola || '-') + '</td><td data-label="Turma">' + esc(a.turma || '-') + '</td>' +
+      '<td data-label="Resp.">' + esc(a.responsavel || '-') + '</td><td class="col-tel" data-label="Tel.">' + esc(a.telefone || '-') + '</td>' +
+      '<td class="col-chk" data-label="CPF">' + (a.cpfAluno ? '✓' : '-') + '</td><td class="col-chk" data-label="SUS">' + (a.sus ? '✓' : '-') + '</td>' +
+      '<td class="col-chk" data-label="RG">' + (a.rg ? '✓' : '-') + '</td><td class="col-chk" data-label="Resid.">' + (a.residencia ? '✓' : '-') + '</td>' +
+      '<td data-label="Ed. Especial">' + (a.edEspecial ? 'Sim' : 'Não') + '</td>' +
+      '<td class="col-obs">' + (obs || '<span style="opacity:.5;">—</span>') + '</td></tr>';
   }
 
   function filtrar(itens, filtro) {
@@ -171,9 +172,9 @@
         (extras.descartadas > 0 ? ' · ' + extras.descartadas + ' descartadas por falta de nome ou escola' : '') +
         (extras.semBanco ? ' · <strong style="color:#b45309;">não foi possível comparar com os alunos já cadastrados</strong>' : '') +
         (filtro !== 'todos' ? ' · <a href="#" data-filtro="todos">mostrar todos</a>' : '') + '</div>';
-      html += '<div style="overflow:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">' +
-        '<thead><tr style="background:rgba(148,163,184,.2);text-align:left;"><th>Situação</th><th>Nome</th><th>Escola</th><th>Turma</th><th>Resp.</th><th>Tel.</th>' +
-        '<th>CPF</th><th>SUS</th><th>RG</th><th>Resid.</th><th>Ed.Especial</th><th>Observações</th></tr></thead><tbody>' +
+      html += '<div><table class="tabela-previa">' +
+        '<thead><tr><th>Situação</th><th>Nome</th><th>Escola</th><th>Turma</th><th>Resp.</th><th>Tel.</th>' +
+        '<th class="col-chk">CPF</th><th class="col-chk">SUS</th><th class="col-chk">RG</th><th class="col-chk">Resid.</th><th>Ed.Especial</th><th>Observações</th></tr></thead><tbody>' +
         lista.slice(0, LIMITE_LINHAS).map(linhaHtml).join('') + '</tbody></table></div>';
       if (!lista.length) html += '<p style="padding:8px;opacity:.7;">Nenhuma linha neste filtro.</p>';
       if (lista.length > LIMITE_LINHAS) html += '<p style="padding:8px 0;font-size:12px;">Exibindo ' + LIMITE_LINHAS + ' de ' + lista.length + ' linhas (os problemas aparecem primeiro).</p>';
