@@ -35,6 +35,7 @@
     'orgs-curriculares.js',
     'importar-profissionais.js',
     'importador.js',
+    'previa-importacao.js',
     'profissionais.js',
     'tour.js',
     'ver-como.js',
