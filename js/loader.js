@@ -37,7 +37,8 @@
     'importador.js',
     'profissionais.js',
     'tour.js',
-    'ver-como.js'
+    'ver-como.js',
+    'dropzone-csv.js'
   ];
 
   function carregarScript(nome) {
