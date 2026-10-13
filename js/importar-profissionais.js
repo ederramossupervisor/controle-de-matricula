@@ -71,16 +71,16 @@ function renderizarPreviewProfissionais(lista) {
     return;
   }
 
-  let html = '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
-  html += '<thead><tr style="background:#f1f5f9;">';
+  let html = '<table class="tabela-previa">';
+  html += '<thead><tr>';
   html += '<th>ID</th><th>Nome</th><th>Cargo</th><th>Regime</th><th>Matrícula</th>';
   html += '</tr></thead><tbody>';
   lista.slice(0, 50).forEach(p => {
-    html += `<tr style="border-bottom:1px solid #e2e8f0;">`;
-    html += `<td>${p.id || '-'}</td><td>${p.nome || p['Nome do profissional'] || '-'}</td>`;
-    html += `<td>${p['Descrição Cargo'] || p.CARGO || '-'}</td>`;
-    html += `<td>${p['Regime Trabalho'] || p.REGIME || '-'}</td>`;
-    html += `<td>${p['Matrícula'] || p.MATRICULA || '-'}</td>`;
+    html += `<tr>`;
+    html += `<td data-label="ID">${p.id || '-'}</td><td data-label="Nome">${p.nome || p['Nome do profissional'] || '-'}</td>`;
+    html += `<td data-label="Cargo">${p['Descrição Cargo'] || p.CARGO || '-'}</td>`;
+    html += `<td data-label="Regime">${p['Regime Trabalho'] || p.REGIME || '-'}</td>`;
+    html += `<td data-label="Matrícula">${p['Matrícula'] || p.MATRICULA || '-'}</td>`;
     html += `</tr>`;
   });
   html += '</tbody></table>';
