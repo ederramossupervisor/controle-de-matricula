@@ -4186,3 +4186,91 @@ body.recarregando #loading {
 .notif-msg { margin: 4px 0; overflow-wrap: anywhere; }
 .notif-acoes { margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap; }
 .notif-vazio { text-align: center; padding: 20px; color: var(--text-muted); }
+
+/* ==========================================
+   MODAIS DE IMPORTAÇÃO – pré-visualização sem rolagem horizontal
+   (Importar Alunos, Atualizar Matriculados, Promover Alunos, Importar Profissionais)
+   ========================================== */
+@media (min-width: 601px) {
+  .modal-card--import { max-width: 1100px; width: 96%; }
+}
+
+.preview-import {
+  max-height: min(55vh, 420px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+}
+
+.tabela-previa {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: auto;
+}
+
+.tabela-previa th,
+.tabela-previa td {
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.tabela-previa thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--card-bg);
+  border-bottom: 2px solid var(--card-border);
+  white-space: nowrap;
+}
+
+.tabela-previa tbody tr { border-bottom: 1px solid rgba(148, 163, 184, .35); }
+.tabela-previa .col-situacao { white-space: nowrap; }
+.tabela-previa .col-chk { text-align: center; width: 1%; white-space: nowrap; }
+.tabela-previa .col-tel { white-space: nowrap; }
+.tabela-previa .col-obs { font-size: 12px; width: 24%; }
+.tabela-previa .col-obs div + div { margin-top: 2px; }
+
+/* Telas estreitas: cada linha vira um "cartãozinho" (nada de rolagem lateral) */
+@media (max-width: 900px) {
+  .tabela-previa,
+  .tabela-previa tbody,
+  .tabela-previa tr,
+  .tabela-previa td { display: block; width: 100%; }
+
+  .tabela-previa thead { display: none; }
+
+  .tabela-previa tbody tr { padding: 8px 10px; }
+
+  .tabela-previa td {
+    display: flex;
+    gap: 8px;
+    padding: 2px 0;
+    text-align: left;
+  }
+
+  .tabela-previa td::before {
+    content: attr(data-label);
+    flex: 0 0 82px;
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .tabela-previa td.col-situacao::before,
+  .tabela-previa td.col-obs::before { content: none; }
+
+  /* SUS / CPF / RG / Resid. lado a lado, em uma linha só */
+  .tabela-previa td.col-chk {
+    display: inline-flex;
+    width: auto;
+    margin-right: 14px;
+    text-align: left;
+  }
+  .tabela-previa td.col-chk::before { flex: 0 0 auto; }
+
+  .tabela-previa .col-obs { width: 100%; }
+}
