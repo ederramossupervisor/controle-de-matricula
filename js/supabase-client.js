@@ -370,11 +370,18 @@ function cpfFormatado(v) {
 function paraDataIso(s) {
   if (!s) return null;
   s = String(s).trim();
+  let iso = null;
   let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return m[1] + '-' + m[2] + '-' + m[3];
-  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (m) return m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
-  return null;
+  if (m) iso = m[1] + '-' + m[2] + '-' + m[3];
+  else {
+    m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) iso = m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+  }
+  if (!iso) return null;
+  // data impossível (ex.: 31/02) faria o banco recusar o lote inteiro: trata como data ausente
+  const p = iso.split('-').map(Number);
+  const t = new Date(Date.UTC(p[0], p[1] - 1, p[2]));
+  return (t.getUTCFullYear() === p[0] && t.getUTCMonth() === p[1] - 1 && t.getUTCDate() === p[2]) ? iso : null;
 }
 
 function hojeSaoPaulo() {

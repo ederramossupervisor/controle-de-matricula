@@ -1426,7 +1426,7 @@
     
     <!-- 📤 MODAL DE IMPORTAÇÃO CSV -->
     <div id="modalImportacao" class="modal-overlay" style="display:none;">
-      <div class="modal-card modal-card--grande" style="max-width: 1150px;">
+      <div class="modal-card modal-card--grande">
         <div class="modal-header">
           <h2><i class="fas fa-upload"></i> Importar Alunos (CSV)</h2>
           <button class="close-btn" onclick="fecharModalImportacao()"><i class="fas fa-times"></i></button>
@@ -1436,7 +1436,7 @@
             <input type="file" id="arquivoCSV" accept=".csv,text/csv" style="padding: 8px;">
             <button class="btn-primary" onclick="processarCSV()" style="margin-left: 8px;"><i class="fas fa-list"></i> Carregar Pré-visualização</button>
           </div>
-          <div id="previewContainer" style="max-height: 45vh; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <div id="previewContainer" style="max-height: 300px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
             <p style="padding: 16px; color: #64748b;">Selecione um arquivo CSV para visualizar os dados.</p>
           </div>
           <div style="margin-top: 16px; display: flex; gap: 10px;">
@@ -1686,7 +1686,7 @@
 
     <!-- 📤 MODAL DE PROMOÇÃO (CSV) -->
     <div id="modalPromocao" class="modal-overlay" style="display:none;">
-      <div class="modal-card modal-card--grande" style="max-width: 1150px;">
+      <div class="modal-card modal-card--grande">
         <div class="modal-header">
           <h2><i class="fas fa-arrow-up"></i> Promover Alunos (CSV)</h2>
           <button class="close-btn" onclick="fecharModalPromocao()"><i class="fas fa-times"></i></button>
@@ -1696,7 +1696,7 @@
             <br>Alunos existentes terão a <strong>turma</strong> atualizada. Alunos novos serão cadastrados automaticamente.</p>
           <input type="file" id="arquivoCSVPromocao" accept=".csv,text/csv" style="margin-bottom:12px;">
           <button class="btn-primary" onclick="processarCSVPromocao()"><i class="fas fa-list"></i> Carregar Pré-visualização</button>
-          <div id="previewPromocao" style="max-height: 45vh; overflow: auto; margin-top: 12px; border:1px solid var(--card-border); border-radius:8px;"></div>
+          <div id="previewPromocao" style="max-height: 300px; overflow: auto; margin-top: 12px; border:1px solid var(--card-border); border-radius:8px;"></div>
           <div id="statusPromocao" style="margin-top: 8px; font-size: 14px; color: var(--text-muted);"></div>
           <div style="margin-top:16px;">
             <button class="btn-salvar" id="btnExecutarPromocao" onclick="executarPromocaoCSV()" disabled><i class="fas fa-check-circle"></i> Promover Alunos</button>
@@ -1708,7 +1708,7 @@
     </div>
     <!-- 📥 MODAL ATUALIZAR ALUNOS MATRICULADOS -->
     <div id="modalAtualizarMatriculados" class="modal-overlay" style="display:none;">
-      <div class="modal-card modal-card--grande" style="max-width: 1150px;">
+      <div class="modal-card modal-card--grande">
         <div class="modal-header">
           <h2><i class="fas fa-sync-alt"></i> Atualizar Alunos Matriculados</h2>
           <button class="close-btn" onclick="fecharModalAtualizarMatriculados()"><i class="fas fa-times"></i></button>
@@ -1720,7 +1720,7 @@
           </p>
           <input type="file" id="arquivoCSVAtualizar" accept=".csv,text/csv" style="margin-bottom:12px;">
           <button class="btn-primary" onclick="processarCSVAtualizar()"><i class="fas fa-list"></i> Carregar Pré-visualização</button>
-          <div id="previewAtualizar" style="max-height: 45vh; overflow: auto; margin-top: 12px; border:1px solid var(--card-border); border-radius:8px;"></div>
+          <div id="previewAtualizar" style="max-height: 300px; overflow: auto; margin-top: 12px; border:1px solid var(--card-border); border-radius:8px;"></div>
           <div id="statusAtualizar" style="margin-top: 8px; font-size: 14px; color: var(--text-muted);"></div>
           <div style="margin-top:16px;">
             <button class="btn-salvar" id="btnExecutarAtualizarMatriculados" onclick="executarAtualizarMatriculados()" disabled><i class="fas fa-check-circle"></i> Atualizar</button>

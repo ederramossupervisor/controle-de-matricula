@@ -1420,24 +1420,17 @@ function processarCSV() {
     
     Papa.parse(csvText, {
       header: true,
-      skipEmptyLines: false,   // mantém o nº da linha do arquivo; linhas em branco são descartadas abaixo
+      skipEmptyLines: true,
       delimiter: ";",
       complete: function(results) {
-        const cabecalho = results.meta.fields || [];
-        // linha 1 = cabeçalho, então a primeira linha de dados é a 2
-        const linhasComDados = [];
-        results.data.forEach((linha, i) => {
-          const temDado = Object.keys(linha).some(k => String(linha[k] == null ? '' : linha[k]).trim() !== '');
-          if (temDado) linhasComDados.push({ linha: i + 2, dados: linha });
-        });
-        if (linhasComDados.length === 0) {
+        const dados = results.data;
+        if (dados.length === 0) {
           mostrarToast('Nenhum dado encontrado no CSV.', 'warning');
           return;
         }
-
-        const linhas = linhasComDados.map(({ linha: nLinha, dados: linha }) => {
-          const brutoMatricula = (linha['Aluno: Data de matrícula'] || '').toString().trim();
-          const brutoNascimento = (linha['Aluno: Data de nascimento'] || linha['Aluno: Data de Nascimento'] || '').toString().trim();
+        
+        window._csvLinhasLidas = dados.length;   // usado pela pré-visualização (previa-importacao.js)
+        alunosImportados = dados.map(linha => {
           const dataMatricula = parseDataCSV(linha['Aluno: Data de matrícula']);
           const rawDef = (linha['Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotação'] || '').toLowerCase();
           const edEspecial = rawDef.includes('sim');
@@ -1445,7 +1438,7 @@ function processarCSV() {
           // Normaliza UF (maiúscula, sem espaços)
           const ufNascimento = (linha['Aluno: UF de nascimento'] || linha['Aluno: UF de Nascimento'] || '').trim().toUpperCase();
 
-          return { linha: nLinha, aluno: {
+          return {
             id: linha['id'] || '',
             nome: linha['Aluno: Nome'] || '',
             responsavel: linha['Aluno: Nome do responsável'] || '',
@@ -1466,20 +1459,12 @@ function processarCSV() {
             dataNascimento: parseDataCSV(linha['Aluno: Data de nascimento'] || linha['Aluno: Data de Nascimento']),
             naturalidade: linha['Aluno: Naturalidade'] || '',
             ufNascimento: ufNascimento,
-            nacionalidade: linha['Aluno: Nacionalidade'] || '',
-            // textos originais das datas, só para a pré-visualização avisar quando não forem reconhecidos
-            _brutoMatricula: brutoMatricula,
-            _brutoNascimento: brutoNascimento
-          } };
-        });
+            nacionalidade: linha['Aluno: Nacionalidade'] || ''
+          };
+        }).filter(a => a.nome && a.escola);
 
-        // A análise (novos / já existem / diferenças / inválidos) define o que segue para a gravação:
-        // ela preenche alunosImportados e habilita o botão "Iniciar Importação".
-        alunosImportados = [];
-        document.getElementById('btnExecutarImportacao').disabled = true;
-        analisarPreviaImportacao(linhas, {
-          edEspecial: cabecalho.indexOf('Aluno: Deficiência, transtorno do espectro autista e altas habilidades ou superdotação') >= 0
-        });
+        renderizarPreview(alunosImportados);
+        document.getElementById('btnExecutarImportacao').disabled = (alunosImportados.length === 0);
       },
       error: function(err) {
         mostrarToast('Erro ao processar CSV: ' + err, 'error');

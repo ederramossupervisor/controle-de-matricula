@@ -1,383 +1,232 @@
 // js/previa-importacao.js – Pré-visualização inteligente da importação de alunos (CSV)
 //
-// Depois de ler o CSV, compara cada linha com o que já está na base e mostra:
-//   • Novos ................. serão criados
-//   • Já existem (iguais) ... mesmo ID na escola, nenhum campo diferente
-//   • Já existem (diferem) .. mesmo ID na escola, mas algum campo do CSV é diferente
-//   • Com erro .............. linhas que NÃO serão importadas (sem nome/escola, escola sem permissão, ID repetido)
-//   • Avisos ................ linhas que serão importadas, mas com algo estranho (CPF/data/telefone/UF, sem turma)
-//
-// IMPORTANTE: a importação por arquivo só CRIA alunos (alunos que já existem são ignorados, nunca alterados).
-// Por isso só os alunos novos seguem para a gravação (alunosImportados). Quem quiser atualizar quem já existe
-// usa "Atualizar matriculados" / "Promover alunos".
+// Substitui renderizarPreview() (ui.js). Em vez de só listar as linhas, analisa o arquivo ANTES de gravar:
+//   • Novos            → serão importados
+//   • Já cadastrados   → o sistema já tem esse ID na escola; a importação os IGNORA (não altera ninguém)
+//   • Com erro         → a importação vai ignorar a linha (escola desconhecida/sem permissão, ID repetido no arquivo)
+//   • Com aviso        → entra na importação, mas há algo para conferir (CPF, datas, sem turma...)
+// Nada aqui grava dados: só lê (a comparação com o banco é uma consulta de leitura).
+// As regras espelham as de inserirAlunosSb() (supabase-client.js), para a prévia não prometer o que a importação não faz.
 (function () {
-  'use strict';
+  var LIMITE_LINHAS = 100;
+  var tokenAtual = 0;      // evita que uma análise antiga (arquivo anterior) sobrescreva a nova
 
-  var UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO','EX'];
-
-  // chave no objeto do CSV → coluna na tabela "alunos"
-  var CAMPOS = [
-    { k: 'nome',          col: 'nome',           rotulo: 'Nome',            tipo: 'texto' },
-    { k: 'responsavel',   col: 'responsavel',    rotulo: 'Responsável',     tipo: 'texto' },
-    { k: 'telefone',      col: 'telefone',       rotulo: 'Telefone',        tipo: 'fone' },
-    { k: 'turma',         col: 'turma',          rotulo: 'Turma',           tipo: 'texto' },
-    { k: 'cpfAluno',      col: 'cpf_numero',     rotulo: 'CPF',             tipo: 'cpf' },
-    { k: 'racaCor',       col: 'raca_cor',       rotulo: 'Raça/cor',        tipo: 'raca' },
-    { k: 'filiacao1',     col: 'filiacao_1',     rotulo: 'Filiação 1',      tipo: 'texto' },
-    { k: 'filiacao2',     col: 'filiacao_2',     rotulo: 'Filiação 2',      tipo: 'texto' },
-    { k: 'dataNascimento',col: 'data_nascimento',rotulo: 'Nascimento',      tipo: 'data' },
-    { k: 'naturalidade',  col: 'naturalidade',   rotulo: 'Naturalidade',    tipo: 'texto' },
-    { k: 'ufNascimento',  col: 'uf_nascimento',  rotulo: 'UF nasc.',        tipo: 'texto' },
-    { k: 'nacionalidade', col: 'nacionalidade',  rotulo: 'Nacionalidade',   tipo: 'texto' },
-    { k: 'edEspecial',    col: 'ed_especial',    rotulo: 'Ed. Especial',    tipo: 'bool' }
-  ];
-  var COLUNAS_BANCO = ['codigo', 'escola'].concat(CAMPOS.map(function (c) { return c.col; })).join(',');
-
-  var MAX_LINHAS_TABELA = 200;
-  var estado = { token: 0, itens: [], filtro: 'todos', limite: MAX_LINHAS_TABELA, semComparacao: false };
-
-  // ---------- utilitários ----------
   function esc(v) {
     return String(v === undefined || v === null ? '' : v)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
-  function vazio(v) { return v === undefined || v === null || String(v).trim() === ''; }
-  function minusc(v) {
-    return String(v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
-  }
-  function soDigitos(v) { return String(v || '').replace(/\D/g, ''); }
-  function dataReal(iso) {
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+
+  function dataIsoValida(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || '');
     if (!m) return false;
-    var d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
-    return d.getUTCFullYear() === +m[1] && d.getUTCMonth() === +m[2] - 1 && d.getUTCDate() === +m[3];
-  }
-  function dataBR(iso) {
-    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
-    return m ? m[3] + '/' + m[2] + '/' + m[1] : (iso || '');
-  }
-  function hojeIso() { return new Date().toISOString().slice(0, 10); }
-
-  // valor "normalizado" de um campo para comparar CSV x base
-  function normalizar(tipo, v) {
-    if (tipo === 'bool') return v === true;
-    if (vazio(v)) return '';
-    if (tipo === 'fone' || tipo === 'cpf') return soDigitos(v);
-    if (tipo === 'data') return String(v).slice(0, 10);
-    return minusc(v);
-  }
-  function exibir(tipo, v) {
-    if (tipo === 'bool') return v === true ? 'Sim' : 'Não';
-    if (vazio(v)) return '(vazio)';
-    if (tipo === 'data') return dataBR(v);
-    return String(v).trim();
+    var a = +m[1], me = +m[2], d = +m[3];
+    var t = new Date(Date.UTC(a, me - 1, d));
+    return t.getUTCFullYear() === a && t.getUTCMonth() === me - 1 && t.getUTCDate() === d;
   }
 
-  // ---------- validação de uma linha (só com o que está no CSV) ----------
-  // Devolve { erros: [...], avisos: [...] }
-  function validarLinha(a, cab) {
-    var erros = [], avisos = [];
-    if (vazio(a.nome)) erros.push('Sem nome');
-    if (vazio(a.escola)) erros.push('Sem escola');
-
-    if (!vazio(a.cpfAluno)) {
-      var d = soDigitos(a.cpfAluno);
-      if (d.length !== 11) avisos.push('CPF com ' + d.length + ' dígitos (será ignorado)');
-      else if (typeof validarCPF === 'function' && !validarCPF(d)) avisos.push('CPF inválido (dígitos verificadores)');
-    }
-    if (a._brutoNascimento && !dataReal(a.dataNascimento)) avisos.push('Data de nascimento não reconhecida: "' + a._brutoNascimento + '"');
-    else if (a.dataNascimento && dataReal(a.dataNascimento) && a.dataNascimento > hojeIso()) avisos.push('Data de nascimento no futuro');
-    else if (a.dataNascimento && dataReal(a.dataNascimento) && a.dataNascimento < '1950-01-01') avisos.push('Data de nascimento antes de 1950');
-    if (a._brutoMatricula && !dataReal(a.dataMatricula)) avisos.push('Data de matrícula não reconhecida: "' + a._brutoMatricula + '"');
-
-    if (!vazio(a.telefone)) {
-      var t = soDigitos(a.telefone);
-      if (t.length < 10) avisos.push('Telefone incompleto (' + t.length + ' dígitos)');
-    }
-    if (!vazio(a.ufNascimento) && UFS.indexOf(String(a.ufNascimento).trim().toUpperCase()) < 0) {
-      avisos.push('UF de nascimento inválida: "' + String(a.ufNascimento).trim() + '"');
-    }
-    if (!vazio(a.nome) && vazio(a.turma)) avisos.push('Sem turma (entra como Inativo)');
-    return { erros: erros, avisos: avisos };
+  function hojeIso() {
+    try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' }).format(new Date()); }
+    catch (_) { return new Date().toISOString().slice(0, 10); }
   }
 
-  // ---------- consulta à base ----------
-  async function buscarExistentes(porEscola, token, aoProgredir) {
-    // porEscola: { escolaCanonica: [ids] } → Map "escola|id" → registro
-    var mapa = new Map();
-    var tarefas = [];
-    Object.keys(porEscola).forEach(function (escola) {
-      var ids = porEscola[escola];
-      for (var i = 0; i < ids.length; i += 150) tarefas.push({ escola: escola, ids: ids.slice(i, i + 150) });
-    });
-    var feitas = 0, proximo = 0;
-    async function trabalhador() {
-      while (proximo < tarefas.length) {
-        var t = tarefas[proximo++];
-        var r = await sb.from('alunos').select(COLUNAS_BANCO).eq('escola', t.escola).in('codigo', t.ids);
-        if (r.error) throw r.error;
-        r.data.forEach(function (row) { mapa.set(row.escola + '|' + row.codigo, row); });
-        feitas++;
-        if (token === estado.token) aoProgredir(feitas, tarefas.length);
-      }
-    }
-    var n = Math.min(3, tarefas.length);
-    var ws = [];
-    for (var i = 0; i < n; i++) ws.push(trabalhador());
-    await Promise.all(ws);
-    return mapa;
-  }
-
-  function compararComBase(a, row, cab) {
-    var difs = [];
-    CAMPOS.forEach(function (c) {
-      if (c.tipo === 'bool') {
-        if (!cab.edEspecial) return;                // coluna não veio no CSV → não dá pra comparar
-      } else if (vazio(a[c.k])) {
-        return;                                    // CSV em branco não é "mudança" (nada seria gravado)
-      }
-      var novo = normalizar(c.tipo, a[c.k]);
-      var atual = normalizar(c.tipo, row[c.col]);
-      if (c.tipo === 'raca') { novo = minusc(typeof racaCorSb === 'function' ? racaCorSb(a[c.k]) || '' : a[c.k]); }
-      if (novo !== atual) {
-        difs.push({ rotulo: c.rotulo, de: exibir(c.tipo, row[c.col]), para: exibir(c.tipo, a[c.k]) });
-      }
-    });
-    return difs;
-  }
-
-  // ---------- análise principal ----------
-  // linhas: [{ linha: nºNoArquivo, aluno: {...} }]   cab: { edEspecial: bool }
-  async function analisar(linhas, cab) {
-    var token = ++estado.token;
-    var container = document.getElementById('previewContainer');
-    var btn = document.getElementById('btnExecutarImportacao');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-download"></i> Iniciar Importação'; btn.title = ''; }
-    alunosImportados = [];
-
-    function status(msg) {
-      if (token === estado.token && container) container.innerHTML = '<p class="pi-status">' + esc(msg) + '</p>';
-    }
-    status('Analisando ' + linhas.length + ' linhas…');
-
-    var itens = linhas.map(function (l) {
-      var v = validarLinha(l.aluno, cab);
-      return { linha: l.linha, aluno: l.aluno, erros: v.erros, avisos: v.avisos, situacao: null, difs: [] };
-    });
-
-    // 1) escola existe e o usuário pode gravar nela? (mesma regra da gravação)
-    var mapaEscolas = null;
-    try { mapaEscolas = (typeof mapaEscolasEditaveisSb === 'function') ? await mapaEscolasEditaveisSb() : null; }
-    catch (e) { console.warn('Prévia: não foi possível validar as escolas', e); }
-    if (token !== estado.token) return;
-    if (mapaEscolas) {
-      itens.forEach(function (it) {
-        if (vazio(it.aluno.escola)) return;
-        var canon = mapaEscolas[normEscolaSb(it.aluno.escola)];
-        if (!canon) it.erros.push('Escola "' + String(it.aluno.escola).trim() + '" não cadastrada ou sem permissão');
-        else it.escolaCanon = canon;
-      });
-    }
-
-    // 2) ID repetido dentro do próprio arquivo (a 2ª ocorrência é ignorada na gravação)
+  // ---------- 1) Validação do arquivo (sem banco) ----------
+  function analisarLinhas(alunos, mapaEscolas) {
+    var hoje = hojeIso();
     var vistos = {};
-    itens.forEach(function (it) {
-      if (it.erros.length || vazio(it.aluno.id)) return;
-      var chave = (it.escolaCanon || minusc(it.aluno.escola)) + '|' + String(it.aluno.id).trim();
-      if (vistos[chave]) it.erros.push('ID repetido no arquivo (igual à linha ' + vistos[chave] + ')');
-      else vistos[chave] = it.linha;
-    });
+    return alunos.map(function (a, i) {
+      var erros = [], avisos = [];
+      var chaveEsc = normEscolaSb(a.escola);
+      var escolaOficial = mapaEscolas[chaveEsc] || null;
+      var id = String(a.id || '').trim();
 
-    // 3) compara com a base (só linhas com ID e escola válida)
+      if (!escolaOficial) erros.push('Escola não encontrada ou sem permissão para importar');
+      if (id && escolaOficial) {
+        var k = escolaOficial + '|' + id;
+        if (vistos[k]) erros.push('ID repetido no arquivo (só a primeira linha vale)');
+        vistos[k] = true;
+      }
+
+      if (!String(a.turma || '').trim()) avisos.push('Sem turma: entra como Inativo');
+      if (String(a.nome || '').trim().split(/\s+/).length < 2) avisos.push('Nome sem sobrenome');
+
+      var cpfBruto = String(a.cpfAluno || '').trim();
+      if (cpfBruto) {
+        var digitos = cpfBruto.replace(/\D/g, '');
+        if (digitos.length !== 11) avisos.push('CPF incompleto: não será gravado');
+        else if (typeof validarCPF === 'function' && !validarCPF(cpfBruto)) avisos.push('CPF com dígitos inválidos');
+      }
+
+      if (!a.dataNascimento) avisos.push('Sem data de nascimento válida');
+      else if (!dataIsoValida(a.dataNascimento)) avisos.push('Data de nascimento impossível: será ignorada');
+      else if (a.dataNascimento > hoje) avisos.push('Data de nascimento no futuro');
+
+      if (!a.dataMatricula) avisos.push('Sem data de matrícula válida: usará a data de hoje');
+      else if (!dataIsoValida(a.dataMatricula)) avisos.push('Data de matrícula impossível: usará a data de hoje');
+      else if (a.dataMatricula > hoje) avisos.push('Data de matrícula no futuro');
+
+      return { aluno: a, linha: i, id: id, escolaOficial: escolaOficial, erros: erros, avisos: avisos, jaCadastrado: false };
+    });
+  }
+
+  // ---------- 2) Comparação com o banco (somente leitura) ----------
+  async function marcarJaCadastrados(itens) {
     var porEscola = {};
     itens.forEach(function (it) {
-      if (it.erros.length || vazio(it.aluno.id) || !it.escolaCanon) return;
-      (porEscola[it.escolaCanon] = porEscola[it.escolaCanon] || []).push(String(it.aluno.id).trim());
+      if (it.id && it.escolaOficial && !it.erros.length) (porEscola[it.escolaOficial] = porEscola[it.escolaOficial] || []).push(it);
     });
-    var existentes = new Map();
-    estado.semComparacao = false;
-    try {
-      if (Object.keys(porEscola).length) {
-        existentes = await buscarExistentes(porEscola, token, function (f, t) {
-          status('Comparando com a base… (' + f + ' de ' + t + ')');
-        });
+
+    var tarefas = [];
+    Object.keys(porEscola).forEach(function (escola) {
+      var lista = porEscola[escola];
+      for (var i = 0; i < lista.length; i += 150) tarefas.push({ escola: escola, lote: lista.slice(i, i + 150) });
+    });
+
+    var existentes = {};
+    var proxima = 0;
+    async function trabalhador() {
+      while (proxima < tarefas.length) {
+        var t = tarefas[proxima++];
+        var codigos = t.lote.map(function (it) { return it.id; });
+        var res = await sb.from('alunos').select('codigo').eq('escola', t.escola).in('codigo', codigos).limit(1000);
+        if (res.error) throw res.error;
+        res.data.forEach(function (r) { existentes[t.escola + '|' + r.codigo] = true; });
       }
-    } catch (e) {
-      console.error('Prévia: falha ao consultar a base', e);
-      estado.semComparacao = true;
     }
-    if (token !== estado.token) return;
+    await Promise.all([trabalhador(), trabalhador(), trabalhador(), trabalhador()]);
 
     itens.forEach(function (it) {
-      if (it.erros.length) { it.situacao = 'erro'; return; }
-      if (estado.semComparacao || vazio(it.aluno.id) || !it.escolaCanon) { it.situacao = 'novo'; return; }
-      var row = existentes.get(it.escolaCanon + '|' + String(it.aluno.id).trim());
-      if (!row) { it.situacao = 'novo'; return; }
-      it.difs = compararComBase(it.aluno, row, cab);
-      it.situacao = it.difs.length ? 'mudou' : 'igual';
+      if (it.id && it.escolaOficial && existentes[it.escolaOficial + '|' + it.id]) it.jaCadastrado = true;
     });
+  }
 
-    estado.itens = itens;
-    estado.filtro = 'todos';
-    estado.limite = MAX_LINHAS_TABELA;
+  // ---------- 3) Resultado ----------
+  function situacao(it) {
+    if (it.erros.length) return 'erro';
+    if (it.jaCadastrado) return 'ja';
+    return 'novo';
+  }
 
-    // Só alunos novos seguem para a gravação (quem já existe é ignorado pela importação; mandar só
-    // geraria "falsos enviados" — e o "Desfazer importação" apagaria alunos antigos).
-    alunosImportados = itens.filter(function (it) { return it.situacao === 'novo'; }).map(function (it) {
-      var limpo = Object.assign({}, it.aluno);
-      delete limpo._brutoMatricula; delete limpo._brutoNascimento;   // campos só da prévia
-      return limpo;
+  function resumir(itens) {
+    var r = { novos: 0, ja: 0, erro: 0, aviso: 0 };
+    itens.forEach(function (it) {
+      var s = situacao(it);
+      if (s === 'erro') r.erro++;
+      else if (s === 'ja') r.ja++;
+      else { r.novos++; if (it.avisos.length) r.aviso++; }
     });
-    renderizar();
+    return r;
   }
 
-  // ---------- interface ----------
-  function injetarEstilo() {
-    if (document.getElementById('previaImportacaoEstilo')) return;
-    var st = document.createElement('style');
-    st.id = 'previaImportacaoEstilo';
-    st.textContent =
-      '.pi-status{padding:16px;color:#64748b;margin:0}' +
-      '.pi-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;padding:10px}' +
-      '.pi-card{border:2px solid transparent;border-radius:10px;padding:8px 10px;text-align:left;cursor:pointer;font:inherit;color:inherit;background:#f1f5f9;transition:border-color .15s,transform .1s}' +
-      '.pi-card:hover{transform:translateY(-1px)}' +
-      '.pi-card.pi-sel{border-color:#2563eb}' +
-      '.pi-card b{display:block;font-size:22px;line-height:1.1}' +
-      '.pi-card span{font-size:12px;opacity:.85}' +
-      '.pi-card.pi-novo{background:rgba(22,163,74,.12)}.pi-card.pi-novo b{color:#15803d}' +
-      '.pi-card.pi-igual{background:rgba(100,116,139,.14)}' +
-      '.pi-card.pi-mudou{background:rgba(217,119,6,.14)}.pi-card.pi-mudou b{color:#b45309}' +
-      '.pi-card.pi-erro{background:rgba(220,38,38,.12)}.pi-card.pi-erro b{color:#b91c1c}' +
-      '.pi-card.pi-aviso{background:rgba(234,179,8,.16)}.pi-card.pi-aviso b{color:#a16207}' +
-      '.pi-nota{margin:0;padding:0 10px 8px;font-size:12px;color:#64748b;line-height:1.4}' +
-      '.pi-nota.pi-forte{color:#b45309}' +
-      '.pi-tab{width:100%;border-collapse:collapse;font-size:13px}' +
-      '.pi-tab th{position:sticky;top:0;background:#f1f5f9;color:#334155;text-align:left;padding:6px 8px;z-index:1}' +
-      '.pi-tab td{padding:6px 8px;border-bottom:1px solid #e2e8f0;vertical-align:top}' +
-      '.pi-badge{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:600;white-space:nowrap}' +
-      '.pi-b-novo{background:#dcfce7;color:#166534}.pi-b-igual{background:#e2e8f0;color:#334155}' +
-      '.pi-b-mudou{background:#fef3c7;color:#92400e}.pi-b-erro{background:#fee2e2;color:#991b1b}' +
-      '.pi-det{font-size:12px;line-height:1.45}' +
-      '.pi-det .pi-e{color:#b91c1c}.pi-det .pi-w{color:#a16207}.pi-det .pi-d{color:#92400e}' +
-      '.pi-det s{opacity:.65}' +
-      '.pi-mais{display:block;margin:8px auto;padding:6px 14px;border:1px solid #cbd5e1;border-radius:8px;background:transparent;color:inherit;cursor:pointer}' +
-      '[data-theme="dark"] .pi-card{background:#1e293b}' +
-      '[data-theme="dark"] .pi-card.pi-novo{background:rgba(22,163,74,.2)}[data-theme="dark"] .pi-card.pi-novo b{color:#4ade80}' +
-      '[data-theme="dark"] .pi-card.pi-igual{background:rgba(148,163,184,.18)}' +
-      '[data-theme="dark"] .pi-card.pi-mudou{background:rgba(217,119,6,.22)}[data-theme="dark"] .pi-card.pi-mudou b{color:#fbbf24}' +
-      '[data-theme="dark"] .pi-card.pi-erro{background:rgba(220,38,38,.22)}[data-theme="dark"] .pi-card.pi-erro b{color:#f87171}' +
-      '[data-theme="dark"] .pi-card.pi-aviso{background:rgba(234,179,8,.2)}[data-theme="dark"] .pi-card.pi-aviso b{color:#facc15}' +
-      '[data-theme="dark"] .pi-tab th{background:#1e293b;color:#cbd5e1}' +
-      '[data-theme="dark"] .pi-tab td{border-color:#334155}' +
-      '[data-theme="dark"] .pi-det .pi-e{color:#f87171}[data-theme="dark"] .pi-det .pi-w{color:#facc15}[data-theme="dark"] .pi-det .pi-d{color:#fbbf24}' +
-      '[data-theme="dark"] .pi-b-novo{background:rgba(22,163,74,.3);color:#86efac}[data-theme="dark"] .pi-b-igual{background:#334155;color:#e2e8f0}' +
-      '[data-theme="dark"] .pi-b-mudou{background:rgba(217,119,6,.3);color:#fde68a}[data-theme="dark"] .pi-b-erro{background:rgba(220,38,38,.3);color:#fecaca}';
-    document.head.appendChild(st);
+  var ROTULO = { erro: ['Erro', '#dc2626'], ja: ['Já cadastrado', '#64748b'], novo: ['Novo', '#16a34a'] };
+
+  function linhaHtml(it) {
+    var a = it.aluno, s = situacao(it);
+    var cor = ROTULO[s][1];
+    var obs = it.erros.map(function (t) { return '<div style="color:#dc2626;">⛔ ' + esc(t) + '</div>'; })
+      .concat(it.jaCadastrado ? ['<div style="opacity:.75;">Já existe nesta escola: será ignorado</div>'] : [])
+      .concat(it.avisos.map(function (t) { return '<div style="color:#b45309;">⚠ ' + esc(t) + '</div>'; })).join('');
+    return '<tr style="border-bottom:1px solid rgba(148,163,184,.35);vertical-align:top;">' +
+      '<td style="white-space:nowrap;"><span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;color:#fff;background:' + cor + ';">' + ROTULO[s][0] + '</span></td>' +
+      '<td>' + esc(a.nome || '-') + '</td><td>' + esc(a.escola || '-') + '</td><td>' + esc(a.turma || '-') + '</td>' +
+      '<td>' + esc(a.responsavel || '-') + '</td><td>' + esc(a.telefone || '-') + '</td>' +
+      '<td>' + (a.cpfAluno ? '✓' : '-') + '</td><td>' + (a.sus ? '✓' : '-') + '</td><td>' + (a.rg ? '✓' : '-') + '</td><td>' + (a.residencia ? '✓' : '-') + '</td>' +
+      '<td>' + (a.edEspecial ? 'Sim' : 'Não') + '</td>' +
+      '<td style="font-size:12px;min-width:200px;">' + (obs || '<span style="opacity:.5;">—</span>') + '</td></tr>';
   }
 
-  function contagens() {
-    var c = { todos: estado.itens.length, novo: 0, igual: 0, mudou: 0, erro: 0, aviso: 0, semId: 0 };
-    estado.itens.forEach(function (it) {
-      c[it.situacao]++;
-      if (it.situacao !== 'erro' && it.avisos.length) c.aviso++;
-      if (it.situacao === 'novo' && vazio(it.aluno.id)) c.semId++;
+  function filtrar(itens, filtro) {
+    var lista = itens.filter(function (it) {
+      var s = situacao(it);
+      if (filtro === 'novos') return s === 'novo';
+      if (filtro === 'ja') return s === 'ja';
+      if (filtro === 'erro') return s === 'erro';
+      if (filtro === 'aviso') return s === 'novo' && it.avisos.length > 0;
+      return true;
     });
-    return c;
+    // problemas primeiro (erro, aviso, já cadastrado, novo); dentro de cada grupo mantém a ordem do arquivo
+    var peso = function (it) { var s = situacao(it); return s === 'erro' ? 0 : (s === 'novo' && it.avisos.length) ? 1 : s === 'ja' ? 2 : 3; };
+    return lista.slice().sort(function (x, y) { return peso(x) - peso(y) || x.linha - y.linha; });
   }
 
-  function passaFiltro(it) {
-    var f = estado.filtro;
-    if (f === 'todos') return true;
-    if (f === 'aviso') return it.situacao !== 'erro' && it.avisos.length > 0;
-    return it.situacao === f;
+  function montarPainel(container, itens, resumo, extras) {
+    var filtro = 'todos';
+
+    function chip(chave, rotulo, valor, cor, dica) {
+      return '<button type="button" data-filtro="' + chave + '" title="' + esc(dica) + '" style="flex:1 1 140px;text-align:left;cursor:pointer;' +
+        'padding:10px 12px;border-radius:10px;border:2px solid ' + cor + ';background:transparent;color:inherit;font:inherit;">' +
+        '<div style="font-size:22px;font-weight:800;color:' + cor + ';line-height:1.1;">' + valor + '</div>' +
+        '<div style="font-size:12px;font-weight:600;">' + rotulo + '</div></button>';
+    }
+
+    function desenhar() {
+      var lista = filtrar(itens, filtro);
+      var html = '<div style="padding:12px;">';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">' +
+        chip('novos', 'Novos (serão importados)', resumo.novos, '#16a34a', 'Mostrar só os novos') +
+        chip('ja', 'Já cadastrados (ignorados)', resumo.ja, '#64748b', 'Mostrar só os que já existem') +
+        chip('erro', 'Com erro (ignorados)', resumo.erro, '#dc2626', 'Mostrar só as linhas com erro') +
+        chip('aviso', 'Novos com aviso (conferir)', resumo.aviso, '#d97706', 'Mostrar só os novos com aviso') + '</div>';
+      html += '<div style="font-size:12px;opacity:.8;margin-bottom:8px;">' +
+        (extras.linhasLidas ? extras.linhasLidas + ' linhas no arquivo' : itens.length + ' linhas válidas') +
+        (extras.descartadas > 0 ? ' · ' + extras.descartadas + ' descartadas por falta de nome ou escola' : '') +
+        (extras.semBanco ? ' · <strong style="color:#b45309;">não foi possível comparar com os alunos já cadastrados</strong>' : '') +
+        (filtro !== 'todos' ? ' · <a href="#" data-filtro="todos">mostrar todos</a>' : '') + '</div>';
+      html += '<div style="overflow:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">' +
+        '<thead><tr style="background:rgba(148,163,184,.2);text-align:left;"><th>Situação</th><th>Nome</th><th>Escola</th><th>Turma</th><th>Resp.</th><th>Tel.</th>' +
+        '<th>CPF</th><th>SUS</th><th>RG</th><th>Resid.</th><th>Ed.Especial</th><th>Observações</th></tr></thead><tbody>' +
+        lista.slice(0, LIMITE_LINHAS).map(linhaHtml).join('') + '</tbody></table></div>';
+      if (!lista.length) html += '<p style="padding:8px;opacity:.7;">Nenhuma linha neste filtro.</p>';
+      if (lista.length > LIMITE_LINHAS) html += '<p style="padding:8px 0;font-size:12px;">Exibindo ' + LIMITE_LINHAS + ' de ' + lista.length + ' linhas (os problemas aparecem primeiro).</p>';
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    container.onclick = function (ev) {
+      var alvo = ev.target.closest && ev.target.closest('[data-filtro]');
+      if (!alvo || !container.contains(alvo)) return;
+      ev.preventDefault();
+      filtro = (filtro === alvo.getAttribute('data-filtro')) ? 'todos' : alvo.getAttribute('data-filtro');
+      desenhar();
+    };
+    desenhar();
   }
 
-  var ROTULO = { novo: 'Novo', igual: 'Já existe', mudou: 'Já existe · difere', erro: 'Erro' };
-
-  function detalhe(it) {
-    var h = [];
-    it.erros.forEach(function (m) { h.push('<div class="pi-e">✖ ' + esc(m) + '</div>'); });
-    it.difs.forEach(function (d) {
-      h.push('<div class="pi-d">≠ ' + esc(d.rotulo) + ': <s>' + esc(d.de) + '</s> → ' + esc(d.para) + '</div>');
-    });
-    if (it.situacao !== 'erro') it.avisos.forEach(function (m) { h.push('<div class="pi-w">⚠ ' + esc(m) + '</div>'); });
-    return h.join('') || '<span style="opacity:.6">—</span>';
-  }
-
-  function renderizar() {
+  // ---------- 4) Substitui a pré-visualização antiga ----------
+  window.renderizarPreview = function (alunos) {
     var container = document.getElementById('previewContainer');
-    var btn = document.getElementById('btnExecutarImportacao');
     if (!container) return;
-    var c = contagens();
-
-    if (c.todos === 0) {
-      container.innerHTML = '<p class="pi-status" style="color:#dc2626">Nenhuma linha com dados foi encontrada no arquivo.</p>';
+    if (!alunos || alunos.length === 0) {
+      container.innerHTML = '<p style="padding:16px;color:#dc2626;">Nenhum aluno válido encontrado.</p>';
       return;
     }
+    var meuToken = ++tokenAtual;
+    container.onclick = null;
+    container.innerHTML = '<p style="padding:16px;opacity:.8;">Analisando o arquivo…</p>';
 
-    function card(chave, cls, numero, texto) {
-      return '<button type="button" class="pi-card ' + cls + (estado.filtro === chave ? ' pi-sel' : '') +
-        '" data-pi-filtro="' + chave + '"><b>' + numero + '</b><span>' + texto + '</span></button>';
-    }
-    var h = '<div class="pi-cards">' +
-      card('novo', 'pi-novo', c.novo, 'Novos (serão criados)') +
-      card('igual', 'pi-igual', c.igual, 'Já existem, iguais') +
-      card('mudou', 'pi-mudou', c.mudou, 'Já existem, com diferenças') +
-      card('erro', 'pi-erro', c.erro, 'Com erro (ignorados)') +
-      card('aviso', 'pi-aviso', c.aviso, 'Com avisos') +
-      card('todos', '', c.todos, 'Todas as linhas') +
-      '</div>';
+    (async function () {
+      var itens, mapa, semBanco = false;
+      try { mapa = await mapaEscolasEditaveisSb(); } catch (_) { mapa = null; }
+      if (meuToken !== tokenAtual) return;
+      if (!mapa) {   // sem como saber as escolas permitidas: mantém só a lista simples, sem bloquear a importação
+        container.innerHTML = '<p style="padding:16px;color:#b45309;">Não foi possível analisar o arquivo agora. Você ainda pode importar normalmente.</p>';
+        return;
+      }
+      itens = analisarLinhas(alunos, mapa);
+      try { await marcarJaCadastrados(itens); } catch (e) { console.warn('Prévia: comparação com o banco falhou', e); semBanco = true; }
+      if (meuToken !== tokenAtual) return;
 
-    if (estado.semComparacao) {
-      h += '<p class="pi-nota pi-forte">Não foi possível comparar com a base agora (falha na consulta). Todas as linhas válidas serão tratadas como novas; alunos que já existirem serão ignorados na gravação.</p>';
-    } else if (c.igual + c.mudou > 0) {
-      h += '<p class="pi-nota pi-forte">Alunos que já existem <b>não são alterados</b> por esta importação, mesmo os que diferem do cadastro. Para atualizar dados de quem já está matriculado, use “Atualizar matriculados”.</p>';
-    }
-    if (c.semId > 0) {
-      h += '<p class="pi-nota">' + c.semId + ' aluno(s) sem ID no arquivo: não dá para saber se já existem, então serão criados como novos.</p>';
-    }
+      var resumo = resumir(itens);
+      var lidas = window._csvLinhasLidas || 0;
+      montarPainel(container, itens, resumo, {
+        linhasLidas: lidas, descartadas: Math.max(0, lidas - alunos.length), semBanco: semBanco
+      });
 
-    var visiveis = estado.itens.filter(passaFiltro);
-    h += '<table class="pi-tab"><thead><tr><th>Linha</th><th>Situação</th><th>Nome</th><th>Escola</th><th>Turma</th><th>Detalhes</th></tr></thead><tbody>';
-    visiveis.slice(0, estado.limite).forEach(function (it) {
-      h += '<tr><td>' + it.linha + '</td>' +
-        '<td><span class="pi-badge pi-b-' + it.situacao + '">' + ROTULO[it.situacao] + '</span></td>' +
-        '<td>' + esc(it.aluno.nome || '-') + '</td><td>' + esc(it.aluno.escola || '-') + '</td><td>' + esc(it.aluno.turma || '-') + '</td>' +
-        '<td class="pi-det">' + detalhe(it) + '</td></tr>';
-    });
-    if (!visiveis.length) h += '<tr><td colspan="6" style="padding:14px;opacity:.7">Nenhuma linha nesta categoria.</td></tr>';
-    h += '</tbody></table>';
-    if (visiveis.length > estado.limite) {
-      h += '<button type="button" class="pi-mais" data-pi-mais="1">Mostrar mais (' + (visiveis.length - estado.limite) + ' restantes)</button>';
-    }
-    container.innerHTML = h;
-
-    if (btn) {
-      btn.disabled = (c.novo === 0);
-      btn.innerHTML = '<i class="fas fa-download"></i> Iniciar Importação' + (c.novo ? ' (' + c.novo + ' novo' + (c.novo > 1 ? 's' : '') + ')' : '');
-      btn.title = c.novo === 0 ? 'Não há alunos novos neste arquivo' : '';
-    }
-  }
-
-  function aoClicar(ev) {
-    var alvo = ev.target.closest && ev.target.closest('[data-pi-filtro],[data-pi-mais]');
-    if (!alvo || !alvo.closest('#previewContainer')) return;
-    if (alvo.hasAttribute('data-pi-mais')) { estado.limite += MAX_LINHAS_TABELA; }
-    else { estado.filtro = alvo.getAttribute('data-pi-filtro'); estado.limite = MAX_LINHAS_TABELA; }
-    renderizar();
-  }
-
-  // ---------- ponto de entrada (chamado por processarCSV em data.js) ----------
-  window.analisarPreviaImportacao = function (linhas, cab) {
-    injetarEstilo();
-    return analisar(linhas, cab || {}).catch(function (e) {
-      console.error('Erro na pré-visualização:', e);
-      var container = document.getElementById('previewContainer');
-      if (container) container.innerHTML = '<p class="pi-status" style="color:#dc2626">Erro ao analisar o arquivo: ' + esc(e && e.message || e) + '</p>';
-    });
+      // Nada novo para gravar: não há o que importar (só trava se a comparação com o banco funcionou)
+      var botao = document.getElementById('btnExecutarImportacao');
+      if (botao && !semBanco) {
+        botao.disabled = (resumo.novos === 0);
+        if (resumo.novos === 0 && typeof mostrarToast === 'function') mostrarToast('Nenhum aluno novo para importar neste arquivo.', 'warning');
+      }
+    })();
   };
-  // para testes
-  window._previaImportacao = { validarLinha: validarLinha, compararComBase: compararComBase, estado: estado };
-
-  document.addEventListener('click', aoClicar);
 })();

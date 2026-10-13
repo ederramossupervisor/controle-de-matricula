@@ -35,11 +35,11 @@
     'orgs-curriculares.js',
     'importar-profissionais.js',
     'importador.js',
-    'previa-importacao.js',
     'profissionais.js',
     'tour.js',
     'ver-como.js',
-    'dropzone-csv.js'
+    'dropzone-csv.js',
+    'previa-importacao.js'
   ];
 
   function carregarScript(nome) {
