@@ -2003,13 +2003,13 @@ function processarCSVPromocao() {
 
         // Pré-visualização (mantida a original)
         const container = document.getElementById("previewPromocao");
-        let html = '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
+        let html = '<table class="tabela-previa">';
         html += '<thead><tr><th>ID</th><th>Nome</th><th>Escola</th><th>Turma</th></tr></thead><tbody>';
         alunosPromocao.slice(0, 50).forEach(a => {
-          html += `<tr><td>${a.id}</td><td>${a.nome}</td><td>${a.escola}</td><td>${a.turma}</td></tr>`;
+          html += `<tr><td data-label="ID">${escapar(a.id)}</td><td data-label="Nome">${escapar(a.nome)}</td><td data-label="Escola">${escapar(a.escola)}</td><td data-label="Turma">${escapar(a.turma)}</td></tr>`;
         });
         html += '</tbody></table>';
-        if (alunosPromocao.length > 50) html += '<p>Mostrando 50 de ' + alunosPromocao.length + '.</p>';
+        if (alunosPromocao.length > 50) html += '<p style="padding:8px;">Mostrando 50 de ' + alunosPromocao.length + '.</p>';
         container.innerHTML = html;
 
         document.getElementById('btnExecutarPromocao').disabled = (alunosPromocao.length === 0);
@@ -2152,13 +2152,13 @@ function processarCSVAtualizar() {
 
         // Pré-visualização
         const container = document.getElementById("previewAtualizar");
-        let html = '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
+        let html = '<table class="tabela-previa">';
         html += '<thead><tr><th>ID</th><th>Nome</th><th>Escola</th><th>Turma</th></tr></thead><tbody>';
         alunosAtualizar.slice(0, 50).forEach(a => {
-          html += `<tr><td>${a.id}</td><td>${a.nome}</td><td>${a.escola}</td><td>${a.turma}</td></tr>`;
+          html += `<tr><td data-label="ID">${escapar(a.id)}</td><td data-label="Nome">${escapar(a.nome)}</td><td data-label="Escola">${escapar(a.escola)}</td><td data-label="Turma">${escapar(a.turma)}</td></tr>`;
         });
         html += '</tbody></table>';
-        if (alunosAtualizar.length > 50) html += '<p>Mostrando 50 de ' + alunosAtualizar.length + '.</p>';
+        if (alunosAtualizar.length > 50) html += '<p style="padding:8px;">Mostrando 50 de ' + alunosAtualizar.length + '.</p>';
         container.innerHTML = html;
 
         document.getElementById('btnExecutarAtualizarMatriculados').disabled = (alunosAtualizar.length === 0);
