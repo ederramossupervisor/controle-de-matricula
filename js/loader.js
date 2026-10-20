@@ -39,7 +39,8 @@
     'tour.js',
     'ver-como.js',
     'dropzone-csv.js',
-    'previa-importacao.js'
+    'previa-importacao.js',
+    'mobile.js'
   ];
 
   function carregarScript(nome) {

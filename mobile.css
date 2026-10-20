@@ -1,0 +1,185 @@
+/* ==========================================================================
+   mobile.css — interface de celular (ativa só com body.m-ui, ≤ 800px)
+   Todas as regras ficam sob "body.m-ui": no desktop nada muda.
+   Para desligar tudo: remova o <link> de mobile.css e js/mobile.js do loader.
+   ========================================================================== */
+:root { --m-nav-h: 60px; --m-header-h: 56px; --m-banner-h: 0px; }
+body.ver-como-ativo { --m-banner-h: 40px; }
+
+/* Elementos criados por mobile.js ficam invisíveis no desktop */
+#mNav, #mFab, #mSearch, #mBell, .mFiltroBtn, #mFiltrosSheet, #mBackdrop, #mMenuPerfil, #mStatus { display: none; }
+
+body.m-ui {
+  padding-top: 0 !important;
+  padding-bottom: calc(var(--m-nav-h) + var(--safe-bottom) + 12px) !important;
+  -webkit-tap-highlight-color: transparent;
+}
+body.m-ui button, body.m-ui .btn-header, body.m-ui select { touch-action: manipulation; }
+body.m-ui [data-tooltip]::before, body.m-ui [data-tooltip]::after { display: none !important; }
+body.m-ui #footerPrincipal, body.m-ui #dockMobile, body.m-ui #btnToggleListaMobile { display: none !important; }
+body.m-ui #app { padding-bottom: 0 !important; }
+
+/* ---------- TOPO COMPACTO ---------- */
+body.m-ui header {
+  position: sticky !important; top: var(--m-banner-h); height: auto !important; min-height: 0 !important;
+  flex-wrap: nowrap !important; flex-direction: row !important; align-items: center !important;
+  gap: 10px !important; justify-content: flex-start !important; padding: calc(var(--safe-top) + 8px) 12px 8px !important;
+  background: linear-gradient(135deg, #1e3a8a, #2563eb) !important; background-image: linear-gradient(135deg, #1e3a8a, #2563eb) !important;
+}
+body.m-ui header::before { display: none !important; }
+body.m-ui header .icone-flutuante, body.m-ui header #estrelasContainer, body.m-ui #indicadorUltimaAtualizacao,
+body.m-ui #nomeUsuarioTexto, body.m-ui #emailUsuarioTexto, body.m-ui #perfilUsuarioTexto,
+body.m-ui #headerTitulo > div:last-child { display: none !important; }
+body.m-ui .header-right { order: 0; width: auto !important; margin: 0 !important; flex: 0 0 auto; }
+body.m-ui #headerTitulo { order: 1; flex: 1 1 0 !important; width: auto !important; min-width: 0; padding: 0 !important; text-align: left !important; }
+body.m-ui #nomeEscolaHeader {
+  text-align: left !important;
+  font-size: 16px !important; line-height: 1.2 !important; letter-spacing: 0 !important; text-shadow: none !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.m-ui #fotoPerfilImg, body.m-ui #fotoPerfilIniciais { width: 38px !important; height: 38px !important; font-size: 18px !important; }
+body.m-ui #mBell { display: flex; order: 2; position: relative; width: 44px; height: 44px; border: 0; border-radius: 50%;
+  background: rgba(255,255,255,.14); color: #fff; font-size: 19px; align-items: center; justify-content: center; flex: 0 0 auto; }
+body.m-ui #mBell .m-badge { position: absolute; top: 2px; right: 2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px;
+  background: #dc2626; color: #fff; font-size: 11px; line-height: 18px; text-align: center; display: none; }
+/* barra de ferramentas antiga: some do fluxo (menu continua dentro dela) */
+body.m-ui header > .m-toolbar { position: static !important; width: 0 !important; height: 0 !important; margin: 0 !important; overflow: visible !important; order: 3; }
+body.m-ui .m-toolbar > div:first-child, body.m-ui .m-toolbar .btn-menu-brilho, body.m-ui #headerActionsRight { display: none !important; }
+body.m-ui #faixaCampanha { position: static !important; display: none; margin: 8px 12px 0; max-width: none !important; background: #1e3a8a !important; border-radius: 12px !important; }
+body.m-ui #faixaCampanha[style*="display: block"], body.m-ui #faixaCampanha[style*="display: flex"] { display: block !important; }
+body.m-ui #mStatus { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px 0; }
+body.m-ui #mStatus:empty, body.m-ui #mStatus.m-vazio { display: none; }
+body.m-ui #rankingContainer { position: static !important; }
+body.m-ui #mStatus #rankingContainer * { color: var(--text-primary) !important; }
+body.m-ui #mStatus .m-estrelas { font-size: 16px; letter-spacing: 2px; color: #d4a017; }
+
+/* ---------- MURAL ---------- */
+body.m-ui #muralComunicados { display: block !important; padding: 8px 12px !important; margin: 8px 12px 0; border: 1px solid var(--card-border); border-radius: 14px; }
+body.m-ui #muralComunicados h3 { font-size: 14px !important; }
+body.m-ui #muralCards { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+body.m-ui #muralCards > * { flex: 0 0 86% !important; max-width: 86% !important; scroll-snap-align: start; }
+
+/* ---------- MÉTRICAS ---------- */
+body.m-ui #painel { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important; gap: 8px !important; padding: 10px 12px !important;
+  margin: 0 !important; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+body.m-ui #painel::-webkit-scrollbar { display: none; }
+body.m-ui .painel-metricas { display: contents !important; }
+body.m-ui .metrica-card { flex: 0 0 auto !important; min-width: 108px !important; padding: 10px 12px !important; border-radius: 14px !important; scroll-snap-align: start; }
+body.m-ui .metrica-valor { font-size: 24px !important; }
+body.m-ui .metrica-titulo { font-size: 11px !important; margin-bottom: 2px !important; }
+body.m-ui .metrica-escola { display: none !important; }
+
+/* ---------- BUSCA + FILTROS (barra fixa sob o topo) ---------- */
+body.m-ui .filtros-container { position: sticky; top: calc(var(--m-header-h) + var(--m-banner-h)); z-index: 45;
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: center; gap: 8px !important; padding: 8px 12px !important;
+  background: #eef2f7; border-bottom: 1px solid var(--card-border); }
+body.m-ui.m-tab-prof #filtros-container, body.m-ui.m-tab-alunos #filtros-profissionais-container { display: none !important; }
+body.m-ui .filtros-container > .input-icon:last-child { flex: 1 1 auto !important; min-width: 0 !important; order: 1; display: block !important; }
+body.m-ui .filtros-container > .mFiltroBtn { order: 2; }
+body.m-ui .filtros-container > .input-icon .icon { display: flex !important; }
+body.m-ui .filtros-container > .input-icon input { padding-left: 44px !important; border-radius: 24px; min-height: 44px; }
+body.m-ui .mFiltroBtn { display: flex; position: relative; flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--input-border);
+  background: var(--card-bg); color: var(--btn-primary-bg); align-items: center; justify-content: center; font-size: 18px; }
+body.m-ui .mFiltroBtn .m-badge { position: absolute; top: -3px; right: -3px; min-width: 18px; height: 18px; border-radius: 9px; background: #2563eb;
+  color: #fff; font-size: 11px; line-height: 18px; text-align: center; padding: 0 4px; display: none; }
+body.m-ui .mFiltroBtn.m-ativo .m-badge { display: block; }
+body.m-ui #mFiltrosSheet { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 10010; background: var(--card-bg);
+  border-radius: 24px 24px 0 0; padding: 18px 16px calc(16px + var(--safe-bottom)); max-height: 85dvh; overflow-y: auto;
+  transform: translateY(105%); visibility: hidden; transition: transform .25s ease, visibility 0s .25s; }
+body.m-ui #mFiltrosSheet.m-aberto { transform: none; visibility: visible; transition: transform .25s ease; }
+body.m-ui #mFiltrosSheet h3 { margin: 0 0 12px; font-size: 17px; }
+body.m-ui #mFiltrosSheet .input-icon { display: block; margin-bottom: 10px; min-width: 0 !important; width: 100%; }
+body.m-ui #mFiltrosSheet .input-icon .icon { display: flex !important; }
+body.m-ui #mFiltrosSheet .m-linha { display: flex; gap: 10px; margin-top: 6px; }
+body.m-ui #mFiltrosSheet .m-linha button { flex: 1; min-height: 48px; border-radius: 28px; font-size: 16px; border: 1px solid var(--input-border); background: var(--card-bg); color: var(--text-primary); }
+body.m-ui #mFiltrosSheet .m-linha button.m-primario { background: var(--btn-primary-bg); color: #fff; border-color: var(--btn-primary-bg); }
+body.m-ui #mBackdrop { display: block; position: fixed; inset: 0; z-index: 10005; background: rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .2s; }
+body.m-ui #mBackdrop.m-aberto { opacity: 1; pointer-events: auto; }
+
+/* ---------- ALTERNADOR CARDS/LISTA E LISTA ---------- */
+body.m-ui .m-oculto-mobile { display: none !important; }
+body.m-ui #areaToggleVisualizacao { margin-left: auto; }
+body.m-ui #toggleVisualizacao .aba-item { padding: 8px 12px; min-height: 40px; }
+body.m-ui #toggleVisualizacao { display: flex !important; }
+body.m-ui #lista { display: grid !important; grid-template-columns: 1fr !important; gap: 10px !important; padding: 0 12px 16px !important; }
+body.m-ui #lista.modo-lista { display: block !important; padding: 0 12px 16px !important; }
+body.m-ui #lista > div { padding: 12px !important; border-radius: 16px !important; flex-wrap: wrap; }
+body.m-ui #lista > div:hover { transform: none; }
+body.m-ui #lista .aluno-info { flex: 1 1 60%; }
+body.m-ui #lista .aluno-acoes { flex: 1 0 100%; justify-content: flex-end; border-top: 1px solid var(--card-border); padding-top: 6px; flex-wrap: wrap; }
+body.m-ui #lista .btn-icone { width: 44px !important; height: 44px !important; }
+body.m-ui #paginacao { display: flex !important; margin: 8px 0 16px !important; }
+
+/* ---------- MENU (folha inferior com atalhos em grade) ---------- */
+body.m-ui #menuDropdown, body.m-ui .dropdown-content.dropdown-horizontal {
+  display: flex !important; flex-direction: column !important; position: fixed !important; left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important;
+  width: 100% !important; max-width: 100% !important; max-height: 88dvh !important; margin: 0 !important; transform: translateY(105%) !important;
+  visibility: hidden; border-radius: 24px 24px 0 0 !important; padding: 8px 14px calc(16px + var(--safe-bottom)) !important;
+  overflow-y: auto !important; overflow-x: hidden !important; gap: 0 !important; transition: transform .25s ease, visibility 0s .25s; }
+body.m-ui #menuDropdown.menu-aberto { transform: none !important; visibility: visible; transition: transform .25s ease; }
+body.m-ui #menuAlunosWrapper { flex-direction: column !important; flex-wrap: nowrap !important; width: 100%; min-width: 0; }
+body.m-ui #menuDropdown > * { min-width: 0; max-width: 100%; }
+body.m-ui .menu-coluna { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0 !important; max-width: 100% !important; flex: 0 0 auto !important; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--card-border); width: 100%; }
+body.m-ui .menu-coluna[style*="display:none"], body.m-ui .menu-coluna[style*="display: none"] { display: none; }
+body.m-ui .menu-coluna .menu-secao-titulo { grid-column: 1 / -1; text-align: left !important; font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); margin: 0 2px 2px; }
+body.m-ui .menu-coluna .btn-header { width: 100%; min-height: 52px; display: flex; align-items: center; gap: 8px; text-align: left; white-space: normal !important; overflow: visible !important; text-overflow: clip !important; min-width: 0; line-height: 1.2;
+  padding: 10px 10px; border-radius: 14px; font-size: 14px; background: #f1f5f9 !important; color: var(--text-primary) !important; border: 1px solid var(--card-border); margin: 0; }
+body.m-ui .menu-coluna .btn-header i { margin: 0; flex: 0 0 auto; width: 20px; text-align: center; }
+body.m-ui .menu-coluna .btn-header[onclick^="logout"] { color: #b91c1c !important; background: #fef2f2 !important; }
+body.m-ui #mMenuPerfil { display: flex; align-items: center; gap: 12px; padding: 10px 2px 12px; border-bottom: 1px solid var(--card-border); }
+body.m-ui #mMenuPerfil .m-av { width: 46px; height: 46px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 20px; overflow: hidden; flex: 0 0 auto; }
+body.m-ui #mMenuPerfil .m-av img { width: 100%; height: 100%; object-fit: cover; }
+body.m-ui #mMenuPerfil .m-nome { font-weight: 600; font-size: 15px; }
+body.m-ui #mMenuPerfil .m-sub { font-size: 12px; color: var(--text-muted); word-break: break-all; }
+body.m-ui .menu-overlay { z-index: 10000; }
+
+/* ---------- BARRA INFERIOR ---------- */
+body.m-ui #mNav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 500; height: calc(var(--m-nav-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom); background: var(--card-bg); border-top: 1px solid var(--card-border); box-shadow: 0 -2px 10px rgba(0,0,0,.06); }
+body.m-ui #mNav button { flex: 1; border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  color: var(--text-muted); font-size: 11px; padding: 6px 2px; }
+body.m-ui #mNav button i { margin: 0; font-size: 20px; }
+body.m-ui #mNav button.m-ativo { color: var(--btn-primary-bg); font-weight: 600; }
+body.m-ui #mFab { display: none; position: fixed; right: 16px; bottom: calc(var(--m-nav-h) + var(--safe-bottom) + 14px); z-index: 490; width: 56px; height: 56px;
+  border-radius: 50%; border: 0; background: var(--btn-primary-bg); color: #fff; font-size: 22px; box-shadow: 0 6px 16px rgba(37,99,235,.4); align-items: center; justify-content: center; }
+body.m-ui #mFab i { margin: 0; }
+body.m-ui.m-tab-alunos.m-pode-novo #mFab { display: flex; }
+body.m-ui .toast-container { bottom: calc(var(--m-nav-h) + var(--safe-bottom) + 12px) !important; }
+body.m-ui.m-tab-alunos #paginacao { margin-bottom: 70px !important; }
+
+/* ---------- BUSCA GLOBAL (tela cheia) ---------- */
+body.m-ui #mSearch { display: flex; flex-direction: column; position: fixed; inset: 0; z-index: 10020; background: var(--card-bg);
+  transform: translateY(100%); visibility: hidden; transition: transform .22s ease, visibility 0s .22s; }
+body.m-ui #mSearch.m-aberto { transform: none; visibility: visible; transition: transform .22s ease; }
+body.m-ui #mSearch .m-topo { display: flex; align-items: center; gap: 8px; padding: calc(var(--safe-top) + 8px) 10px 8px; border-bottom: 1px solid var(--card-border); }
+body.m-ui #mSearch .m-voltar { width: 44px; height: 44px; border: 0; background: transparent; font-size: 20px; color: var(--text-primary); flex: 0 0 auto; }
+body.m-ui #mSearch .m-corpo { flex: 1; overflow-y: auto; padding: 0 0 20px; }
+body.m-ui #mSearch .m-corpo > div:first-child { flex: 1; }
+body.m-ui #mSearch #inputBuscaGlobal { width: 100% !important; min-height: 44px; font-size: 16px; }
+body.m-ui #mSearch #dropdownBuscaGlobal { position: static !important; max-height: none !important; border: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+body.m-ui #mSearch .m-dica { padding: 24px 20px; color: var(--text-muted); text-align: center; font-size: 14px; }
+
+/* ---------- JANELAS (modais) ---------- */
+body.m-ui .modal-overlay { align-items: flex-end !important; overscroll-behavior: contain; }
+body.m-ui .modal-card { width: 100% !important; max-width: 100% !important; margin: 0 !important; border-radius: 22px 22px 0 0 !important; max-height: 92dvh !important;
+  display: flex; flex-direction: column; }
+body.m-ui .modal-card--grande, body.m-ui .modal-card--historico { height: 94dvh !important; max-height: 94dvh !important; }
+body.m-ui .modal-card--fullscreen { height: 100dvh !important; max-height: 100dvh !important; border-radius: 0 !important; }
+body.m-ui .modal-header { position: sticky; top: 0; z-index: 3; background: var(--card-bg); padding: 10px 12px 8px 16px !important; }
+body.m-ui .modal-header h2 { font-size: 17px !important; }
+body.m-ui .modal-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+body.m-ui .modal-body .modal-actions { position: sticky; bottom: 0; background: var(--card-bg); padding-top: 10px !important; border-top: 1px solid var(--card-border); z-index: 2; }
+body.m-ui .modal-body table:not(details table):not(#tabelaHistorico) { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* formulários montados em tabela (ficha do profissional etc.) viram campos empilhados */
+body.m-ui .modal-body details table, body.m-ui .modal-body details table tbody, body.m-ui .modal-body details table tr,
+body.m-ui .modal-body details table th, body.m-ui .modal-body details table td { display: block; width: 100% !important; }
+body.m-ui .modal-body details table th { font-size: 12px; color: var(--text-muted); text-align: left; padding: 10px 0 2px; font-weight: 600; }
+body.m-ui .modal-body details table td { padding: 0 0 4px; }
+body.m-ui .modal-body details table input, body.m-ui .modal-body details table select { min-height: 44px; font-size: 16px !important; }
+body.m-ui .modal-body details > summary { min-height: 44px; display: flex; align-items: center; }
+body.m-ui input, body.m-ui select, body.m-ui textarea { font-size: 16px !important; }
+
+body.m-ui #mStatus #estrelasContainer { font-size: 16px !important; letter-spacing: 2px !important; min-height: 0 !important; margin: 0 !important; color: #d4a017 !important; text-shadow: none !important; line-height: 1.2 !important; }
+body.m-ui.m-tab-prof #mGrpAlunos, body.m-ui.m-tab-alunos #mGrpProf { display: none; }
+body.m-ui #mSearch .m-ir { width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--btn-primary-bg); color: #fff; flex: 0 0 auto; }
+body.m-ui #mSearch .m-ir i { margin: 0; }
