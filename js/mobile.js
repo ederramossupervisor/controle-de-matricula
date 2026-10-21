@@ -122,6 +122,8 @@
     ['abaAlunos', 'abaProfissionais'].forEach(function (id) {
       var el = $(id); if (el) new MutationObserver(sincronizar).observe(el, { attributes: true, attributeFilter: ['class'] });
     });
+    var appEl0 = $('app');
+    if (appEl0) new MutationObserver(sincronizar).observe(appEl0, { attributes: true, attributeFilter: ['style', 'class'] });
     if (window.ResizeObserver) new ResizeObserver(medirTopo).observe(header);
     document.addEventListener('keydown', function (e) { if (ativo && e.key === 'Escape') fecharCamadas(); });
 
@@ -230,6 +232,8 @@
   }
   function sincronizar() {
     if (!ativo) return;
+    var appEl = $('app');
+    document.body.classList.toggle('m-logado', !!appEl && getComputedStyle(appEl).display !== 'none');
     var alunos = abaAlunosAtiva();
     document.body.classList.toggle('m-tab-alunos', alunos);
     document.body.classList.toggle('m-tab-prof', !alunos);
@@ -294,7 +298,7 @@
       }
     } else if (!mq.matches && ativo) {
       fecharCamadas(); ativo = false; clearInterval(pollTimer);
-      document.body.classList.remove('m-ui', 'm-tab-alunos', 'm-tab-prof', 'm-pode-novo');
+      document.body.classList.remove('m-ui', 'm-logado', 'm-tab-alunos', 'm-tab-prof', 'm-pode-novo');
       desrelocar();
       if (localStorage.getItem('modoFoco') === '1') document.body.classList.add('modo-foco');
     }
