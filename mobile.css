@@ -183,3 +183,10 @@ body.m-ui #mStatus #estrelasContainer { font-size: 16px !important; letter-spaci
 body.m-ui.m-tab-prof #mGrpAlunos, body.m-ui.m-tab-alunos #mGrpProf { display: none; }
 body.m-ui #mSearch .m-ir { width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--btn-primary-bg); color: #fff; flex: 0 0 auto; }
 body.m-ui #mSearch .m-ir i { margin: 0; }
+
+/* ---------- MURAL: botões e cabeçalho compactos ---------- */
+body.m-ui #muralComunicados { padding: 6px 10px !important; }
+body.m-ui #muralComunicados > div:first-child { margin-bottom: 4px !important; min-height: 0; }
+body.m-ui #muralComunicados .btn-pequeno { padding: 3px 10px !important; min-height: 28px !important; height: 28px; font-size: 12px !important; line-height: 1; border-radius: 14px !important; width: auto !important; }
+body.m-ui #muralComunicados .btn-pequeno i { font-size: 11px; margin-right: 4px; }
+body.m-ui #muralComunicados h3 i { font-size: 13px; margin-right: 6px; }
