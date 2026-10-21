@@ -190,3 +190,74 @@ body.m-ui #muralComunicados > div:first-child { margin-bottom: 4px !important; m
 body.m-ui #muralComunicados .btn-pequeno { padding: 3px 10px !important; min-height: 28px !important; height: 28px; font-size: 12px !important; line-height: 1; border-radius: 14px !important; width: auto !important; }
 body.m-ui #muralComunicados .btn-pequeno i { font-size: 11px; margin-right: 4px; }
 body.m-ui #muralComunicados h3 i { font-size: 13px; margin-right: 6px; }
+
+/* ==========================================================================
+   VISUAL NATIVO (v2): barra enxuta, busca em pílula, cards de celular
+   ========================================================================== */
+body.m-ui { background: #f2f4f8 !important; }
+
+/* topo: só nome da escola + sino */
+body.m-ui header { background: #1e40af !important; background-image: none !important; box-shadow: 0 1px 0 rgba(0,0,0,.08); padding: calc(var(--safe-top) + 6px) 8px 6px 16px !important; }
+body.m-ui .header-right { display: none !important; }
+body.m-ui #headerTitulo { text-align: left !important; }
+body.m-ui #nomeEscolaHeader { font-size: 17px !important; font-weight: 700 !important; }
+body.m-ui #mBell { background: transparent; }
+
+/* faixa de status e mural: linhas simples */
+body.m-ui #mStatus { padding: 8px 16px 0; }
+body.m-ui #muralComunicados { margin: 10px 12px 0; padding: 0 !important; border: 0; border-radius: 14px; background: var(--card-bg) !important; box-shadow: 0 1px 2px rgba(0,0,0,.05); overflow: hidden; }
+body.m-ui #muralComunicados > div:first-child { margin: 0 !important; padding: 0 14px; min-height: 46px; cursor: pointer; align-items: center; }
+body.m-ui #muralComunicados h3 { font-size: 14px !important; font-weight: 600; }
+body.m-ui #muralComunicados #btnToggleMural { display: none !important; }
+body.m-ui #muralComunicados > div:first-child::after { content: "\f078"; font-family: "Font Awesome 6 Free", "Font Awesome 5 Free"; font-weight: 900; font-size: 12px; color: var(--text-muted); order: 3; margin-left: 8px; transition: transform .2s; }
+body.m-ui #muralComunicados.m-mural-aberto > div:first-child::after { transform: rotate(180deg); }
+body.m-ui #muralComunicados > div:first-child { display: flex; justify-content: space-between; }
+body.m-ui #muralCards { padding: 0 12px 12px !important; }
+
+/* métricas enxutas */
+body.m-ui #painel { padding: 10px 12px 2px !important; gap: 8px !important; }
+body.m-ui .metrica-card { min-width: 92px !important; padding: 8px 12px !important; border-radius: 14px !important; background: var(--card-bg) !important; box-shadow: 0 1px 2px rgba(0,0,0,.05) !important; border: 0 !important; text-align: left !important; align-items: flex-start !important; }
+body.m-ui .metrica-valor { font-size: 22px !important; line-height: 1.1; }
+body.m-ui .metrica-titulo { font-size: 11px !important; text-transform: uppercase; letter-spacing: .4px; }
+body.m-ui .metrica-detalhe { display: none !important; }
+
+/* busca em pílula com botão de filtro dentro */
+body.m-ui .filtros-container { background: rgba(242,244,248,.92) !important; backdrop-filter: blur(8px); border: 0 !important; padding: 8px 12px !important; gap: 8px !important; }
+body.m-ui .filtros-container > .input-icon:last-child input { background: var(--card-bg); border: 0 !important; box-shadow: 0 1px 2px rgba(0,0,0,.07); min-height: 46px; border-radius: 23px; font-size: 15px !important; }
+body.m-ui .filtros-container > .input-icon .icon { left: 6px; }
+body.m-ui .mFiltroBtn { border: 0; box-shadow: 0 1px 2px rgba(0,0,0,.07); width: 46px; height: 46px; }
+
+/* linha de ferramentas da lista: só o alternador, em ícones */
+body.m-ui #areaToggleVisualizacao { margin: 0 12px 0 auto; }
+body.m-ui #toggleVisualizacao { background: #e4e8ef; border-radius: 12px; padding: 3px; gap: 2px; }
+body.m-ui #toggleVisualizacao .aba-item { font-size: 0 !important; padding: 0 !important; width: 40px; min-height: 34px !important; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+body.m-ui #toggleVisualizacao .aba-item i { font-size: 15px; margin: 0; }
+body.m-ui #areaToggleVisualizacao { padding: 0; }
+
+/* cards de aluno */
+body.m-ui #lista { gap: 10px !important; padding: 4px 12px 16px !important; }
+body.m-ui #lista > div { display: block !important; background: var(--card-bg) !important; box-shadow: 0 1px 3px rgba(0,0,0,.07) !important; border: 0 !important; border-left: 4px solid transparent !important;
+  border-radius: 16px !important; padding: 12px 12px 10px 12px !important; }
+body.m-ui #lista > div.status-completo { border-left-color: #10b981 !important; }
+body.m-ui #lista > div.status-pendente { border-left-color: #f59e0b !important; }
+body.m-ui #lista > div.status-vencido { border-left-color: #ef4444 !important; }
+body.m-ui #lista > div:active { background: #f8fafc !important; transform: scale(.985) !important; }
+body.m-ui #lista .aluno-avatar, body.m-ui #lista .aluno-foto { border-radius: 50% !important; width: 46px !important; height: 46px !important; }
+body.m-ui #lista .botoes-acao-vertical { gap: 8px !important; }
+body.m-ui #lista .btn-acao-card { border-radius: 10px !important; }
+body.m-ui #lista .docs-icons { display: flex !important; flex-wrap: wrap; gap: 6px !important; margin: 0 !important; justify-content: flex-start; }
+body.m-ui #lista .doc-icon { width: 30px !important; height: 30px !important; border-radius: 50% !important; background: #f1f5f9; }
+body.m-ui #lista .doc-icon.entregue { background: #dcfce7; }
+body.m-ui #lista .doc-icon.pendente { background: #fef3c7; }
+body.m-ui #lista .doc-icon.vencido { background: #fee2e2; }
+body.m-ui #lista .doc-icon.info { background: #dbeafe; }
+body.m-ui #lista .doc-icon i { font-size: 13px; margin: 0; }
+body.m-ui #lista .doc-icon:hover { transform: none; }
+
+/* barra inferior: indicador em pílula */
+body.m-ui #mNav { box-shadow: 0 -1px 0 rgba(0,0,0,.06); }
+body.m-ui #mNav button i { width: 56px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 15px; transition: background .2s; }
+body.m-ui #mNav button.m-ativo i { background: #dbeafe; }
+
+/* paginação enxuta */
+body.m-ui .btn-paginacao { min-height: 40px; }
