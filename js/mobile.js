@@ -124,6 +124,21 @@
     });
     if (window.ResizeObserver) new ResizeObserver(medirTopo).observe(header);
     document.addEventListener('keydown', function (e) { if (ativo && e.key === 'Escape') fecharCamadas(); });
+
+    // toque simples no card do aluno abre a ficha (no desktop é duplo clique)
+    var lista = $('lista');
+    if (lista) lista.addEventListener('click', function (e) {
+      if (!ativo || e.target.closest('button, a, input, select, textarea, label, .btn-icone, .btn-acao-card, .aluno-avatar, .aluno-foto, .doc-icon')) return;
+      var card = e.target.closest('#lista > div'); if (!card || card.tagName !== 'DIV') return;
+      card.dispatchEvent(new MouseEvent('dblclick', { bubbles: true, cancelable: true }));
+    });
+    // mural: a linha do título expande/recolhe
+    var mural = $('muralComunicados');
+    if (mural) mural.addEventListener('click', function (e) {
+      if (!ativo || e.target.closest('button') || !e.target.closest('#muralComunicados > div:first-child')) return;
+      if (window.toggleMural) toggleMural();
+      var c = $('muralCards'); mural.classList.toggle('m-mural-aberto', !!c && c.style.display !== 'none');
+    });
   }
 
   function atualizarPerfilMenu() {
@@ -132,6 +147,7 @@
     var temFoto = img && img.style.display !== 'none' && img.getAttribute('src');
     box.innerHTML = '<div class="m-av">' + (temFoto ? '<img src="' + img.getAttribute('src') + '" alt="">' : '<i class="fas fa-user"></i>') + '</div>' +
       '<div><div class="m-nome"></div><div class="m-sub"></div></div>';
+    box.onclick = function () { var f = $('fotoPerfilContainer'); if (f) { fecharCamadas(); f.click(); } };
     box.querySelector('.m-nome').textContent = (nome && nome.textContent) || '';
     box.querySelector('.m-sub').textContent = [(em && em.textContent) || '', (pf && pf.textContent) || ''].filter(Boolean).join(' · ');
   }
