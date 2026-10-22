@@ -2421,30 +2421,15 @@ function abrirResultadoBusca(link) {
       }
       break;
     case 'legislacao':
-      // Fecha o dropdown do buscador global
-      fecharDropdownBusca();
-      
-      // Obtém o termo que foi digitado no campo de busca global
-      const termo = document.getElementById('inputBuscaGlobal').value.trim();
-      
-      // Abre o modal de Legislação
-      abrirModalLegislacao();
-      
-      // Garante que estamos na aba "Consultar"
-      mostrarAbaConsultaLegislacao();
-      
-      // Preenche o campo de busca com o termo pesquisado (usamos o campo "Buscar por assunto...")
-      const campoBusca = document.getElementById('filtroAssuntoLegislacao');
-      if (campoBusca) {
-        campoBusca.value = termo;
-      }
-      
-      // Dispara a busca (que agora vai destacar os itens)
-      setTimeout(() => {
-        buscarLegislacao();
-        // Se quiser abrir o detalhe do item específico, descomente a linha abaixo:
-        // abrirDetalheLegislacao(id);
-      }, 500); // pequeno atraso para garantir que o modal foi renderizado
+      // O termo digitado na busca global pode casar com número, tipo ou palavras-chave;
+      // o filtro "Assunto" só olha o assunto e devolvia lista vazia. Por isso abrimos a
+      // consulta SEM filtros e mostramos o documento clicado pelo id.
+      ['filtroTipoLegislacao', 'filtroAnoLegislacao', 'filtroAssuntoLegislacao', 'filtroPalavrasChaveLegislacao'].forEach(function (fid) {
+        const campo = document.getElementById(fid);
+        if (campo) campo.value = '';
+      });
+      abrirModalLegislacao();   // já carrega a lista completa na aba Consultar
+      if (id) setTimeout(() => abrirDetalheLegislacao(id), 300);
       break;
     case 'comunicado':
       abrirModalComunicado();
