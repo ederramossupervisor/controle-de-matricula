@@ -958,14 +958,58 @@ function renderUsuarios(usuarios) {
 
   if (usuarios.length === 0) {
     container.innerHTML = "<p>Nenhum usuário cadastrado</p>";
+    const c = document.getElementById("contadorUsuarios");
+    if (c) c.textContent = "";
     return;
   }
 
+  // Cache com a lista completa; o filtro apenas decide o que aparece
   window._usuariosCache = usuarios;
+
+  // Popula o filtro de escola (mantendo a seleção atual, se ainda existir)
+  const selEscola = document.getElementById("filtroUsuarioEscola");
+  if (selEscola) {
+    const atual = selEscola.value;
+    const escolas = [...new Set(usuarios.map(u => (u.ESCOLA || "").trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    const temSemEscola = usuarios.some(u => !(u.ESCOLA || "").trim());
+    selEscola.innerHTML = '<option value="">Todas as escolas</option>' +
+      escolas.map(e => `<option value="${e.replace(/"/g, '&quot;')}">${e}</option>`).join('') +
+      (temSemEscola ? '<option value="__SEM_ESCOLA__">Sem escola (ex.: supervisão)</option>' : '');
+    selEscola.value = [...selEscola.options].some(o => o.value === atual) ? atual : "";
+  }
+
+  aplicarFiltroUsuarios();
+}
+
+function normalizarBuscaUsuario(s) {
+  return (s || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+}
+
+function aplicarFiltroUsuarios() {
+  const container = document.getElementById("listaUsuariosContainer");
+  const usuarios = window._usuariosCache;
+  if (!container || !Array.isArray(usuarios)) return;
+
+  const termo = normalizarBuscaUsuario(document.getElementById("filtroUsuarioBusca")?.value);
+  const escolaSel = document.getElementById("filtroUsuarioEscola")?.value || "";
 
   const classesPerfil = { SUPERVISOR: 'perfil-supervisor', SECRETARIA: 'perfil-secretaria', PEDAGOGICO: 'perfil-pedagogico' };
 
+  container.innerHTML = "";
+  let exibidos = 0;
+
   usuarios.forEach((u, idx) => {
+    const escolaU = (u.ESCOLA || "").trim();
+    if (escolaSel === "__SEM_ESCOLA__") { if (escolaU) return; }
+    else if (escolaSel && escolaU !== escolaSel) return;
+
+    if (termo) {
+      const alvo = normalizarBuscaUsuario((u.NOME || "") + " " + (u.EMAIL || ""));
+      if (!alvo.includes(termo)) return;
+    }
+
+    exibidos++;
     const div = document.createElement("div");
     div.className = "usuario-card";
 
@@ -994,6 +1038,14 @@ function renderUsuarios(usuarios) {
     `;
     container.appendChild(div);
   });
+
+  if (exibidos === 0) {
+    container.innerHTML = '<p style="color: var(--text-muted);">Nenhum usuário encontrado com esse filtro.</p>';
+  }
+  const c = document.getElementById("contadorUsuarios");
+  if (c) c.textContent = exibidos === usuarios.length
+    ? `${usuarios.length} usuário(s)`
+    : `${exibidos} de ${usuarios.length} usuário(s)`;
 }
 
 // ------ ATOS AUTORIZATIVOS ------
