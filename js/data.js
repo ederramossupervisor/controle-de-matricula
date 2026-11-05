@@ -1298,6 +1298,8 @@ async function salvarUsuario() {
 
 async function salvarEdicaoUsuario() {
   const emailAlvo = document.getElementById("edicaoEmail").dataset.emailOriginal;
+  const novoEmail = document.getElementById("edicaoEmail").value.trim().toLowerCase();
+  const emailMudou = novoEmail !== (emailAlvo || "").trim().toLowerCase();
   const nome = document.getElementById("edicaoNome").value.trim();
   const perfis = getPerfisSelecionados('perfilEdicao');
   const escola = document.getElementById("escolaEdicao").value.trim();
@@ -1314,13 +1316,23 @@ async function salvarEdicaoUsuario() {
     erroDiv.style.display = "block";
     return;
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoEmail)) {
+    erroDiv.textContent = "Informe um e-mail válido";
+    erroDiv.style.display = "block";
+    return;
+  }
   erroDiv.style.display = "none";
+
+  if (emailMudou && !await Dialogo.confirmar(
+    `Alterar o e-mail de ${emailAlvo} para ${novoEmail}? O usuário passará a entrar no sistema com o novo e-mail (a senha continua a mesma).`,
+    { titulo: 'Alterar e-mail', textoConfirmar: 'Alterar' })) return;
 
   showButtonLoading(btnSalvar);
 
   const dados = {
     acao: "editarUsuario",
     email: emailAlvo,
+    novoEmail: emailMudou ? novoEmail : undefined,
     nome: nome,
     perfis: perfis,
     escola: escola,
@@ -1328,6 +1340,7 @@ async function salvarEdicaoUsuario() {
   };
 
   postSemResposta(dados, "Usuário atualizado com sucesso!", async () => {
+    if (emailMudou) registrarUltimaAcao('E-mail de usuário alterado', `${emailAlvo} → ${novoEmail}`);
     hideButtonLoading(btnSalvar);
     fecharModalEdicaoUsuario();
     if (document.getElementById("modalListaUsuarios").style.display === "flex") {
